@@ -1,0 +1,70 @@
+========================================================
+  RECEPCIÓN DE MERCADERÍA DJI  —  Conteo de series por escaneo
+========================================================
+
+CÓMO ABRIRLO
+------------
+Doble clic en "index.html" (se abre en tu navegador: Chrome, Edge, etc.).
+No necesita internet. Funciona con la pistola de escaneo (lápiz/láser)
+porque la pistola escribe la serie y da "Enter" sola.
+
+CÓMO SE USA
+-----------
+1. Poné el cursor en la caja grande "ESCANEÁ AQUÍ LA SERIE…"
+   (queda enfocada sola; si la perdés, hacé clic en cualquier lado).
+2. Escaneá la PRIMERA serie de la caja:
+   - El programa DETECTA el producto solo por el patrón de la serie.
+   - Si es un producto único, abre la caja y te avisa cuál detectó.
+   - Si es un producto "hermano" (no se distingue solo por la serie),
+     te muestra las 2 opciones para que confirmes con un clic,
+     según la etiqueta de la caja física.
+3. Seguí escaneando el resto de series de esa caja: se suman solas,
+   sin volver a preguntar. Suena un "bip" agudo al agregar bien.
+4. Cuando termines una caja/producto, tocá "📦 Nueva caja" y escaneá
+   la primera serie del siguiente producto (se vuelve a detectar).
+
+CATÁLOGO DE PRODUCTOS (botón "Catálogo" arriba a la derecha)
+------------------------------------------------------------
+- AGREGAR producto nuevo: escribí su Código y Nombre y tocá "Agregar".
+  El producto empieza sin series y va APRENDIENDO las series a medida
+  que las escaneás (queda guardado para las próximas recepciones).
+- EDITAR: tocá "Editar" en cualquier producto (incluidos los 17 base)
+  para corregir el código o el nombre. Si ya habías escaneado series de
+  ese producto, se corrigen también automáticamente.
+- ELIMINAR: los productos que vos agregaste se pueden borrar.
+- RESTABLECER: si editaste un producto base y te arrepentiste, el botón
+  "Restablecer" lo regresa a su código y nombre originales.
+Todo el catálogo se guarda solo en la app.
+
+PROTECCIONES AUTOMÁTICAS
+------------------------
+- Series REPETIDAS: si escaneás dos veces la misma, la rechaza (bip grave)
+  y te dice en qué producto ya estaba. No la cuenta doble.
+- Serie de OTRA CAJA: si estando en un producto escaneás algo que parece
+  de otro, te avisa y te deja cambiar de caja o agregar igual.
+- Serie DESCONOCIDA (producto nuevo que no estaba en el catálogo):
+  te deja asignarla a un producto existente o crear uno nuevo. El
+  programa APRENDE ese patrón para la próxima vez.
+
+GUARDADO
+--------
+Se guarda solo en el navegador. Si cerrás o se va la luz, al reabrir
+sigue todo lo escaneado. "🗑️ Limpiar todo" borra solo la recepción
+actual (no el catálogo).
+
+EXPORTAR
+--------
+"⬇️ Exportar a Excel" genera un archivo con el MISMO diseño DJI, en UN
+SOLO cuadro: todas las series agrupadas por producto, con el subtotal de
+cada producto (TOTAL D000xx) y el TOTAL GENERAL al final.
+El archivo se llama "Recepcion DJI <fecha>.xlsx" y cae en tus Descargas.
+
+Mirá "EJEMPLO exportacion.xlsx" para ver cómo queda.
+
+ARCHIVOS (no borrar)
+--------------------
+  index.html   -> la aplicación (esto es lo que abrís)
+  catalog.js   -> catálogo con los 17 productos y sus series de referencia
+  logo.png     -> logo DJI
+  lib/exceljs.min.js -> motor para crear el Excel
+Mantené los 4 juntos en la misma carpeta.
