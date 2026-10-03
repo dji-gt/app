@@ -58,11 +58,13 @@
 /* Apartados de la app. Para agregar uno nuevo: su carpeta + una línea aquí. */
 const ICONOS = {
   chat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.9-.9L3 20.5l1.5-4.6A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4z"/><path d="M8 10h8M8 14h5"/></svg>',
+  personas:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 20a6.5 6.5 0 0 0-3-5.5"/></svg>',
   caja:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/><path d="M7.5 5.5l9 5"/></svg>'
 };
 const SECCIONES = [
   {id:'mensajes',  nombre:'Mensajes',  titulo:'Mensajes para clientes',  src:'mensajes/index.html',  icono:'chat'},
-  {id:'recepcion', nombre:'Recepción', titulo:'Recepción de mercadería', src:'recepcion/index.html', icono:'caja'}
+  {id:'recepcion', nombre:'Recepción', titulo:'Recepción de mercadería', src:'recepcion/index.html', icono:'caja'},
+  {id:'clientes',  nombre:'Clientes',  titulo:'Clientes en espera de producto', src:'clientes/index.html', icono:'personas'}
 ];
 const LS = 'dji_app_seccion';
 const nav = document.getElementById('nav'), cont = document.getElementById('contenido'), cargando = document.getElementById('cargando');

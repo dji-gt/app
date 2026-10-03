@@ -1223,6 +1223,13 @@ const BASE = [
     versiones:[{id:'msg-pago-autorizacion-v', nombre:'Mensaje', corto:'Mensaje', precio:null, resumen:'', extras:[], incluye:[]}]
   },
   {
+    id:'msg-facturacion-datos', nombre:'Facturación · Pedir datos para la factura', cat:'mensajes', mensaje:true,
+    alias:'factura facturacion facturar datos nit nombre telefono celular correo email direccion envio enviar domicilio entrega',
+    gancho:'', clave:'', specs:[], fortalezas:[], cmp:{},
+    texto:"¡Con mucho gusto! 😊 Para elaborar su *factura*, por favor compártanos los siguientes datos:\n\n👤 Nombre completo:\n📱 Número de teléfono:\n🧾 NIT:\n📧 Correo electrónico:\n📍 Dirección:\n\n🚚 *¿Desea que se lo enviemos?* (opcional) Si es así, por favor incluya en la dirección la zona, el municipio y un punto de referencia.\n\n¡Muchas gracias!",
+    versiones:[{id:'msg-facturacion-datos-v', nombre:'Mensaje', corto:'Mensaje', precio:null, resumen:'', extras:[], incluye:[]}]
+  },
+  {
     id:'msg-servicio-tecnico', nombre:'Servicio técnico · Número de WhatsApp', cat:'mensajes', mensaje:true,
     alias:'servicio tecnico soporte taller reparacion reparaciones reparar arreglo garantia garantias mantenimiento mantenimientos repuesto repuestos stock pieza falla dañado roto arruino arruinado descompuesto golpe no funciona no enciende numero whatsapp contacto',
     gancho:'', clave:'', specs:[], fortalezas:[], cmp:{},
