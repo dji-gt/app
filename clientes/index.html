@@ -202,6 +202,7 @@
 <div class="appbar">
   <b>Clientes en espera</b>
   <div class="ab-right">
+    <span id="nubeEstado"></span>
     <button class="ab-btn" id="btnExport" title="Exportar a Excel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg><span>Excel</span></button>
     <button class="ab-btn" id="btnAjustes" title="Nombres y respaldo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg><span>Ajustes</span></button>
     <img src="../recepcion/logo.png" class="logo" alt="DJI">
@@ -242,7 +243,7 @@
           <button class="btn ghost" id="fCancelar" hidden>Cancelar</button>
         </div>
         <div class="status" id="status"><span class="ic"></span><span class="msg"></span></div>
-        <div class="save-ind"><span class="dot"></span><span>Se guarda en este equipo</span></div>
+        <div class="save-ind"><span class="dot"></span><span id="saveTxt">Se guarda en este equipo</span></div>
       </div>
     </div>
 
@@ -274,7 +275,7 @@
     </div>
     <div class="msec">
       <h3>Respaldo</h3>
-      <p>Los clientes se guardan en este navegador. Con el respaldo podés pasarlos a otra computadora o celular (al cargarlo se suman, no se borra nada).</p>
+      <p id="respaldoTxt">Los clientes se guardan en este navegador. Con el respaldo podés pasarlos a otra computadora o celular (al cargarlo se suman, no se borra nada).</p>
       <div class="mrow">
         <button class="btn dark sm" onclick="descargarRespaldo()">⬇️ Descargar respaldo</button>
         <button class="btn ghost sm" onclick="document.getElementById('archivo').click()">⬆️ Cargar respaldo</button>
@@ -285,6 +286,7 @@
 <input type="file" id="archivo" accept=".json,application/json" hidden>
 <div class="toast" id="toast"></div>
 
+<script src="../nube.js"></script>
 <script src="../recepcion/lib/exceljs.min.js"></script>
 <script src="../recepcion/catalog.js"></script>
 <script>
@@ -352,7 +354,61 @@ function cargar(){
   }catch(e){}
   try{ const u=localStorage.getItem(LS_ULTIMO); if(u && datos.vendedores.includes(u)) registro=u; }catch(e){}
 }
-function guardar(){ try{ localStorage.setItem(LS_DATOS,JSON.stringify(datos)); }catch(e){ toast("⚠️ No se pudo guardar en este navegador"); } }
+function guardarLocal(){ try{ localStorage.setItem(LS_DATOS,JSON.stringify(datos)); }catch(e){ toast("⚠️ No se pudo guardar en este navegador"); } }
+function guardar(){ guardarLocal(); subirNube(); }
+
+// ---------- nube (todas las computadoras conectadas ven lo mismo) ----------
+let nubeReg = null;          // último estado de la nube: {id: cliente}
+let nubeAj = null;           // último mapa de ajustes en la nube
+let cambiosSinSubir = false; // cambios hechos antes de que llegara la nube
+const mapaRegistros = lista => { const m={}; lista.forEach(r=>{ m[r.id]=r; }); return m; };
+const masNuevo = (a,b) => (a.actualizado||a.fecha) > (b.actualizado||b.fecha);
+function unirRegistros(nube, locales){
+  const out={};
+  for(const id in nube){ const r=limpiarRegistro(Object.assign({id},nube[id])); if(r) out[r.id]=r; }
+  locales.forEach(r=>{ const c=out[r.id]; if(!c || masNuevo(r,c)) out[r.id]=r; });
+  return Object.values(out);
+}
+function subirNube(){
+  if(!window.Nube || !Nube.conectado()) return;
+  if(nubeReg===null){ cambiosSinSubir=true; return; }
+  Nube.guardarColeccion("clientes", mapaRegistros(datos.registros), nubeReg);
+  if(nubeAj!==null) Nube.guardarMapa("ajustes","clientes", {vendedores:datos.vendedores}, nubeAj);
+}
+async function conectarNube(){
+  if(!window.Nube) return;
+  if(!conectarNube.pintado){ Nube.pintar($("nubeEstado")); conectarNube.pintado=true; }
+  if(!Nube.conectado()) return;
+  $("saveTxt").textContent="Se guarda en la nube";
+  $("respaldoTxt").textContent="Los clientes ya se guardan en la nube y los ven todas las computadoras conectadas. El respaldo sirve para tener una copia en un archivo.";
+  if(!await Nube.iniciar()) return;
+  // primera vez en este equipo: sumar a la nube lo que ya había aquí
+  const unido = await Nube.unirUnaVez("clientes", async ()=>{
+    const nube=await Nube.leerColeccion("clientes"), aj=await Nube.leerMapa("ajustes","clientes");
+    const todos=unirRegistros(nube, datos.registros);
+    await Nube.guardarColeccion("clientes", mapaRegistros(todos), nube);
+    if(!aj.existe || !Array.isArray(aj.mapa.vendedores)) await Nube.guardarMapa("ajustes","clientes",{vendedores:datos.vendedores},aj.mapa);
+  });
+  if(!unido && localStorage.getItem("dji_nube_unido_clientes")!==Nube.clave()){
+    addEventListener("online", ()=>conectarNube(), {once:true});   // sin internet: se reintenta al volver
+    return;
+  }
+  Nube.escucharColeccion("clientes",(mapa)=>{
+    let lista=Object.keys(mapa).map(id=>limpiarRegistro(Object.assign({id},mapa[id]))).filter(Boolean);
+    nubeReg=mapa;
+    if(cambiosSinSubir){ cambiosSinSubir=false; lista=unirRegistros(mapa, datos.registros); Nube.guardarColeccion("clientes", mapaRegistros(lista), mapa); }
+    const orden=l=>l.slice().sort((a,b)=>a.id.localeCompare(b.id));
+    if(Nube.estable(orden(lista))===Nube.estable(orden(datos.registros))) return;
+    datos.registros=lista; guardarLocal(); render(); renderDatalist();
+  });
+  Nube.escucharMapa("ajustes","clientes",(m)=>{
+    nubeAj=m;
+    if(!Array.isArray(m.vendedores) || Nube.estable(m.vendedores)===Nube.estable(datos.vendedores)) return;
+    datos.vendedores=m.vendedores.map(v=>String(v).trim()).filter(Boolean);
+    guardarLocal(); renderVendedoresForm(); render();
+    if($("ajModal").classList.contains("show")) renderVendedoresAj();
+  });
+}
 
 // ============================================================
 //  FORMULARIO
@@ -673,6 +729,7 @@ cargar();
 limpiarForm();
 renderDatalist();
 render();
+conectarNube();
 </script>
 </body>
 </html>

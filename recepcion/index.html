@@ -296,6 +296,7 @@
     <span class="brand-txt"><b>Recepción de Mercadería</b></span>
   </div>
   <div class="ab-right">
+    <span id="nubeEstado"></span>
     <button class="btn-cat" id="btnCat" title="Catálogo de productos">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.5 1.5 0 015.5 4H10a1 1 0 011 1v14a1 1 0 00-1-1H5.5A1.5 1.5 0 014 16.5v-11z"/><path d="M20 5.5A1.5 1.5 0 0018.5 4H14a1 1 0 00-1 1v14a1 1 0 011-1h4.5a1.5 1.5 0 001.5-1.5v-11z"/></svg>
       <span>Catálogo</span>
@@ -379,7 +380,7 @@
 
         <div class="tools">
           <span class="spacer"></span>
-          <span class="save-ind"><span class="dot"></span><span>Guardado automático</span></span>
+          <span class="save-ind"><span class="dot"></span><span id="saveTxt">Guardado automático</span></span>
         </div>
       </div>
     </div>
@@ -437,6 +438,7 @@
   <button class="btn ok" onclick="exportExcel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Exportar</button>
 </div>
 
+<script src="../nube.js"></script>
 <script src="lib/exceljs.min.js"></script>
 <script src="catalog.js"></script>
 <script>
@@ -470,7 +472,13 @@ const $ = id => document.getElementById(id);
 const pq = $("pq"), qn = $("qn"), suggEl = $("sugg");
 
 // ---------- utilidades ----------
-function nuevaRecepcion(fecha){ return {fecha, totalCajas:null, cajas:[{items:[]}], actual:0}; }
+function nuevaRecepcion(fecha){ return {fecha, totalCajas:null, cajas:[nuevaCaja()], actual:0}; }
+function nuevoId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+let seqOrden=0;
+function sigOrden(){ return Date.now()*1000+(seqOrden++%1000); }
+// orden: se fija cuando la caja recibe su primer producto (así se numeran en el orden en que se registran)
+function nuevaCaja(items){ return {id:nuevoId(), orden:items&&items.length?sigOrden():null, items:items||[]}; }
+const ordenDe = c => c.orden==null ? Infinity : c.orden;
 function todayISO(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 function fmtFecha(iso){const [y,m,d]=iso.split("-");return d+"/"+m+"/"+y;}
 function norm(s){return (s||"").trim().toUpperCase().replace(/\s+/g,"");}
@@ -481,7 +489,8 @@ function plural(n,uno,varios){return n+" "+(n===1?uno:varios);}
 function fold(s){return (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/([a-z])(\d)/g,"$1 $2").replace(/(\d)([a-z])/g,"$1 $2").replace(/[^a-z0-9]+/g," ").trim();}
 
 // ---------- catálogo ----------
-function saveCatalogDelta(){ try{ localStorage.setItem(LS_CATALOG,JSON.stringify(catDelta)); }catch(e){} }
+function saveCatalogLocal(){ try{ localStorage.setItem(LS_CATALOG,JSON.stringify(catDelta)); }catch(e){} }
+function saveCatalogDelta(){ saveCatalogLocal(); subirCatalogo(); }
 
 function loadCatalog(){
   // cargar / migrar los cambios del catálogo
@@ -681,6 +690,7 @@ function agregar(){
     beep(false); qn.focus(); qn.select(); return;
   }
   const caja=recep.cajas[recep.actual], p=byCode[pick], num=recep.actual+1;
+  if(caja.orden==null) caja.orden=sigOrden();
   const ex=caja.items.find(x=>x.codigo===pick);
   if(ex){ ex.cant+=n; setStatus("ok","➕",`Caja ${num}: se ${n===1?"sumó":"sumaron"} ${n} a ${p.descripcion}. Ahora son ${ex.cant}.`); }
   else { caja.items.push({codigo:p.codigo,descripcion:p.descripcion,cant:n}); setStatus("ok","✔",`Caja ${num}: ${p.descripcion} — ${plural(n,"unidad","unidades")}.`); }
@@ -696,7 +706,7 @@ function siguienteCaja(){
   }
   const last=recep.cajas.length-1;
   if(!recep.cajas[last].items.length) recep.actual=last;
-  else { recep.cajas.push({items:[]}); recep.actual=recep.cajas.length-1; }
+  else { recep.cajas.push(nuevaCaja()); recep.actual=recep.cajas.length-1; }
   const reg=cajasConProductos();
   if(recep.totalCajas && reg>=recep.totalCajas) setStatus("warn","⚠️",`Ya registraste ${reg} de ${recep.totalCajas} cajas. Si llegaron más, corregí el total arriba.`);
   else setStatus("info","📦",`Caja ${recep.actual+1} abierta. Elegí el producto que trae.`);
@@ -714,7 +724,7 @@ function eliminarCaja(i){
   const u=unidadesCaja(c);
   if(c.items.length && !confirm(`¿Eliminar la caja ${i+1} (${plural(u,"unidad","unidades")})?`+(i<recep.cajas.length-1?" Las cajas que siguen se vuelven a numerar.":""))) return;
   recep.cajas.splice(i,1);
-  if(!recep.cajas.length) recep.cajas.push({items:[]});
+  if(!recep.cajas.length) recep.cajas.push(nuevaCaja());
   if(recep.actual>i) recep.actual--;
   else if(recep.actual===i) recep.actual=recep.cajas.length-1;
   setStatus("info","🗑️",`Caja ${i+1} eliminada.`);
@@ -759,7 +769,7 @@ function pasarVieja(){
   const {d,prods}=viejaPend;
   const estabaVacia=!cajasConProductos();
   if(!recep.cajas[recep.cajas.length-1].items.length) recep.cajas.pop();
-  prods.forEach(c=>{ const it=d.items[c]; recep.cajas.push({items:[{codigo:c,descripcion:byCode[c]?byCode[c].descripcion:(it.descripcion||c),cant:it.serials.length}]}); });
+  prods.forEach(c=>{ const it=d.items[c]; recep.cajas.push(nuevaCaja([{codigo:c,descripcion:byCode[c]?byCode[c].descripcion:(it.descripcion||c),cant:it.serials.length}])); });
   recep.actual=recep.cajas.length-1;
   if(estabaVacia && d.fecha) recep.fecha=d.fecha;
   marcarVieja(); save(); load(); renderAll();
@@ -902,7 +912,9 @@ function renderCatalog(){
 // ============================================================
 //  PERSISTENCIA
 // ============================================================
-function save(){ podar(); try{ localStorage.setItem(LS_RECEP,JSON.stringify(recep)); }catch(e){} }
+function guardarLocal(){ try{ localStorage.setItem(LS_RECEP,JSON.stringify(recep)); }catch(e){} }
+function save(){ podar(); guardarLocal(); subirNube(); }
+const limpiarItems = items => (Array.isArray(items)?items:[]).filter(it=>it&&it.codigo&&Number(it.cant)>0).map(it=>({codigo:String(it.codigo),descripcion:String(it.descripcion||it.codigo),cant:Math.floor(Number(it.cant))}));
 function load(){
   try{
     const d=JSON.parse(localStorage.getItem(LS_RECEP)||"null");
@@ -910,16 +922,112 @@ function load(){
       recep={
         fecha:d.fecha||todayISO(),
         totalCajas:(parseInt(d.totalCajas,10)>0?parseInt(d.totalCajas,10):null),
-        cajas:d.cajas.map(c=>({items:((c&&c.items)||[]).filter(it=>it&&it.codigo&&Number(it.cant)>0).map(it=>({codigo:String(it.codigo),descripcion:String(it.descripcion||it.codigo),cant:Math.floor(Number(it.cant))}))})),
+        cajas:d.cajas.map((c,i)=>{
+          const items=limpiarItems(c&&c.items);
+          // las cajas guardadas antes de la nube no traen id/orden
+          const orden = c && c.orden!=null ? Number(c.orden) : (items.length ? (Date.now()-d.cajas.length+i)*1000 : null);
+          return {id:(c&&c.id)?String(c.id):nuevoId(), orden, items};
+        }),
         actual:0
       };
-      if(!recep.cajas.length) recep.cajas.push({items:[]});
+      if(!recep.cajas.length) recep.cajas.push(nuevaCaja());
       recep.actual=Math.min(Math.max(0,parseInt(d.actual,10)||0),recep.cajas.length-1);
     }
   }catch(e){}
   try{ const v=localStorage.getItem(LS_VISTA); if(v==="cajas"||v==="productos") vista=v; }catch(e){}
   $("fecha").value=recep.fecha;
   $("totalCajas").value=recep.totalCajas||"";
+}
+
+// ============================================================
+//  NUBE (todas las computadoras conectadas ven la misma recepción)
+//  - cada caja es un documento: varias personas pueden contar a la vez
+//  - la caja que se está llenando es de cada computadora
+// ============================================================
+let nubeCajas=null, nubeInfo=null, nubeCat=null, cambiosSinSubir=false, cambiosCat=false;
+const mapaCajas = () => { const m={}; recep.cajas.forEach(c=>{ if(c.items.length) m[c.id]={orden:c.orden, items:c.items}; }); return m; };
+function subirNube(){
+  if(!window.Nube || !Nube.conectado()) return;
+  if(nubeCajas===null){ cambiosSinSubir=true; return; }
+  Nube.guardarColeccion("cajas", mapaCajas(), nubeCajas);
+  if(nubeInfo!==null) Nube.guardarMapa("recepcion","info",{fecha:recep.fecha,totalCajas:recep.totalCajas},nubeInfo);
+}
+function subirCatalogo(){
+  if(!window.Nube || !Nube.conectado()) return;
+  if(nubeCat===null){ cambiosCat=true; return; }
+  Nube.guardarMapa("recepcion","catalogo",{overrides:catDelta.overrides,added:catDelta.added},nubeCat);
+}
+function unirCatalogo(m){ // lo de la nube manda; se suma lo que solo está en este equipo
+  const ov=Object.assign({}, catDelta.overrides, m.overrides||{});
+  const ad=(Array.isArray(m.added)?m.added:[]).slice();
+  catDelta.added.forEach(a=>{ if(!ad.some(x=>x.codigo===a.codigo)) ad.push(a); });
+  return {overrides:ov, added:ad};
+}
+function aplicarCajas(mapa){
+  const act=recep.cajas[recep.actual], actId=act&&act.id;
+  const lista=Object.keys(mapa).map(id=>({id, orden:Number(mapa[id].orden)||0, items:limpiarItems(mapa[id].items)})).filter(c=>c.items.length);
+  // la caja vacía que esta computadora está llenando (todavía no está en la nube)
+  if(act && !act.items.length && !mapa[act.id]) lista.push(act);
+  lista.sort((a,b)=>ordenDe(a)-ordenDe(b));
+  if(!lista.length) lista.push(nuevaCaja());
+  if(Nube.estable(lista)===Nube.estable(recep.cajas)) return;
+  recep.cajas=lista;
+  let i=lista.findIndex(c=>c.id===actId);
+  recep.actual = i<0 ? lista.length-1 : i;   // si otra computadora borró la caja abierta, se pasa a la última
+  guardarLocal(); renderAll();
+}
+async function conectarNube(){
+  if(!window.Nube) return;
+  if(!conectarNube.pintado){ Nube.pintar($("nubeEstado")); conectarNube.pintado=true; }
+  if(!Nube.conectado()) return;
+  $("saveTxt").textContent="Guardado en la nube";
+  if(!await Nube.iniciar()) return;
+  // primera vez en este equipo: unir con lo que ya hay en la nube
+  const unido=await Nube.unirUnaVez("recepcion", async ()=>{
+    const cajas=await Nube.leerColeccion("cajas"), info=await Nube.leerMapa("recepcion","info"), cat=await Nube.leerMapa("recepcion","catalogo");
+    await Nube.guardarMapa("recepcion","catalogo",unirCatalogo(cat.mapa),cat.mapa);
+    const hayLocal=recep.cajas.some(c=>c.items.length);
+    if(!Object.keys(cajas).length){
+      if(hayLocal || recep.totalCajas){ await Nube.guardarColeccion("cajas", mapaCajas(), {}); await Nube.guardarMapa("recepcion","info",{fecha:recep.fecha,totalCajas:recep.totalCajas},info.mapa); }
+    } else if(hayLocal){
+      // la nube ya tiene otra recepción: se usa la de la nube y la de aquí queda guardada como copia
+      try{ localStorage.setItem(LS_RECEP+"_antes_nube",JSON.stringify(recep)); }catch(e){}
+      setStatus("info","☁️","Ya había una recepción en la nube y es la que se muestra. La que tenía esta computadora quedó guardada como copia.");
+    }
+  });
+  if(!unido && localStorage.getItem("dji_nube_unido_recepcion")!==Nube.clave()){
+    addEventListener("online", ()=>conectarNube(), {once:true});   // sin internet: se reintenta al volver
+    return;
+  }
+  Nube.escucharColeccion("cajas",(mapa)=>{
+    nubeCajas=mapa;
+    if(cambiosSinSubir){
+      cambiosSinSubir=false;
+      const m=Object.assign({}, mapa, mapaCajas());   // lo hecho aquí antes de conectar se suma
+      Nube.guardarColeccion("cajas", m, mapa);
+      aplicarCajas(m); return;
+    }
+    aplicarCajas(mapa);
+  });
+  Nube.escucharMapa("recepcion","info",(m,existe)=>{
+    nubeInfo=m;
+    if(!existe){ if(cambiosSinSubir===false) Nube.guardarMapa("recepcion","info",{fecha:recep.fecha,totalCajas:recep.totalCajas},m); return; }
+    const f=m.fecha||recep.fecha, t=parseInt(m.totalCajas,10)>0?parseInt(m.totalCajas,10):null;
+    if(f===recep.fecha && t===recep.totalCajas) return;
+    recep.fecha=f; recep.totalCajas=t; guardarLocal();
+    $("fecha").value=f;
+    if(document.activeElement!==$("totalCajas")) $("totalCajas").value=t||"";
+    renderAll();
+  });
+  Nube.escucharMapa("recepcion","catalogo",(m,existe)=>{
+    nubeCat=m;
+    if(cambiosCat){ cambiosCat=false; const u=unirCatalogo(m); catDelta.overrides=u.overrides; catDelta.added=u.added; saveCatalogLocal(); Nube.guardarMapa("recepcion","catalogo",u,m); loadCatalog(); renderAll(); return; }
+    if(!existe) return;
+    const ov=m.overrides&&typeof m.overrides==="object"?m.overrides:{}, ad=Array.isArray(m.added)?m.added:[];
+    if(Nube.estable(ov)===Nube.estable(catDelta.overrides) && Nube.estable(ad)===Nube.estable(catDelta.added)) return;
+    catDelta.overrides=ov; catDelta.added=ad; saveCatalogLocal(); loadCatalog(); renderAll();
+    if($("catModal").classList.contains("show")) renderCatalog();
+  });
 }
 
 // ============================================================
@@ -1051,6 +1159,7 @@ load();
 renderAll();
 revisarVieja();
 pq.focus();
+conectarNube();
 </script>
 </body>
 </html>

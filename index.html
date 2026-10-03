@@ -33,6 +33,8 @@
   .cargando.on{display:flex}
   .cargando i{width:22px;height:22px;border-radius:50%;border:3px solid #d5dae2;border-top-color:var(--accent);animation:gira .8s linear infinite}
   @keyframes gira{to{transform:rotate(360deg)}}
+  .aviso{position:fixed;left:50%;top:18px;transform:translate(-50%,-12px);background:#0e9f6e;color:#fff;padding:12px 18px;border-radius:12px;font:700 14px/1.3 inherit;box-shadow:0 12px 30px rgba(0,0,0,.25);opacity:0;transition:.25s;z-index:50;max-width:calc(100% - 32px);text-align:center;pointer-events:none}
+  .aviso.on{opacity:1;transform:translate(-50%,0)}
 
   /* ===== Celular: la barra pasa abajo ===== */
   @media (max-width:720px){
@@ -54,6 +56,8 @@
     <div class="cargando" id="cargando"><i></i>Cargando…</div>
   </main>
 
+<div class="aviso" id="aviso"></div>
+<script src="nube.js"></script>
 <script>
 /* Apartados de la app. Para agregar uno nuevo: su carpeta + una línea aquí. */
 const ICONOS = {
@@ -100,6 +104,13 @@ window.addEventListener('hashchange', () => ir(location.hash.slice(1)));
 let inicio = location.hash.slice(1);
 if(!SECCIONES.some(s => s.id === inicio)){ try{ inicio = localStorage.getItem(LS) || ''; }catch(e){ inicio = ''; } }
 ir(inicio || SECCIONES[0].id);
+
+// recién conectado con el link de la tienda
+if(window.Nube && Nube.recienConectado()){
+  const av = document.getElementById('aviso');
+  av.textContent = '☁️ Listo: esta computadora quedó conectada a la nube de la tienda';
+  av.classList.add('on'); setTimeout(() => av.classList.remove('on'), 4500);
+}
 </script>
 </body>
 </html>
