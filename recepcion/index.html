@@ -13,8 +13,6 @@
     --ok:#0e9f6e; --ok-bg:#e7f7f0; --ok-br:#bfe9d7;
     --warn:#b7791f; --warn-bg:#fdf6e6; --warn-br:#f0e0b8;
     --err:#e02424; --err-bg:#fdecec; --err-br:#f6c9c9;
-    /* compatibilidad */
-    --dji:#111318; --dji-2:#1b1e26; --dji-3:#2563eb;
     --shadow-sm:0 1px 2px rgba(16,24,40,.06);
     --shadow:0 1px 3px rgba(16,24,40,.06),0 10px 26px rgba(16,24,40,.05);
     --shadow-lg:0 18px 44px rgba(16,24,40,.13);
@@ -24,15 +22,13 @@
   html,body{margin:0;padding:0}
   body{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   svg{display:block}
+  [hidden]{display:none!important}
 
   /* ===== Top bar ===== */
   .appbar{background:var(--black);color:#fff;padding:0 22px;display:flex;align-items:center;gap:16px;height:66px;position:sticky;top:0;z-index:50;box-shadow:0 1px 0 rgba(255,255,255,.04),0 6px 20px rgba(0,0,0,.16)}
   .appbar .brand{display:flex;align-items:center;gap:12px}
-  .brand-badge{width:38px;height:38px;border-radius:11px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.4)}
-  .brand-badge svg{width:20px;height:20px}
   .brand-txt{display:flex;flex-direction:column;line-height:1.18}
   .brand-txt b{font-size:17px;font-weight:750;letter-spacing:.1px}
-  .brand-txt span{font-size:11.5px;color:rgba(255,255,255,.6);letter-spacing:.2px}
   .ab-right{margin-left:auto;display:flex;align-items:center;gap:16px}
   .fecha{display:flex;flex-direction:column;gap:2px;background:rgba(255,255,255,.08);padding:6px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.09)}
   .fecha>span{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.55)}
@@ -51,38 +47,98 @@
   .kpi-ic.amber{background:#fbf1dd;color:#b7791f}
   .kpi-ic.green{background:var(--ok-bg);color:var(--ok)}
   .kpi-n{font-size:30px;font-weight:800;letter-spacing:-.5px;color:var(--ink);line-height:1}
-  .kpi-n.code{font-size:22px;letter-spacing:.5px}
-  .kpi-n.small{font-size:15px;font-weight:700;color:var(--muted);letter-spacing:0;line-height:1.25;max-height:2.4em;overflow:hidden}
+  .kpi-n small{font-size:17px;font-weight:700;color:var(--muted);letter-spacing:0;margin-left:3px}
   .kpi-l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:7px;font-weight:600}
   .kpi.kpi-dark{background:var(--black);border-color:var(--black)}
   .kpi.kpi-dark::after{content:"";position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,.35),transparent 70%)}
   .kpi-dark .kpi-ic{background:rgba(255,255,255,.1);color:#fff}
   .kpi-dark .kpi-n{color:#fff}
+  .kpi-dark .kpi-n small{color:rgba(255,255,255,.5)}
   .kpi-dark .kpi-l{color:rgba(255,255,255,.55)}
 
   /* ===== Layout ===== */
   .layout{display:grid;grid-template-columns:1fr;gap:16px}
   .colA,.colB{display:flex;flex-direction:column;gap:14px;min-width:0}
-
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
 
-  /* ===== Scan station ===== */
-  .scan{padding:18px}
-  .scan-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:15px}
-  .scan .active{flex:1;min-width:220px}
-  .scan .active .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
-  .scan .active .v{font-size:19px;font-weight:800;color:var(--ink);display:flex;align-items:center;gap:10px;margin-top:5px;flex-wrap:wrap;line-height:1.2}
-  .scan .active .v .badge{background:var(--black);color:#fff;font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;font-family:"Consolas",monospace}
-  .scan .active .v .cnt{background:var(--accent);color:#fff;font-size:13px;font-weight:800;padding:4px 11px;border-radius:20px}
-  .scan .active .none{color:var(--muted);font-weight:600;font-size:16px}
-  .scanbox{position:relative}
-  .scanbox .baricon{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--accent);pointer-events:none}
-  .scanbox .baricon svg{width:26px;height:26px}
-  .scanbox input{width:100%;font-size:25px;font-weight:700;letter-spacing:1px;padding:17px 20px 17px 54px;border:2px solid var(--line);border-radius:13px;outline:none;font-family:"Consolas","SF Mono",monospace;background:#fafbfc;text-transform:uppercase;color:var(--ink);transition:.14s}
-  .scanbox input::placeholder{color:#b7bdc8;font-weight:600;letter-spacing:.5px}
-  .scanbox input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.13)}
-  .scanbox .hint{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);pointer-events:none;background:var(--line-2);padding:4px 8px;border-radius:6px;font-weight:600}
-  .scan .tools{display:flex;gap:10px;margin-top:13px;flex-wrap:wrap;align-items:center}
+  /* ===== aviso (recepción anterior por series) ===== */
+  .banner{background:#fff;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .banner .bn-t{flex:1;min-width:240px;font-size:14px;color:var(--ink-2)}
+  .banner .bn-t b{color:var(--ink)}
+  .banner .bn-a{display:flex;gap:8px;flex-wrap:wrap}
+
+  /* ===== cajas que llegaron ===== */
+  .arrive{padding:16px 18px}
+  .arr-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .arr-l{flex:1;min-width:200px;display:flex;flex-direction:column;gap:2px}
+  .arr-l b{font-size:16px;font-weight:800;letter-spacing:-.2px}
+  .arr-l span{font-size:12.5px;color:var(--muted)}
+  .arrive input{width:130px;font-size:24px;font-weight:800;text-align:center;padding:10px 12px;border:2px solid var(--line);border-radius:12px;outline:none;background:#fafbfc;color:var(--ink);font-family:inherit}
+  .arrive input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.13)}
+  .prog{height:9px;background:var(--line-2);border-radius:9px;overflow:hidden;margin-top:14px}
+  .prog i{display:block;height:100%;width:0;background:var(--accent);border-radius:9px;transition:width .25s}
+  .prog.done i{background:var(--ok)}
+  .prog.over i{background:var(--err)}
+  .prog-t{font-size:13px;color:var(--ink-2);margin-top:8px;font-weight:600}
+  .prog-t.done{color:#0b7a53}
+  .prog-t.over{color:#b71c1c}
+  .prog-t.muted{color:var(--muted);font-weight:500}
+
+  /* ===== estación de conteo ===== */
+  .entry{padding:18px}
+  .entry-h{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+  .cajabig{flex:1;min-width:200px;display:flex;flex-direction:column}
+  .cajabig .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+  .cajabig .v{font-size:26px;font-weight:800;letter-spacing:-.3px;line-height:1.15;margin-top:3px}
+  .cajabig .v b{color:var(--accent)}
+  .cajabig .of{font-size:14px;color:var(--muted);font-weight:700;margin-left:6px;letter-spacing:0}
+  .cajabig .edit-note{font-size:12.5px;color:var(--warn);font-weight:700;margin-top:3px}
+
+  .form{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:end}
+  .f-prod{grid-column:1 / -1}
+  .form label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin:0 0 6px 2px}
+  .combo{position:relative}
+  #pq{scroll-margin-top:76px}
+  .combo input{width:100%;font-size:16px;font-weight:600;padding:13px 14px;border:2px solid var(--line);border-radius:12px;outline:none;background:#fafbfc;color:var(--ink);font-family:inherit}
+  .combo input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.13)}
+  .combo input.chosen{border-color:var(--ok);background:var(--ok-bg);color:#0b5d40}
+  .sugg{position:absolute;left:0;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-lg);z-index:40;max-height:340px;overflow:auto;padding:6px;display:none}
+  .sugg.show{display:block}
+  .sg{display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:9px;cursor:pointer}
+  .sg.on,.sg:hover{background:var(--accent-bg)}
+  .sg .code{font-family:"Consolas",monospace;font-weight:800;font-size:12.5px;background:var(--line-2);padding:4px 8px;border-radius:7px;flex-shrink:0;color:var(--ink)}
+  .sg.on .code{background:var(--accent);color:#fff}
+  .sg .dsc{flex:1;font-weight:600;font-size:14px;line-height:1.25;min-width:0}
+  .sg .dsc mark{background:transparent;color:var(--accent);font-weight:800}
+  .sg .tag{font-size:10px;font-weight:800;color:var(--accent);background:var(--accent-bg);padding:2px 8px;border-radius:20px;white-space:nowrap;letter-spacing:.3px}
+  .sg.on .tag{background:#fff}
+  .sg.none{color:var(--muted);cursor:default;background:transparent!important}
+  .sg.add{color:var(--accent);font-weight:700;border-top:1px solid var(--line);border-radius:0 0 9px 9px;margin-top:4px}
+
+  .stepper{display:flex;align-items:stretch;border:2px solid var(--line);border-radius:12px;overflow:hidden;background:#fafbfc}
+  .stepper:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px rgba(37,99,235,.13);background:#fff}
+  .stepper button{border:none;background:transparent;width:42px;font-size:20px;font-weight:700;color:var(--ink-2);cursor:pointer}
+  .stepper button:hover{background:var(--line-2)}
+  .stepper input{width:72px;border:none;background:transparent;text-align:center;font-size:20px;font-weight:800;outline:none;color:var(--ink);font-family:inherit;-moz-appearance:textfield;padding:11px 0}
+  .stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .stepper.sm{border-width:1px;border-radius:9px;background:#fff}
+  .stepper.sm button{width:30px;font-size:16px}
+  .stepper.sm input{width:50px;font-size:15px;padding:5px 0}
+  .f-add{padding:15px 20px;font-size:15px}
+
+  .box-now{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+  .box-now .bn-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+  .box-now .bn-h b{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:700}
+  .box-now .bn-h span{font-size:13px;font-weight:800;color:var(--ink)}
+  .lns{display:flex;flex-direction:column;gap:8px}
+  .ln{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:11px;padding:8px 9px 8px 11px;background:#fcfcfd}
+  .ln .code{font-family:"Consolas",monospace;font-weight:800;font-size:12.5px;background:var(--line-2);padding:4px 8px;border-radius:7px;flex-shrink:0}
+  .ln .dsc{flex:1;font-weight:650;font-size:14px;line-height:1.25;min-width:0}
+  .ln .x{width:30px;height:30px;border-radius:8px;border:none;background:var(--line-2);color:#9aa2b0;cursor:pointer;font-weight:800;font-size:13px;flex-shrink:0}
+  .ln .x:hover{background:var(--err);color:#fff}
+  .box-empty{color:var(--muted);font-size:13.5px;padding:10px 2px}
+
+  .tools{display:flex;gap:10px;margin-top:13px;flex-wrap:wrap;align-items:center}
 
   /* ===== Buttons ===== */
   select,button{font-family:inherit}
@@ -95,7 +151,6 @@
   .btn.ok{background:var(--accent);color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.28)}.btn.ok:hover{background:var(--accent-d)}
   .btn.danger{background:#fff;color:var(--err);border:1px solid var(--err-br)}.btn.danger:hover{background:var(--err-bg)}
   .btn.sm{padding:8px 12px;font-size:13px;border-radius:9px}
-  select.msel{border:1px solid var(--line);border-radius:10px;padding:10px 13px;font-size:14px;font-weight:600;background:#fff;color:var(--ink);max-width:360px;cursor:pointer}
   .spacer{flex:1}
   .save-ind{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;font-weight:600}
   .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px var(--ok-bg)}
@@ -109,62 +164,46 @@
   .status.warn{background:var(--warn-bg);color:#8a5b12;border:1px solid var(--warn-br)}
   .status.info{background:var(--accent-bg);color:#1e40af;border:1px solid #cfdcfb}
 
-  /* ===== decision panel ===== */
-  .decide{background:#fff;border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow);display:none}
-  .decide.show{display:block;animation:pop .18s ease}
-  @keyframes pop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-  .decide.mism{border-left-color:var(--err)}
-  .decide.unk{border-left-color:var(--accent)}
-  .decide .q{font-weight:800;font-size:16.5px;margin-bottom:4px;letter-spacing:-.2px}
-  .decide .sub{color:var(--ink-2);font-size:13.5px;margin-bottom:13px}
-  .decide .sub code{background:var(--line-2);padding:2px 7px;border-radius:6px;font-weight:700;color:var(--ink);font-family:"Consolas",monospace}
-  .opts{display:flex;flex-direction:column;gap:9px}
-  .opt{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:13px 15px;cursor:pointer;text-align:left;transition:.14s}
-  .opt:hover{border-color:var(--accent);background:var(--accent-bg)}
-  .opt.best{border-color:var(--accent);background:var(--accent-bg)}
-  .opt .code{font-family:"Consolas",monospace;font-weight:800;color:var(--ink);font-size:14px;min-width:64px;background:var(--line-2);padding:4px 8px;border-radius:7px;text-align:center}
-  .opt.best .code{background:var(--accent);color:#fff}
-  .opt .dsc{flex:1;font-weight:650;font-size:14px}
-  .opt .tag{font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);padding:3px 9px;border-radius:20px;letter-spacing:.4px}
-  .decide .altrow{display:flex;gap:9px;margin-top:13px;flex-wrap:wrap}
-  .unkform{display:flex;gap:9px;flex-wrap:wrap;margin-top:11px}
-  .unkform input{border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:14px;outline:none}
-  .unkform input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
-  .unkform input.c{width:130px;font-family:"Consolas",monospace;font-weight:700;text-transform:uppercase}
-  .unkform input.d{flex:1;min-width:220px}
-
-  /* ===== products ===== */
+  /* ===== listado ===== */
   .sec-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 2px 2px}
   .sec-h h2{font-size:13px;margin:0;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:700}
-  .plist{display:flex;flex-direction:column;gap:11px}
-  .pcard{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-sm);overflow:hidden;transition:.14s}
-  .pcard.active-p{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.1),var(--shadow-sm)}
-  .phead{display:flex;align-items:center;gap:13px;padding:14px 16px;cursor:pointer}
-  .phead:hover{background:var(--line-2)}
-  .phead .chev{color:var(--muted);transition:.16s;font-size:12px}
-  .pcard.open .chev{transform:rotate(90deg)}
-  .phead .code{font-family:"Consolas",monospace;font-weight:800;color:var(--ink);font-size:13px;background:var(--line-2);padding:5px 9px;border-radius:8px}
-  .phead .dsc{flex:1;font-weight:700;font-size:14.5px;line-height:1.25;min-width:0}
-  .phead .qty{background:var(--black);color:#fff;font-weight:800;font-size:14px;padding:5px 14px;border-radius:22px;white-space:nowrap}
-  .pcard.active-p .phead .qty{background:var(--accent)}
-  .phead .liveflag{font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);padding:3px 9px;border-radius:20px;letter-spacing:.4px}
-  .pbody{display:none;border-top:1px solid var(--line);padding:8px 10px 12px;background:#fcfcfd}
-  .pcard.open .pbody{display:block}
-  .serwrap{display:flex;flex-wrap:wrap;gap:7px;padding:6px}
-  .ser{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 7px 6px 11px;font-family:"Consolas",monospace;font-size:13px;font-weight:600;box-shadow:var(--shadow-sm)}
-  .ser .num{color:var(--muted);font-size:11px}
-  .ser .del{width:19px;height:19px;border-radius:6px;border:none;background:var(--line-2);color:#9aa2b0;cursor:pointer;font-weight:800;line-height:1;font-size:12px;display:flex;align-items:center;justify-content:center}
-  .ser .del:hover{background:var(--err);color:#fff}
-  .prowtools{display:flex;gap:7px;padding:5px 8px 3px;justify-content:flex-end}
-  .empty{background:var(--card);border:1.5px dashed var(--line);border-radius:var(--r);padding:52px 22px;text-align:center;color:var(--muted);box-shadow:var(--shadow-sm)}
-  .empty .emoji{font-size:34px;margin-bottom:10px;opacity:.5}
+  .tabs{display:inline-flex;background:var(--line-2);border-radius:10px;padding:3px;gap:2px}
+  .tabs button{border:none;background:transparent;padding:7px 13px;border-radius:8px;font-size:13px;font-weight:700;color:var(--ink-2);cursor:pointer}
+  .tabs button[aria-pressed="true"]{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm)}
+  .plist{display:flex;flex-direction:column;gap:10px}
+
+  .bcard{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-sm);overflow:hidden}
+  .bcard.on{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.1),var(--shadow-sm)}
+  .bhead{display:flex;align-items:center;gap:10px;padding:11px 12px 11px 15px}
+  .bnum{font-weight:800;font-size:15px;letter-spacing:-.1px}
+  .bmeta{font-size:12.5px;color:var(--muted);font-weight:600;flex:1}
+  .qty{background:var(--black);color:#fff;font-weight:800;font-size:13.5px;padding:4px 12px;border-radius:22px;white-space:nowrap}
+  .bcard.on .qty{background:var(--accent)}
+  .liveflag{font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);padding:3px 9px;border-radius:20px;letter-spacing:.4px}
+  .ib{width:32px;height:32px;border-radius:9px;border:none;background:var(--line-2);color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .ib svg{width:15px;height:15px}
+  .ib:hover{background:#e3e7ee}
+  .ib.del:hover{background:var(--err);color:#fff}
+  .blines{border-top:1px solid var(--line);padding:6px 12px 8px 15px;background:#fcfcfd}
+  .bl{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:13.5px}
+  .bl+.bl{border-top:1px dashed var(--line)}
+  .bl .code{font-family:"Consolas",monospace;font-weight:800;font-size:12px;color:var(--ink-2);min-width:62px}
+  .bl .dsc{flex:1;min-width:0;font-weight:600;color:var(--ink-2)}
+  .bl b{font-weight:800;min-width:34px;text-align:right}
+
+  .prow{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-sm);padding:12px 14px;display:flex;align-items:center;gap:12px}
+  .prow .code{font-family:"Consolas",monospace;font-weight:800;color:var(--ink);font-size:13px;background:var(--line-2);padding:5px 9px;border-radius:8px;flex-shrink:0}
+  .prow .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+  .prow .dsc{font-weight:700;font-size:14.5px;line-height:1.25}
+  .prow .cj{font-size:12.5px;color:var(--muted);font-weight:600}
+
+  .empty{background:var(--card);border:1.5px dashed var(--line);border-radius:var(--r);padding:44px 22px;text-align:center;color:var(--muted);box-shadow:var(--shadow-sm)}
   .empty b{color:var(--ink);display:block;font-size:16px;margin-bottom:5px}
 
-  .grand{display:none;align-items:center;justify-content:space-between;background:var(--black);color:#fff;border-radius:var(--r);padding:16px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .grand{display:none;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--black);color:#fff;border-radius:var(--r);padding:16px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
   .grand::after{content:"";position:absolute;right:-20px;top:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,.4),transparent 70%)}
   .grand .l{font-weight:700;font-size:13px;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.7);position:relative}
-  .grand .n{font-weight:800;font-size:22px;position:relative;letter-spacing:-.3px}
-  .grand .n b{color:#fff}
+  .grand .n{font-weight:800;font-size:20px;position:relative;letter-spacing:-.3px}
 
   .footer-actions{display:flex;gap:11px;margin-top:4px;flex-wrap:wrap;align-items:center}
 
@@ -177,6 +216,7 @@
   .btn-cat svg{width:17px;height:17px}
 
   /* ===== modal catálogo ===== */
+  @keyframes pop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
   .modal-ov{position:fixed;inset:0;background:rgba(17,19,24,.55);backdrop-filter:blur(3px);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:5vh 16px;overflow:auto}
   .modal-ov.show{display:flex}
   .modal{background:var(--card);border-radius:18px;box-shadow:var(--shadow-lg);width:100%;max-width:680px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;animation:pop .18s ease}
@@ -206,7 +246,7 @@
   .cdesc{font-weight:700;font-size:14px;line-height:1.25}
   .cmeta{font-size:12px;color:var(--muted)}
   .cmeta b{color:var(--accent)}
-  .ctag{font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;letter-spacing:.3px;text-transform:uppercase;margin-left:4px;white-space:nowrap}
+  .ctag{font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;letter-spacing:.3px;text-transform:uppercase;white-space:nowrap}
   .ctag.base{background:var(--line-2);color:var(--muted)}
   .ctag.new{background:var(--ok-bg);color:#0b7a53}
   .ctag.edit{background:#fbf1dd;color:#b7791f}
@@ -226,12 +266,13 @@
     .kpi{padding:13px 13px 12px}
     .kpi-n{font-size:26px}
     .wrap{padding:16px 14px 90px}
-    .brand-txt span{display:none}
     .fecha>span{display:none}
     .appbar{padding:0 14px;height:60px}
-    .scanbox input{font-size:20px;padding:15px 16px 15px 48px}
-    .scanbox .baricon svg{width:22px;height:22px}
-    .scanbox .hint{display:none}
+    .f-add{padding:13px 16px}
+    .ln{flex-wrap:wrap}
+    .ln .dsc{flex:1 1 calc(100% - 90px)}
+    .ln .stepper{margin-left:auto}
+    .entry-h .btn{display:none}
     .footer-actions{display:none}
     .mobilebar{display:flex;gap:10px;position:fixed;left:0;right:0;bottom:0;z-index:60;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom))}
     .mobilebar .btn{flex:1;padding:13px}
@@ -245,6 +286,7 @@
   @media(max-width:400px){
     .kpi-n{font-size:23px}
     .brand-txt b{font-size:15px}
+    .arrive input{width:100%}
   }
 </style>
 </head>
@@ -264,69 +306,97 @@
 </div>
 
 <div class="wrap">
+  <div class="banner" id="banner" hidden></div>
+
   <div class="kpis">
     <div class="kpi kpi-dark">
-      <div class="kpi-h"><span class="kpi-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5l8 4.5 8-4.5"/><path d="M12 12v9"/></svg></span></div>
-      <div class="kpi-n" id="st-art">0</div>
-      <div class="kpi-l">Artículos contados</div>
+      <div class="kpi-h"><span class="kpi-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3 8l9-5 9 5v8l-9 5-9-5V8z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg></span></div>
+      <div class="kpi-n" id="st-cajas">0</div>
+      <div class="kpi-l">Cajas registradas</div>
     </div>
     <div class="kpi">
-      <div class="kpi-h"><span class="kpi-ic blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg></span></div>
+      <div class="kpi-h"><span class="kpi-ic blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5l8 4.5 8-4.5"/><path d="M12 12v9"/></svg></span></div>
+      <div class="kpi-n" id="st-uds">0</div>
+      <div class="kpi-l">Unidades contadas</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-h"><span class="kpi-ic green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg></span></div>
       <div class="kpi-n" id="st-prod">0</div>
       <div class="kpi-l">Productos distintos</div>
     </div>
     <div class="kpi">
-      <div class="kpi-h"><span class="kpi-ic amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3 8l9-5 9 5v8l-9 5-9-5V8z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg></span></div>
-      <div class="kpi-n code" id="st-caja">—</div>
-      <div class="kpi-l">Caja / producto activo</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-h"><span class="kpi-ic green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></div>
-      <div class="kpi-n small" id="st-last">Listo para escanear</div>
-      <div class="kpi-l">Último escaneo</div>
+      <div class="kpi-h"><span class="kpi-ic amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></div>
+      <div class="kpi-n" id="st-faltan">—</div>
+      <div class="kpi-l">Cajas por registrar</div>
     </div>
   </div>
 
   <div class="layout">
     <div class="colA">
-      <!-- decision panel -->
-      <div class="decide" id="decide"></div>
+      <!-- cuántas cajas llegaron -->
+      <div class="arrive card">
+        <div class="arr-row">
+          <div class="arr-l"><b>¿Cuántas cajas llegaron?</b><span>Contá las cajas de la mercadería y escribí el total aquí.</span></div>
+          <input id="totalCajas" type="number" min="1" step="1" inputmode="numeric" placeholder="Ej. 63" aria-label="Total de cajas que llegaron">
+        </div>
+        <div class="prog" id="prog"><i id="progBar"></i></div>
+        <div class="prog-t muted" id="progTxt">Escribí el total para llevar el control de cuántas faltan.</div>
+      </div>
 
-      <!-- scan station -->
-      <div class="scan card">
-        <div class="scan-head">
-          <div class="active">
-            <div class="k">Caja abierta / producto activo</div>
-            <div class="v" id="activeView"><span class="none">Ninguna — escaneá la primera serie para detectar</span></div>
+      <!-- conteo de la caja -->
+      <div class="entry card">
+        <div class="entry-h">
+          <div class="cajabig">
+            <span class="k">Estás llenando la</span>
+            <span class="v">CAJA <b id="cajaNum">1</b><span class="of" id="cajaOf"></span></span>
+            <span class="edit-note" id="editNote" hidden></span>
           </div>
-          <button class="btn dark" id="btnNueva"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nueva caja</button>
+          <button class="btn dark" id="btnSig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span id="btnSigTxt">Siguiente caja</span></button>
         </div>
-        <form id="scanForm" autocomplete="off">
-          <div class="scanbox">
-            <span class="baricon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6v12M8 6v12M11 6v12M14 6v12M17 6v12M20 6v12"/></svg></span>
-            <input id="scanInput" placeholder="Escaneá aquí la serie…" spellcheck="false" autocomplete="off">
-            <span class="hint">Enter ↵</span>
+
+        <div class="form">
+          <div class="f-prod">
+            <label for="pq">Producto</label>
+            <div class="combo">
+              <input id="pq" placeholder="Buscá el producto…   ej: mobile 7 · rs 4 mini · D00017" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="sugg" aria-autocomplete="list">
+              <div class="sugg" id="sugg" role="listbox"></div>
+            </div>
           </div>
-        </form>
-        <div class="tools">
-          <select class="msel" id="manualSel"><option value="">— Fijar producto manualmente —</option></select>
-          <span class="spacer"></span>
-          <span class="save-ind"><span class="dot"></span><span id="saveTxt">Guardado automático</span></span>
+          <div class="f-qty">
+            <label for="qn">Unidades</label>
+            <div class="stepper">
+              <button type="button" id="qMinus" title="Una menos" tabindex="-1">−</button>
+              <input id="qn" type="number" min="1" step="1" value="1" inputmode="numeric">
+              <button type="button" id="qPlus" title="Una más" tabindex="-1">+</button>
+            </div>
+          </div>
+          <button class="btn primary f-add" id="btnAdd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Agregar</button>
         </div>
+
         <div class="status" id="status"><span class="ic"></span><span class="msg"></span></div>
+
+        <div class="box-now" id="boxNow"></div>
+
+        <div class="tools">
+          <span class="spacer"></span>
+          <span class="save-ind"><span class="dot"></span><span>Guardado automático</span></span>
+        </div>
       </div>
     </div>
 
     <div class="colB">
       <div class="sec-h">
-        <h2>Productos escaneados</h2>
-        <button class="btn ghost sm" id="btnExpand">Expandir / contraer</button>
+        <h2 id="listTitle">Cajas registradas</h2>
+        <div class="tabs" role="group" aria-label="Ver por">
+          <button id="tabCajas" aria-pressed="true">Por caja</button>
+          <button id="tabProd" aria-pressed="false">Por producto</button>
+        </div>
       </div>
       <div class="plist" id="plist"></div>
 
       <div class="grand" id="grand">
         <span class="l">Total general</span>
-        <span class="n"><b id="gtot">0</b> artículos · <b id="gprod">0</b> productos</span>
+        <span class="n" id="gtxt"></span>
       </div>
 
       <div class="footer-actions">
@@ -354,7 +424,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Agregar
         </button>
       </div>
-      <div class="modal-hint">El producto nuevo aprende sus series a medida que las vas escaneando.</div>
+      <div class="modal-hint">El producto nuevo aparece de inmediato en el buscador para contarlo.</div>
     </div>
     <div class="modal-search"><input id="catSearch" placeholder="Buscar por código o nombre…" oninput="renderCatalog()" spellcheck="false"></div>
     <div class="modal-body" id="catList"></div>
@@ -363,47 +433,54 @@
 </div>
 
 <div class="mobilebar">
-  <button class="btn dark" onclick="document.getElementById('btnNueva').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nueva caja</button>
-  <button class="btn ok" onclick="document.getElementById('btnExport').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Exportar</button>
+  <button class="btn dark" onclick="siguienteCaja()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Siguiente caja</button>
+  <button class="btn ok" onclick="exportExcel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Exportar</button>
 </div>
 
 <script src="lib/exceljs.min.js"></script>
 <script src="catalog.js"></script>
 <script>
 /* ============================================================
-   Recepción de Mercadería DJI — motor de escaneo y detección
+   Recepción de Mercadería DJI — conteo por cajas
+   Se elige el producto de cada caja y cuántas unidades trae.
    ============================================================ */
 "use strict";
 
+// ---------- claves de guardado (en el navegador) ----------
+const LS_RECEP    = "recepcion_dji_cajas_v1";              // recepción actual, por cajas
+const LS_CATALOG  = "recepcion_dji_catalogo_extra_v1";     // cambios del catálogo (mismo formato de antes)
+const LS_VIEJA    = "recepcion_dji_session_v1";            // recepción del sistema anterior por series (solo se lee, nunca se borra)
+const LS_VIEJA_OK = "recepcion_dji_session_v1_revisada";   // ya se ofreció pasarla a cajas
+const LS_VISTA    = "recepcion_dji_vista";
+
 // ---------- estado ----------
-const LS_SESSION = "recepcion_dji_session_v1";
-const LS_CATALOG = "recepcion_dji_catalogo_extra_v1"; // productos aprendidos
+let PRODUCTS = [];          // catálogo: {codigo, descripcion, base, origCodigo, k:[palabras para buscar]}
+let byCode = {};            // codigo -> producto
+let catDelta = null;        // cambios del catálogo: {overrides, added, learned}
+let catEditing = null;      // codigo en edición dentro del gestor de catálogo
+let catDesdeBuscador = false;
+let recep = nuevaRecepcion(todayISO());   // {fecha, totalCajas, cajas:[{items:[{codigo,descripcion,cant}]}], actual}
+let pick = null;            // codigo elegido en el buscador
+let sugg = [], suggIdx = 0;
+let vista = "cajas";
+let viejaPend = null;
+let actx = null;
 
-let PRODUCTS = [];          // catálogo: {codigo, descripcion, serials:[...ref]}
-let byCode = {};            // codigo -> product
-let families = {};          // codigo -> [codigos hermanos confusables incluido él]
-let pref8index = {};        // codigo -> Set de prefijos de 8
-
-let session = {
-  fecha: todayISO(),
-  order: [],                 // códigos en orden de aparición
-  items: {},                 // codigo -> {codigo, descripcion, serials:[...] }
-  serialMap: {}              // serie -> codigo (para duplicados)
-};
-let activeCode = null;
-let pending = null;          // { serial, res } cuando esperamos una decisión
-let openState = {};          // codigo -> abierto?
-let catDelta = null;         // cambios del catálogo: {overrides, added, learned}
-let catEditing = null;       // codigo en edición dentro del gestor de catálogo
+const $ = id => document.getElementById(id);
+const pq = $("pq"), qn = $("qn"), suggEl = $("sugg");
 
 // ---------- utilidades ----------
+function nuevaRecepcion(fecha){ return {fecha, totalCajas:null, cajas:[{items:[]}], actual:0}; }
 function todayISO(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 function fmtFecha(iso){const [y,m,d]=iso.split("-");return d+"/"+m+"/"+y;}
 function norm(s){return (s||"").trim().toUpperCase().replace(/\s+/g,"");}
-function commonPrefix(a,b){let i=0,n=Math.min(a.length,b.length);while(i<n&&a[i]===b[i])i++;return i;}
-function esc(s){return (s+"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function esc(s){return (s+"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function jsq(s){return esc(JSON.stringify(String(s)));}   // texto seguro dentro de onclick="..."
+function plural(n,uno,varios){return n+" "+(n===1?uno:varios);}
+// texto para buscar: minúsculas, sin tildes, y separa letras de números ("rs4" -> "rs 4")
+function fold(s){return (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/([a-z])(\d)/g,"$1 $2").replace(/(\d)([a-z])/g,"$1 $2").replace(/[^a-z0-9]+/g," ").trim();}
 
-// ---------- carga del catálogo + familias ----------
+// ---------- catálogo ----------
 function saveCatalogDelta(){ try{ localStorage.setItem(LS_CATALOG,JSON.stringify(catDelta)); }catch(e){} }
 
 function loadCatalog(){
@@ -424,38 +501,33 @@ function loadCatalog(){
   PRODUCTS=[];
   (window.CATALOGO_BASE||[]).forEach(b=>{
     const ov=catDelta.overrides[b.codigo];
-    PRODUCTS.push({origCodigo:b.codigo,base:true,codigo:ov?ov.codigo:b.codigo,descripcion:ov?ov.descripcion:b.descripcion,serials:b.serials.slice()});
+    PRODUCTS.push({origCodigo:b.codigo,base:true,codigo:ov?ov.codigo:b.codigo,descripcion:ov?ov.descripcion:b.descripcion});
   });
   catDelta.added.forEach(a=>{
-    if(!PRODUCTS.some(p=>p.codigo===a.codigo)) PRODUCTS.push({origCodigo:null,base:false,codigo:a.codigo,descripcion:a.descripcion,serials:[]});
+    if(!PRODUCTS.some(p=>p.codigo===a.codigo)) PRODUCTS.push({origCodigo:null,base:false,codigo:a.codigo,descripcion:a.descripcion});
   });
-  // aplicar series aprendidas
-  PRODUCTS.forEach(p=>{ const ls=catDelta.learned[p.codigo]; if(ls) ls.forEach(s=>{ if(!p.serials.includes(s)) p.serials.push(s); }); });
-  byCode={}; pref8index={};
-  PRODUCTS.forEach(p=>{
-    byCode[p.codigo]=p;
-    const set=new Set(); p.serials.forEach(s=>{ if(s.length>=8) set.add(s.slice(0,8)); });
-    pref8index[p.codigo]=set;
-  });
-  computeFamilies();
-  buildManualSelect();
+  byCode={};
+  PRODUCTS.forEach(p=>{ byCode[p.codigo]=p; p.k=fold(p.codigo+" "+p.descripcion).split(" "); });
 }
 
-function reinforceFromSession(){
-  session.order.forEach(c=>{ if(byCode[c]&&session.items[c]) session.items[c].serials.forEach(s=>{ if(!byCode[c].serials.includes(s)){ byCode[c].serials.push(s); if(s.length>=8) pref8index[c].add(s.slice(0,8)); } }); });
-  computeFamilies();
+// cambia código/nombre de un producto en todas las cajas de la recepción actual
+function renombrarEnRecepcion(cur,nc,nd){
+  recep.cajas.forEach(c=>{
+    c.items.forEach(it=>{ if(it.codigo===cur){ it.codigo=nc; it.descripcion=nd; } });
+    const m=[]; c.items.forEach(it=>{ const e=m.find(x=>x.codigo===it.codigo); if(e) e.cant+=it.cant; else m.push(it); });
+    c.items=m;
+  });
+  if(pick===cur) pick=nc;
 }
-function rebuildCatalog(){ loadCatalog(); reinforceFromSession(); renderAll(); }
 
-// ---------- alta / edición / borrado de productos ----------
 function addProductCatalog(codigo,desc){
   codigo=norm(codigo); desc=(desc||"").trim();
   if(!codigo){ alert("Escribí un código para el producto."); return false; }
   if(!desc){ alert("Escribí el nombre del producto."); return false; }
   if(byCode[codigo]){ alert("Ya existe un producto con el código "+codigo+"."); return false; }
   catDelta.added.push({codigo,descripcion:desc});
-  saveCatalogDelta(); rebuildCatalog();
-  return true;
+  saveCatalogDelta(); loadCatalog(); renderAll();
+  return codigo;
 }
 function editProductCatalog(cur,nc,nd){
   nc=norm(nc); nd=(nd||"").trim();
@@ -466,366 +538,342 @@ function editProductCatalog(cur,nc,nd){
   if(p.base){ catDelta.overrides[p.origCodigo]={codigo:nc,descripcion:nd}; }
   else { const a=catDelta.added.find(x=>x.codigo===cur); if(a){ a.codigo=nc; a.descripcion=nd; } }
   if(nc!==cur && catDelta.learned[cur]){ catDelta.learned[nc]=(catDelta.learned[nc]||[]).concat(catDelta.learned[cur]); delete catDelta.learned[cur]; }
-  // migrar lo ya escaneado en la sesión
-  if(session.items[cur]){
-    const it=session.items[cur]; it.codigo=nc; it.descripcion=nd;
-    if(nc!==cur){
-      session.items[nc]=it; delete session.items[cur];
-      session.order=session.order.map(c=>c===cur?nc:c);
-      Object.keys(session.serialMap).forEach(s=>{ if(session.serialMap[s]===cur) session.serialMap[s]=nc; });
-      if(openState[cur]!==undefined){ openState[nc]=openState[cur]; delete openState[cur]; }
-      if(activeCode===cur) activeCode=nc;
-    }
-  } else if(activeCode===cur && nc!==cur){ activeCode=nc; }
-  saveCatalogDelta(); save(); rebuildCatalog();
-  const sel=document.getElementById("manualSel"); if(sel) sel.value=activeCode||"";
+  renombrarEnRecepcion(cur,nc,nd);
+  saveCatalogDelta(); save(); loadCatalog(); renderAll();
   return true;
 }
 function deleteProductCatalog(codigo){
   const p=byCode[codigo]; if(!p) return;
   if(p.base){
-    // Restablecer un producto base a su código/nombre originales (migra de vuelta lo escaneado)
+    // Restablecer un producto base a su código/nombre originales (también en lo ya contado)
     if(!catDelta.overrides[p.origCodigo]){ alert("Los productos base no se pueden eliminar, solo editar."); return; }
     if(!confirm("¿Restablecer "+p.origCodigo+" a su código y nombre originales?")) return;
     const orig=(window.CATALOGO_BASE||[]).find(b=>b.codigo===p.origCodigo);
-    const cur=p.codigo;
     delete catDelta.overrides[p.origCodigo];
-    if(cur!==p.origCodigo && catDelta.learned[cur]){ catDelta.learned[p.origCodigo]=(catDelta.learned[p.origCodigo]||[]).concat(catDelta.learned[cur]); delete catDelta.learned[cur]; }
-    if(session.items[cur] && cur!==p.origCodigo){ const it=session.items[cur]; it.codigo=p.origCodigo; it.descripcion=orig.descripcion; session.items[p.origCodigo]=it; delete session.items[cur]; session.order=session.order.map(c=>c===cur?p.origCodigo:c); Object.keys(session.serialMap).forEach(s=>{ if(session.serialMap[s]===cur) session.serialMap[s]=p.origCodigo; }); if(openState[cur]!==undefined){ openState[p.origCodigo]=openState[cur]; delete openState[cur]; } if(activeCode===cur) activeCode=p.origCodigo; }
-    else if(session.items[cur]){ session.items[cur].descripcion=orig.descripcion; }
-    saveCatalogDelta(); save(); rebuildCatalog();
-    const sel=document.getElementById("manualSel"); if(sel) sel.value=activeCode||"";
+    if(codigo!==p.origCodigo && catDelta.learned[codigo]){ catDelta.learned[p.origCodigo]=(catDelta.learned[p.origCodigo]||[]).concat(catDelta.learned[codigo]); delete catDelta.learned[codigo]; }
+    renombrarEnRecepcion(codigo,orig.codigo,orig.descripcion);
+    saveCatalogDelta(); save(); loadCatalog(); renderAll(); renderCatalog();
   } else {
-    // Eliminar un producto agregado (bloqueado si tiene series escaneadas en la recepción actual)
-    if(session.items[codigo] && session.items[codigo].serials.length){
-      alert("Este producto tiene "+session.items[codigo].serials.length+" serie(s) escaneadas en la recepción actual. Quitalas primero (desde la lista de Productos escaneados) para poder eliminarlo del catálogo.");
+    // Eliminar un producto agregado (bloqueado si ya está contado en la recepción actual)
+    const n=unidadesDe(codigo);
+    if(n){
+      alert("Este producto tiene "+plural(n,"unidad contada","unidades contadas")+" en la recepción actual. Quitalo primero de las cajas para poder eliminarlo del catálogo.");
       return;
     }
     if(!confirm("¿Eliminar el producto "+codigo+" del catálogo? (No borra recepciones ya exportadas.)")) return;
     catDelta.added=catDelta.added.filter(a=>a.codigo!==codigo);
     delete catDelta.learned[codigo];
-    saveCatalogDelta(); rebuildCatalog();
+    if(pick===codigo) limpiarPick();
+    saveCatalogDelta(); loadCatalog(); renderAll(); renderCatalog();
   }
 }
 
-function computeFamilies(){
-  // union-find: dos productos son "hermanos confusables" si comparten algún prefijo de 8
-  const parent={}; PRODUCTS.forEach(p=>parent[p.codigo]=p.codigo);
-  function find(x){while(parent[x]!==x){parent[x]=parent[parent[x]];x=parent[x];}return x;}
-  function union(a,b){parent[find(a)]=find(b);}
-  for(let i=0;i<PRODUCTS.length;i++)for(let j=i+1;j<PRODUCTS.length;j++){
-    const A=pref8index[PRODUCTS[i].codigo], B=pref8index[PRODUCTS[j].codigo];
-    let hit=false; for(const x of A){ if(B.has(x)){hit=true;break;} }
-    if(hit) union(PRODUCTS[i].codigo,PRODUCTS[j].codigo);
-  }
-  const groups={};
-  PRODUCTS.forEach(p=>{const r=find(p.codigo);(groups[r]=groups[r]||[]).push(p.codigo);});
-  families={};
-  PRODUCTS.forEach(p=>{ families[p.codigo]=groups[find(p.codigo)].slice(); });
+// ---------- cálculos de la recepción ----------
+const unidadesCaja = c => c.items.reduce((a,it)=>a+it.cant,0);
+const cajasConProductos = () => recep.cajas.filter(c=>c.items.length).length;
+const unidadesTotal = () => recep.cajas.reduce((a,c)=>a+unidadesCaja(c),0);
+function unidadesDe(codigo){ let n=0; recep.cajas.forEach(c=>c.items.forEach(it=>{ if(it.codigo===codigo) n+=it.cant; })); return n; }
+function descDe(it){ return byCode[it.codigo] ? byCode[it.codigo].descripcion : it.descripcion; }
+// por producto, en el orden en que aparecen en las cajas
+function porProducto(){
+  const map=new Map();
+  recep.cajas.forEach((c,i)=>c.items.forEach(it=>{
+    let a=map.get(it.codigo);
+    if(!a){ a={codigo:it.codigo,descripcion:descDe(it),total:0,cajas:[]}; map.set(it.codigo,a); }
+    a.total+=it.cant; a.cajas.push({n:i+1,cant:it.cant});
+  }));
+  return [...map.values()];
 }
-
-// ---------- clasificador ----------
-function scoreFor(codigo, serial){
-  let best=0; const s=byCode[codigo].serials;
-  for(let i=0;i<s.length;i++){const c=commonPrefix(serial,s[i]); if(c>best){best=c; if(best===serial.length)break;}}
-  return best;
-}
-function classify(serial){
-  let scored=PRODUCTS.map(p=>({codigo:p.codigo,score:scoreFor(p.codigo,serial)}));
-  scored.sort((a,b)=>b.score-a.score);
-  const best=scored[0];
-  if(!best || best.score<5) return {status:"desconocido",best:null,candidates:[]};
-  const fam=families[best.codigo]||[best.codigo];
-  let cands=fam.map(c=>({codigo:c,score:scoreFor(c,serial)})).sort((a,b)=>b.score-a.score);
-  const status = cands.length>1 ? "ambiguo" : (best.score>=8 ? "seguro" : "probable");
-  return {status,best,candidates:cands};
+// quita cajas vacías del final (menos la que se está llenando)
+function podar(){
+  while(recep.cajas.length>1 && recep.cajas.length-1>recep.actual && !recep.cajas[recep.cajas.length-1].items.length) recep.cajas.pop();
 }
 
 // ============================================================
-//  ESCANEO
+//  BUSCADOR DE PRODUCTOS
 // ============================================================
-function handleScan(raw){
-  const serial=norm(raw);
-  if(!serial) return;
-  clearDecide();
-
-  // 1) duplicado
-  if(session.serialMap[serial]){
-    const c=session.serialMap[serial];
-    beep(false);
-    setStatus("err","⛔","Serie repetida: "+serial+" — ya estaba en "+shortDesc(c)+" ("+c+"). No se agregó.");
-    flashLast("Repetida ✕","var(--err)");
-    return;
-  }
-
-  const res=classify(serial);
-
-  // 2) sin caja activa → hay que decidir/confirmar producto
-  if(!activeCode){
-    if(res.status==="desconocido"){ askUnknown(serial); return; }
-    if(res.status==="ambiguo"){ askAmbiguous(serial,res); return; }
-    // seguro / probable → abrir caja con el mejor y confirmar de forma no bloqueante
-    setActive(res.best.codigo);
-    addSerial(serial,activeCode,true);
-    showBoxDetected(res.best.codigo,res.status);
-    return;
-  }
-
-  // 3) con caja activa
-  if(res.status==="desconocido"){
-    // serie rara pero seguimos en la misma caja (probable serie nueva del mismo producto)
-    addSerial(serial,activeCode,true);
-    setStatus("warn","➕","Serie poco común, agregada a "+shortDesc(activeCode)+". Verificá si es de esta caja.");
-    return;
-  }
-  const activeInCands = res.candidates.some(c=>c.codigo===activeCode);
-  const bestIsActive = res.best.codigo===activeCode;
-  if(bestIsActive || activeInCands){
-    addSerial(serial,activeCode,true);
-    return;
-  }
-  // 4) mismatch: parece de otro producto distinto al activo
-  askMismatch(serial,res);
+const SINON = {movil:["mobile","movil"], moviles:["mobile","movil"], mobil:["mobile","movil"], dron:["drone"], drones:["drone"], ronin:["rs"], microfono:["microfono","mic"], microfonos:["microfono","mic"], gimbal:["estabilizador"]};
+function tokOk(q,ks){
+  const alts=SINON[q]||[q];
+  return alts.some(a=> /^\d+$/.test(a) ? ks.some(k=>/^\d+$/.test(k) && Number(k)===Number(a)) : ks.some(k=>k.startsWith(a)));
 }
-
-function addSerial(serial,codigo,quiet){
-  if(!session.items[codigo]){
-    session.items[codigo]={codigo,descripcion:byCode[codigo]?byCode[codigo].descripcion:codigo,serials:[]};
-    if(!session.order.includes(codigo)) session.order.push(codigo);
-    openState[codigo]=true;
-  }
-  session.items[codigo].serials.push(serial);
-  session.serialMap[serial]=codigo;
-  // el producto aprende esta serie (mejora la detección futura, se guarda en el catálogo)
-  learn(codigo,serial);
-  save(); renderAll();
-  if(quiet){
-    beep(true);
-    const n=session.items[codigo].serials.length;
-    setStatus("ok","✔","Agregada a "+shortDesc(codigo)+" — serie "+serial+"  ·  llevás "+n+" en esta caja.");
-    flashLast(serial,"var(--ok)");
-  }
+function usadosRecientes(){ // códigos ya contados en esta recepción, el más reciente primero
+  const out=[]; for(let i=recep.cajas.length-1;i>=0;i--) for(let j=recep.cajas[i].items.length-1;j>=0;j--){ const c=recep.cajas[i].items[j].codigo; if(!out.includes(c)) out.push(c); }
+  return out;
 }
-
-function setActive(codigo){
-  activeCode=codigo;
-  document.getElementById("manualSel").value=codigo;
-  renderActive();
+function buscarProd(txt){
+  const qs=fold(txt).split(" ").filter(Boolean);
+  const usados=usadosRecientes();
+  const rank=c=>{ const i=usados.indexOf(c); return i<0?1e9:i; };
+  const exactas=p=>qs.filter(q=>(SINON[q]||[q]).some(a=>p.k.includes(a))).length;
+  return PRODUCTS.filter(p=>qs.every(q=>tokOk(q,p.k)))
+    .sort((a,b)=> exactas(b)-exactas(a) || rank(a.codigo)-rank(b.codigo) || a.codigo.localeCompare(b.codigo));
 }
+function marcar(desc,txt){
+  const qs=fold(txt).split(" ").filter(q=>q && !/^\d+$/.test(q) && q.length>1);
+  return desc.split(/(\s+)/).map(w=>{ const f=fold(w); return qs.some(q=>(SINON[q]||[q]).some(a=>f.startsWith(a))) ? "<mark>"+esc(w)+"</mark>" : esc(w); }).join("");
+}
+function abrirSugg(){
+  const txt=pick?"":pq.value;
+  const usados=usadosRecientes();
+  sugg=buscarProd(txt).slice(0,8); suggIdx=0;
+  let html=sugg.map((p,i)=>`<div class="sg${i===suggIdx?" on":""}" role="option" data-i="${i}">
+      <span class="code">${esc(p.codigo)}</span><span class="dsc">${marcar(p.descripcion,txt)}</span>${usados.includes(p.codigo)?'<span class="tag">YA CONTADO</span>':''}</div>`).join("");
+  if(!sugg.length){
+    html=`<div class="sg none">No encontré “${esc(txt)}” en el catálogo.</div><div class="sg add" data-add="1">➕ Agregar producto nuevo al catálogo…</div>`;
+  }
+  suggEl.innerHTML=html; suggEl.classList.add("show"); pq.setAttribute("aria-expanded","true");
+}
+function cerrarSugg(){ suggEl.classList.remove("show"); pq.setAttribute("aria-expanded","false"); }
+function moverSugg(d){
+  if(!suggEl.classList.contains("show")){ abrirSugg(); return; }
+  if(!sugg.length) return;
+  suggIdx=(suggIdx+d+sugg.length)%sugg.length;
+  suggEl.querySelectorAll(".sg[data-i]").forEach(e=>e.classList.toggle("on",Number(e.dataset.i)===suggIdx));
+  const on=suggEl.querySelector(".sg.on"); if(on) on.scrollIntoView({block:"nearest"});
+}
+function elegir(p){
+  pick=p.codigo; pq.value=p.codigo+"  ·  "+p.descripcion; pq.classList.add("chosen");
+  cerrarSugg(); qn.focus(); qn.select();
+}
+function limpiarPick(){ pick=null; pq.value=""; pq.classList.remove("chosen"); }
+
+let tCerrar=null;
+pq.addEventListener("input",()=>{ clearTimeout(tCerrar); pick=null; pq.classList.remove("chosen"); abrirSugg(); });
+pq.addEventListener("mousedown",()=>{ if(!pick) setTimeout(abrirSugg,0); });
+pq.addEventListener("focus",()=>{ clearTimeout(tCerrar); if(pick) setTimeout(()=>pq.select(),0); });
+// en celular, al tocar el buscador se sube para que la lista de productos se vea sobre el teclado
+pq.addEventListener("pointerdown",()=>{ if(matchMedia("(max-width:720px)").matches) setTimeout(()=>pq.scrollIntoView({block:"start",behavior:"smooth"}),250); });
+pq.addEventListener("blur",()=>{ clearTimeout(tCerrar); tCerrar=setTimeout(cerrarSugg,150); });
+pq.addEventListener("keydown",e=>{
+  if(e.key==="ArrowDown"){ e.preventDefault(); moverSugg(1); }
+  else if(e.key==="ArrowUp"){ e.preventDefault(); moverSugg(-1); }
+  else if(e.key==="Escape"){ cerrarSugg(); }
+  else if(e.key==="Enter"){
+    e.preventDefault();
+    if(pick){ qn.focus(); qn.select(); return; }
+    if(!pq.value.trim()) return;
+    if(!suggEl.classList.contains("show")) abrirSugg();
+    if(sugg.length) elegir(sugg[suggIdx]);
+  }
+});
+suggEl.addEventListener("mousedown",e=>{
+  e.preventDefault();
+  const it=e.target.closest(".sg"); if(!it) return;
+  if(it.dataset.add){ cerrarSugg(); openCatalog(pq.value.trim()); return; }
+  if(it.dataset.i!==undefined) elegir(sugg[Number(it.dataset.i)]);
+});
+qn.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); agregar(); } });
+$("qMinus").addEventListener("click",()=>{ qn.value=Math.max(1,(parseInt(qn.value,10)||1)-1); });
+$("qPlus").addEventListener("click",()=>{ qn.value=(parseInt(qn.value,10)||0)+1; });
 
 // ============================================================
-//  PANELES DE DECISIÓN
+//  CAJAS
 // ============================================================
-function showBoxDetected(codigo,status){
-  const p=byCode[codigo];
+function agregar(){
+  if(!pick || !byCode[pick]){
+    setStatus("warn","👆","Primero elegí el producto de la lista.");
+    beep(false); pq.focus(); abrirSugg(); return;
+  }
+  const n=parseInt(qn.value,10);
+  if(!(n>0)){
+    setStatus("warn","🔢","Escribí cuántas unidades trae (1 o más).");
+    beep(false); qn.focus(); qn.select(); return;
+  }
+  const caja=recep.cajas[recep.actual], p=byCode[pick], num=recep.actual+1;
+  const ex=caja.items.find(x=>x.codigo===pick);
+  if(ex){ ex.cant+=n; setStatus("ok","➕",`Caja ${num}: se ${n===1?"sumó":"sumaron"} ${n} a ${p.descripcion}. Ahora son ${ex.cant}.`); }
+  else { caja.items.push({codigo:p.codigo,descripcion:p.descripcion,cant:n}); setStatus("ok","✔",`Caja ${num}: ${p.descripcion} — ${plural(n,"unidad","unidades")}.`); }
   beep(true);
-  flashLast("Caja detectada","var(--ok)");
-  const d=document.getElementById("decide");
-  d.className="decide unk show";
-  d.innerHTML=`
-    <div class="q">📦 Caja detectada: ${esc(p.descripcion)}</div>
-    <div class="sub">Código <code>${codigo}</code>. Todas las series que escanees ahora se sumarán aquí.
-      ${status==="probable"?"<b style='color:var(--warn)'> (coincidencia parcial — confirmá que es correcto)</b>":""}</div>
-    <div class="altrow">
-      <button class="btn ok sm" onclick="clearDecide()">✔ Sí, es esta caja</button>
-      <button class="btn ghost sm" onclick="openManualPick()">↺ No, elegir otro producto</button>
-    </div>`;
-  focusScan();
+  limpiarPick(); qn.value=1;
+  save(); renderAll(); pq.focus();
+}
+function siguienteCaja(){
+  const caja=recep.cajas[recep.actual];
+  if(!caja.items.length){
+    setStatus("warn","📦",`La caja ${recep.actual+1} todavía está vacía. Agregale sus productos antes de pasar a la siguiente.`);
+    beep(false); pq.focus(); return;
+  }
+  const last=recep.cajas.length-1;
+  if(!recep.cajas[last].items.length) recep.actual=last;
+  else { recep.cajas.push({items:[]}); recep.actual=recep.cajas.length-1; }
+  const reg=cajasConProductos();
+  if(recep.totalCajas && reg>=recep.totalCajas) setStatus("warn","⚠️",`Ya registraste ${reg} de ${recep.totalCajas} cajas. Si llegaron más, corregí el total arriba.`);
+  else setStatus("info","📦",`Caja ${recep.actual+1} abierta. Elegí el producto que trae.`);
+  limpiarPick(); qn.value=1;
+  save(); renderAll(); pq.focus();
+}
+function abrirCaja(i){
+  if(i<0 || i>=recep.cajas.length) return;
+  recep.actual=i;
+  setStatus("info","✏️",`Abriste la caja ${i+1}. Lo que agregues se suma a esta caja.`);
+  save(); renderAll(); pq.focus();
+}
+function eliminarCaja(i){
+  const c=recep.cajas[i]; if(!c) return;
+  const u=unidadesCaja(c);
+  if(c.items.length && !confirm(`¿Eliminar la caja ${i+1} (${plural(u,"unidad","unidades")})?`+(i<recep.cajas.length-1?" Las cajas que siguen se vuelven a numerar.":""))) return;
+  recep.cajas.splice(i,1);
+  if(!recep.cajas.length) recep.cajas.push({items:[]});
+  if(recep.actual>i) recep.actual--;
+  else if(recep.actual===i) recep.actual=recep.cajas.length-1;
+  setStatus("info","🗑️",`Caja ${i+1} eliminada.`);
+  save(); renderAll();
+}
+function lineaActual(i){ return recep.cajas[recep.actual].items[i]; }
+function cambiarCant(i,d){
+  const it=lineaActual(i); if(!it) return;
+  if(it.cant+d<1) return;
+  it.cant+=d; save(); renderAll();
+}
+function fijarCant(i,val){
+  const it=lineaActual(i); if(!it) return;
+  const n=parseInt(val,10);
+  if(n>0){ it.cant=n; save(); }
+  renderAll();
+}
+function quitarLinea(i){
+  const caja=recep.cajas[recep.actual], it=caja.items[i]; if(!it) return;
+  caja.items.splice(i,1);
+  setStatus("info","↩",`Quitaste ${descDe(it)} de la caja ${recep.actual+1}.`);
+  save(); renderAll(); pq.focus();
 }
 
-function askAmbiguous(serial,res){
-  pending={serial,res};
-  const d=document.getElementById("decide");
-  d.className="decide show";
-  let opts=res.candidates.map((c,i)=>{
-    const p=byCode[c.codigo];
-    return `<button class="opt ${i===0?'best':''}" onclick="resolvePick('${c.codigo}')">
-      <span class="code">${c.codigo}</span><span class="dsc">${esc(p.descripcion)}</span>
-      ${i===0?'<span class="tag">SUGERIDO</span>':''}</button>`;
-  }).join("");
-  d.innerHTML=`
-    <div class="q">🤔 ¿Cuál de estos es? Son productos hermanos</div>
-    <div class="sub">La serie <code>${serial}</code> pertenece a esta familia, pero no se puede distinguir sola. Elegí según la etiqueta de la caja:</div>
-    <div class="opts">${opts}</div>
-    <div class="altrow"><button class="btn ghost sm" onclick="openManualPick()">Ver todos los productos…</button></div>`;
-  flashLast("Confirmá producto","var(--warn)"); beep(false); focusScan();
+// ---------- recepción anterior (hecha por series) ----------
+function revisarVieja(){
+  let d=null;
+  try{ if(localStorage.getItem(LS_VIEJA_OK)) return; d=JSON.parse(localStorage.getItem(LS_VIEJA)||"null"); }catch(e){ return; }
+  if(!d || !Array.isArray(d.order) || !d.items) return;
+  const prods=d.order.filter(c=>d.items[c] && Array.isArray(d.items[c].serials) && d.items[c].serials.length);
+  if(!prods.length) return;
+  const u=prods.reduce((a,c)=>a+d.items[c].serials.length,0);
+  viejaPend={d,prods};
+  const b=$("banner");
+  b.innerHTML=`<div class="bn-t"><b>Encontré una recepción anterior hecha con series</b>${d.fecha?" ("+fmtFecha(d.fecha)+")":""}: ${plural(u,"unidad","unidades")} de ${plural(prods.length,"producto","productos")}. ¿Querés pasarla al formato nuevo por cajas?</div>
+    <div class="bn-a"><button class="btn primary sm" onclick="pasarVieja()">Pasarla (una caja por producto)</button><button class="btn ghost sm" onclick="descartarVieja()">No, empezar de cero</button></div>`;
+  b.hidden=false;
 }
-function resolvePick(codigo){
-  if(!pending) return;
-  const serial=pending.serial; pending=null;
-  setActive(codigo);
-  addSerial(serial,codigo,true);
-  clearDecide();
+function marcarVieja(){ try{ localStorage.setItem(LS_VIEJA_OK,"1"); }catch(e){} viejaPend=null; $("banner").hidden=true; }
+function pasarVieja(){
+  if(!viejaPend) return;
+  const {d,prods}=viejaPend;
+  const estabaVacia=!cajasConProductos();
+  if(!recep.cajas[recep.cajas.length-1].items.length) recep.cajas.pop();
+  prods.forEach(c=>{ const it=d.items[c]; recep.cajas.push({items:[{codigo:c,descripcion:byCode[c]?byCode[c].descripcion:(it.descripcion||c),cant:it.serials.length}]}); });
+  recep.actual=recep.cajas.length-1;
+  if(estabaVacia && d.fecha) recep.fecha=d.fecha;
+  marcarVieja(); save(); load(); renderAll();
+  setStatus("ok","✔","Listo: la recepción anterior quedó pasada a cajas.");
 }
-
-function askMismatch(serial,res){
-  pending={serial,res};
-  const best=byCode[res.best.codigo];
-  const d=document.getElementById("decide");
-  d.className="decide mism show";
-  d.innerHTML=`
-    <div class="q">⚠️ ¿Serie de otra caja?</div>
-    <div class="sub">Estás en <code>${activeCode} · ${esc(shortDesc(activeCode))}</code> pero <code>${serial}</code>
-      parece ser de <b>${esc(best.descripcion)}</b> (${res.best.codigo}).</div>
-    <div class="altrow">
-      <button class="btn dark sm" onclick="mismSwitch('${res.best.codigo}')">📦 Cambiar caja a ${res.best.codigo}</button>
-      <button class="btn ghost sm" onclick="mismKeep()">Agregar igual a ${activeCode}</button>
-      <button class="btn danger sm" onclick="clearDecide();focusScan()">Ignorar serie</button>
-    </div>`;
-  beep(false); flashLast("Revisar serie","var(--warn)"); focusScan();
-}
-function mismSwitch(codigo){ if(!pending)return; const s=pending.serial;pending=null;setActive(codigo);addSerial(s,codigo,true);clearDecide(); }
-function mismKeep(){ if(!pending)return; const s=pending.serial;pending=null;addSerial(s,activeCode,true);clearDecide(); }
-
-function askUnknown(serial){
-  pending={serial};
-  const d=document.getElementById("decide");
-  d.className="decide unk show";
-  let opts=PRODUCTS.map(p=>`<option value="${p.codigo}">${p.codigo} · ${esc(p.descripcion)}</option>`).join("");
-  d.innerHTML=`
-    <div class="q">❓ Serie no reconocida</div>
-    <div class="sub">No pude identificar <code>${serial}</code>. Asignala a un producto del catálogo o registrá uno nuevo:</div>
-    <div class="unkform">
-      <select class="msel" id="unkSel" style="flex:1;min-width:240px">${opts}</select>
-      <button class="btn primary sm" onclick="unkAssignExisting()">Asignar</button>
-    </div>
-    <div class="sub" style="margin:12px 0 0">…o producto nuevo:</div>
-    <div class="unkform">
-      <input class="c" id="unkCode" placeholder="Código" maxlength="12">
-      <input class="d" id="unkDesc" placeholder="Descripción del producto">
-      <button class="btn dark sm" onclick="unkAssignNew()">Crear y asignar</button>
-    </div>
-    <div class="altrow"><button class="btn ghost sm" onclick="clearDecide();focusScan()">Cancelar</button></div>`;
-  beep(false); flashLast("Serie desconocida","var(--warn)"); focusScan();
-}
-function unkAssignExisting(){
-  const codigo=document.getElementById("unkSel").value; if(!codigo||!pending)return;
-  const s=pending.serial; pending=null;
-  setActive(codigo); addSerial(s,codigo,true); clearDecide();
-}
-function unkAssignNew(){
-  const codigo=norm(document.getElementById("unkCode").value);
-  const desc=document.getElementById("unkDesc").value.trim();
-  if(!codigo){alert("Escribí un código");return;}
-  if(!desc){alert("Escribí la descripción");return;}
-  if(byCode[codigo]){ alert("Ese código ya existe en el catálogo. Elegilo de la lista de arriba."); return; }
-  if(!pending)return;
-  const s=pending.serial; pending=null;
-  addProductCatalog(codigo,desc);
-  setActive(codigo); addSerial(s,codigo,true); clearDecide();
-}
-function learn(codigo,serial){
-  const p=byCode[codigo]; if(!p||!serial) return;
-  if(!p.serials.includes(serial)){ p.serials.push(serial); if(serial.length>=8) pref8index[codigo].add(serial.slice(0,8)); }
-  if(!catDelta) return;
-  if(!catDelta.learned[codigo]) catDelta.learned[codigo]=[];
-  if(!catDelta.learned[codigo].includes(serial)){ catDelta.learned[codigo].push(serial); saveCatalogDelta(); }
-}
-
-function clearDecide(){ const d=document.getElementById("decide"); d.className="decide"; d.innerHTML=""; }
-function openManualPick(){ clearDecide(); const sel=document.getElementById("manualSel"); sel.focus(); sel.size=Math.min(10,sel.options.length); setStatus("info","👉","Elegí el producto en la lista de arriba."); }
+function descartarVieja(){ marcarVieja(); }
 
 // ============================================================
 //  RENDER
 // ============================================================
-function shortDesc(codigo){ const p=byCode[codigo]; if(!p)return codigo; return p.descripcion.length>42?p.descripcion.slice(0,42)+"…":p.descripcion; }
-
-function renderActive(){
-  const v=document.getElementById("activeView");
-  if(!activeCode){ v.innerHTML=`<span class="none">Ninguna — escaneá la primera serie para detectar</span>`; document.getElementById("st-caja").textContent="—"; return; }
-  const p=byCode[activeCode]; const n=session.items[activeCode]?session.items[activeCode].serials.length:0;
-  v.innerHTML=`<span class="badge">${activeCode}</span> ${esc(p.descripcion)} <span class="cnt">${n} uds</span>`;
-  document.getElementById("st-caja").textContent=activeCode;
-  document.getElementById("st-caja").style.fontSize="20px";
-}
+const IC_EDIT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>';
+const IC_DEL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>';
 
 function renderAll(){
-  renderActive();
-  const list=document.getElementById("plist");
-  if(session.order.length===0){
-    list.innerHTML=`<div class="empty"><b>Todavía no escaneás nada</b>Poné el cursor en la caja de escaneo y dispará la pistola. El programa detecta el producto solo.</div>`;
-    document.getElementById("grand").style.display="none";
-  }else{
-    list.innerHTML=session.order.map(code=>{
-      const it=session.items[code]; if(!it)return"";
-      const open=openState[code]?"open":""; const act=code===activeCode?"active-p":"";
-      const sers=it.serials.map((s,i)=>`<span class="ser"><span class="num">${i+1}.</span>${s}<button class="del" title="Quitar" onclick="delSerial('${code}',${i})">✕</button></span>`).join("");
-      return `<div class="pcard ${open} ${act}">
-        <div class="phead" onclick="toggleCard('${code}')">
-          <span class="chev">▶</span>
-          <span class="code">${code}</span>
-          <span class="dsc">${esc(it.descripcion)}</span>
-          ${code===activeCode?'<span class="liveflag">ACTIVA</span>':''}
-          <span class="qty">${it.serials.length}</span>
-        </div>
-        <div class="pbody">
-          <div class="prowtools">
-            <button class="btn ghost sm" onclick="setActiveManual('${code}')">Reabrir esta caja</button>
-            <button class="btn danger sm" onclick="delProduct('${code}')">Eliminar producto</button>
-          </div>
-          <div class="serwrap">${sers}</div>
-        </div>
+  const reg=cajasConProductos(), uds=unidadesTotal(), prods=porProducto(), tot=recep.totalCajas;
+
+  // KPIs
+  $("st-cajas").innerHTML=reg+(tot?`<small>/ ${tot}</small>`:"");
+  $("st-uds").textContent=uds;
+  $("st-prod").textContent=prods.length;
+  $("st-faltan").textContent=tot?Math.max(tot-reg,0):"—";
+
+  // progreso
+  const prog=$("prog"), pt=$("progTxt");
+  prog.className="prog"; pt.className="prog-t";
+  if(!tot){ $("progBar").style.width="0"; pt.classList.add("muted"); pt.textContent="Escribí el total para llevar el control de cuántas faltan."; }
+  else{
+    $("progBar").style.width=Math.min(100,reg/tot*100)+"%";
+    if(reg>tot){ prog.classList.add("over"); pt.classList.add("over"); pt.textContent=`⚠️ Registraste ${reg} cajas, pero escribiste que llegaron ${tot}. Revisá el total.`; }
+    else if(reg===tot){ prog.classList.add("done"); pt.classList.add("done"); pt.textContent=`✔ Las ${tot} cajas están registradas.`; }
+    else pt.textContent=`${reg} de ${tot} cajas registradas · faltan ${tot-reg}.`;
+  }
+
+  // caja que se está llenando
+  const i=recep.actual, caja=recep.cajas[i], esUltima=i>=recep.cajas.length-1;
+  $("cajaNum").textContent=i+1;
+  $("cajaOf").textContent=tot?`de ${tot}`:"";
+  const note=$("editNote");
+  if(!esUltima){ note.hidden=false; note.textContent="Estás corrigiendo una caja anterior."; } else note.hidden=true;
+  const lastI=recep.cajas.length-1, sigN=recep.cajas[lastI].items.length ? recep.cajas.length+1 : lastI+1;
+  $("btnSigTxt").textContent = esUltima ? "Siguiente caja" : `Ir a la caja ${sigN}`;
+
+  const uc=unidadesCaja(caja);
+  $("boxNow").innerHTML=`<div class="bn-h"><b>Contenido de la caja ${i+1}</b><span>${caja.items.length?plural(uc,"unidad","unidades"):""}</span></div>`+
+    (caja.items.length
+      ? `<div class="lns">${caja.items.map((it,j)=>`<div class="ln">
+          <span class="code">${esc(it.codigo)}</span><span class="dsc">${esc(descDe(it))}</span>
+          <div class="stepper sm"><button type="button" onclick="cambiarCant(${j},-1)" title="Una menos">−</button><input type="number" min="1" step="1" value="${it.cant}" aria-label="Unidades" onchange="fijarCant(${j},this.value)" onkeydown="if(event.key==='Enter')this.blur()"><button type="button" onclick="cambiarCant(${j},1)" title="Una más">+</button></div>
+          <button class="x" onclick="quitarLinea(${j})" title="Quitar de la caja">✕</button></div>`).join("")}</div>`
+      : `<div class="box-empty">Todavía no le agregaste productos a esta caja. Buscá el producto arriba, poné las unidades y tocá <b>Agregar</b>. Si la caja trae varios productos, agregalos uno por uno.</div>`);
+
+  // listado
+  $("tabCajas").setAttribute("aria-pressed",vista==="cajas");
+  $("tabProd").setAttribute("aria-pressed",vista==="productos");
+  $("listTitle").textContent = vista==="cajas" ? "Cajas registradas" : "Resumen por producto";
+  const list=$("plist");
+  if(!uds){
+    list.innerHTML=`<div class="empty"><b>Todavía no contaste nada</b>Escribí cuántas cajas llegaron, elegí el producto de la caja 1 y poné cuántas unidades trae.</div>`;
+  } else if(vista==="cajas"){
+    list.innerHTML=recep.cajas.map((c,k)=>{
+      if(!c.items.length && k!==recep.actual) return `<div class="bcard"><div class="bhead"><span class="bnum">Caja ${k+1}</span><span class="bmeta">vacía</span>
+        <button class="ib" onclick="abrirCaja(${k})" title="Abrir esta caja">${IC_EDIT}</button><button class="ib del" onclick="eliminarCaja(${k})" title="Eliminar caja">${IC_DEL}</button></div></div>`;
+      if(!c.items.length) return "";
+      const on=k===recep.actual;
+      return `<div class="bcard${on?" on":""}">
+        <div class="bhead"><span class="bnum">Caja ${k+1}</span>${on?'<span class="liveflag">ABIERTA</span>':''}<span class="bmeta">${plural(c.items.length,"producto","productos")}</span>
+          <span class="qty">${unidadesCaja(c)}</span>
+          ${on?"":`<button class="ib" onclick="abrirCaja(${k})" title="Abrir para corregir">${IC_EDIT}</button>`}
+          <button class="ib del" onclick="eliminarCaja(${k})" title="Eliminar caja">${IC_DEL}</button></div>
+        <div class="blines">${c.items.map(it=>`<div class="bl"><span class="code">${esc(it.codigo)}</span><span class="dsc">${esc(descDe(it))}</span><b>${it.cant}</b></div>`).join("")}</div>
       </div>`;
     }).join("");
-    let tot=0; session.order.forEach(c=>{ if(session.items[c])tot+=session.items[c].serials.length; });
-    document.getElementById("grand").style.display="flex";
-    document.getElementById("gtot").textContent=tot;
-    document.getElementById("gprod").textContent=session.order.filter(c=>session.items[c]&&session.items[c].serials.length>0).length;
+  } else {
+    list.innerHTML=prods.map(a=>`<div class="prow">
+      <span class="code">${esc(a.codigo)}</span>
+      <span class="info"><span class="dsc">${esc(a.descripcion)}</span><span class="cj">${a.cajas.length===1?"Caja":"Cajas"} ${a.cajas.map(x=>x.n+(a.cajas.length>1?" ("+x.cant+")":"")).join(" · ")}</span></span>
+      <span class="qty">${a.total}</span></div>`).join("");
   }
-  // stats
-  let art=0; session.order.forEach(c=>{ if(session.items[c])art+=session.items[c].serials.length; });
-  document.getElementById("st-art").textContent=art;
-  document.getElementById("st-prod").textContent=session.order.filter(c=>session.items[c]&&session.items[c].serials.length>0).length;
+  const g=$("grand");
+  if(uds){ g.style.display="flex"; $("gtxt").textContent=`${plural(uds,"unidad","unidades")} · ${plural(prods.length,"producto","productos")} · ${plural(reg,"caja","cajas")}`; }
+  else g.style.display="none";
 }
-
-function setStatus(type,ic,msg){ const s=document.getElementById("status"); s.className="status show "+type; s.querySelector(".ic").textContent=ic; s.querySelector(".msg").textContent=msg; }
-function flashLast(txt,color){ const e=document.getElementById("st-last"); e.textContent=txt; e.style.color=color; }
-
-function toggleCard(code){ openState[code]=!openState[code]; renderAll(); }
-function delSerial(code,i){
-  const it=session.items[code]; if(!it)return;
-  const s=it.serials[i]; it.serials.splice(i,1); delete session.serialMap[s];
-  if(it.serials.length===0){ delete session.items[code]; session.order=session.order.filter(c=>c!==code); if(activeCode===code)activeCode=null; }
-  save(); renderAll(); setStatus("info","↩","Serie "+s+" eliminada."); focusScan();
-}
-function delProduct(code){
-  const it=session.items[code]; if(!it)return;
-  if(!confirm("¿Eliminar "+code+" y sus "+it.serials.length+" series de esta recepción?"))return;
-  it.serials.forEach(s=>delete session.serialMap[s]);
-  delete session.items[code]; session.order=session.order.filter(c=>c!==code);
-  if(activeCode===code)activeCode=null;
-  save(); renderAll(); focusScan();
-}
-function setActiveManual(code){ setActive(code); clearDecide(); setStatus("info","📦","Caja activa: "+shortDesc(code)+". Escaneá sus series."); focusScan(); }
-
-function buildManualSelect(){
-  const sel=document.getElementById("manualSel");
-  const cur=sel.value;
-  sel.innerHTML=`<option value="">— Fijar producto manualmente —</option>`+
-    PRODUCTS.slice().sort((a,b)=>a.codigo.localeCompare(b.codigo)).map(p=>`<option value="${p.codigo}">${p.codigo} · ${p.descripcion}</option>`).join("");
-  sel.value=cur;
-}
+function setVista(v){ vista=v; try{ localStorage.setItem(LS_VISTA,v); }catch(e){} renderAll(); }
+function setStatus(type,ic,msg){ const s=$("status"); s.className="status show "+type; s.querySelector(".ic").textContent=ic; s.querySelector(".msg").textContent=msg; }
 
 // ============================================================
 //  GESTOR DE CATÁLOGO (agregar / editar / eliminar productos)
 // ============================================================
-function openCatalog(){ catEditing=null; const s=document.getElementById("catSearch"); if(s)s.value=""; document.getElementById("catModal").classList.add("show"); renderCatalog(); }
-function closeCatalog(){ document.getElementById("catModal").classList.remove("show"); catEditing=null; focusScan(); }
-function onAddProduct(){
-  const c=document.getElementById("npCode").value, d=document.getElementById("npDesc").value;
-  if(addProductCatalog(c,d)){ document.getElementById("npCode").value=""; document.getElementById("npDesc").value=""; renderCatalog(); document.getElementById("npCode").focus(); }
+function openCatalog(prefill){
+  catEditing=null; catDesdeBuscador=typeof prefill==="string";
+  const s=$("catSearch"); if(s) s.value="";
+  $("catModal").classList.add("show"); renderCatalog();
+  if(catDesdeBuscador){ $("npDesc").value=prefill; $("npCode").focus(); }
 }
-function startEdit(c){ catEditing=c; renderCatalog(); const i=document.getElementById("edDesc"); if(i)i.focus(); }
+function closeCatalog(){ $("catModal").classList.remove("show"); catEditing=null; catDesdeBuscador=false; pq.focus(); }
+function onAddProduct(){
+  const c=$("npCode").value, d=$("npDesc").value;
+  const nuevo=addProductCatalog(c,d);
+  if(!nuevo) return;
+  $("npCode").value=""; $("npDesc").value="";
+  if(catDesdeBuscador){ closeCatalog(); elegir(byCode[nuevo]); setStatus("ok","✔","Producto agregado al catálogo. Ahora poné cuántas unidades trae."); return; }
+  renderCatalog(); $("npCode").focus();
+}
+function startEdit(c){ catEditing=c; renderCatalog(); const i=$("edDesc"); if(i) i.focus(); }
 function saveEdit(cur){
-  const nc=document.getElementById("edCode").value, nd=document.getElementById("edDesc").value;
+  const nc=$("edCode").value, nd=$("edDesc").value;
   if(editProductCatalog(cur,nc,nd)){ catEditing=null; renderCatalog(); }
 }
 function renderCatalog(){
-  const q=norm((document.getElementById("catSearch")||{}).value||"");
+  const q=norm(($("catSearch")||{}).value||"");
   const list=PRODUCTS.slice().sort((a,b)=>a.codigo.localeCompare(b.codigo))
     .filter(p=> !q || p.codigo.includes(q) || p.descripcion.toUpperCase().replace(/\s/g,"").includes(q));
   const rows=list.map(p=>{
-    const scanned=session.items[p.codigo]?session.items[p.codigo].serials.length:0;
+    const uds=unidadesDe(p.codigo);
     const tag = p.base ? (catDelta.overrides[p.origCodigo]?'<span class="ctag edit">editado</span>':'<span class="ctag base">base</span>')
                        : '<span class="ctag new">agregado</span>';
     if(catEditing===p.codigo){
@@ -833,53 +881,59 @@ function renderCatalog(){
         <input class="ccode-in" id="edCode" value="${esc(p.codigo)}" maxlength="14" spellcheck="false">
         <input class="cdesc-in" id="edDesc" value="${esc(p.descripcion)}" spellcheck="false">
         <div class="cacts">
-          <button class="btn primary sm" onclick="saveEdit('${p.codigo}')">Guardar</button>
+          <button class="btn primary sm" onclick="saveEdit(${jsq(p.codigo)})">Guardar</button>
           <button class="btn ghost sm" onclick="catEditing=null;renderCatalog()">Cancelar</button>
         </div></div>`;
     }
     let del="";
-    if(p.base){ if(catDelta.overrides[p.origCodigo]) del=`<button class="btn ghost sm" onclick="deleteProductCatalog('${p.codigo}')">Restablecer</button>`; }
-    else del=`<button class="btn danger sm" onclick="deleteProductCatalog('${p.codigo}')">Eliminar</button>`;
+    if(p.base){ if(catDelta.overrides[p.origCodigo]) del=`<button class="btn ghost sm" onclick="deleteProductCatalog(${jsq(p.codigo)})">Restablecer</button>`; }
+    else del=`<button class="btn danger sm" onclick="deleteProductCatalog(${jsq(p.codigo)})">Eliminar</button>`;
     return `<div class="crow">
       <span class="ccode">${esc(p.codigo)}</span>
       <span class="cinfo"><span class="cdesc">${esc(p.descripcion)}</span>
-        <span class="cmeta">${p.serials.length} series ref.${scanned?` · <b>${scanned}</b> escaneadas`:''} ${tag}</span></span>
-      <span class="cacts"><button class="btn ghost sm" onclick="startEdit('${p.codigo}')">Editar</button>${del}</span>
+        <span class="cmeta">${uds?`<b>${uds}</b> en esta recepción · `:''}${tag}</span></span>
+      <span class="cacts"><button class="btn ghost sm" onclick="startEdit(${jsq(p.codigo)})">Editar</button>${del}</span>
     </div>`;
   }).join("");
-  document.getElementById("catList").innerHTML=rows||`<div class="cempty">Sin resultados para “${esc(q)}”.</div>`;
-  document.getElementById("catCount").textContent=PRODUCTS.length+" productos";
+  $("catList").innerHTML=rows||`<div class="cempty">Sin resultados para “${esc(q)}”.</div>`;
+  $("catCount").textContent=PRODUCTS.length+" productos";
 }
 
 // ============================================================
 //  PERSISTENCIA
 // ============================================================
-function save(){ try{ localStorage.setItem(LS_SESSION,JSON.stringify({fecha:session.fecha,order:session.order,items:session.items,activeCode})); }catch(e){} }
+function save(){ podar(); try{ localStorage.setItem(LS_RECEP,JSON.stringify(recep)); }catch(e){} }
 function load(){
   try{
-    const d=JSON.parse(localStorage.getItem(LS_SESSION)||"null");
-    if(d){
-      session.fecha=d.fecha||todayISO();
-      session.order=d.order||[]; session.items=d.items||{}; session.serialMap={};
-      session.order.forEach(c=>{ (session.items[c]?session.items[c].serials:[]).forEach(s=>session.serialMap[s]=c); openState[c]=false; });
-      activeCode=d.activeCode||null;
-      // reforzar aprendizaje de series de la sesión sobre el catálogo
-      session.order.forEach(c=>{ if(byCode[c]) (session.items[c].serials||[]).forEach(s=>{ if(!byCode[c].serials.includes(s)){byCode[c].serials.push(s); if(s.length>=8)pref8index[c].add(s.slice(0,8));} }); });
+    const d=JSON.parse(localStorage.getItem(LS_RECEP)||"null");
+    if(d && Array.isArray(d.cajas)){
+      recep={
+        fecha:d.fecha||todayISO(),
+        totalCajas:(parseInt(d.totalCajas,10)>0?parseInt(d.totalCajas,10):null),
+        cajas:d.cajas.map(c=>({items:((c&&c.items)||[]).filter(it=>it&&it.codigo&&Number(it.cant)>0).map(it=>({codigo:String(it.codigo),descripcion:String(it.descripcion||it.codigo),cant:Math.floor(Number(it.cant))}))})),
+        actual:0
+      };
+      if(!recep.cajas.length) recep.cajas.push({items:[]});
+      recep.actual=Math.min(Math.max(0,parseInt(d.actual,10)||0),recep.cajas.length-1);
     }
   }catch(e){}
-  document.getElementById("fecha").value=session.fecha;
+  try{ const v=localStorage.getItem(LS_VISTA); if(v==="cajas"||v==="productos") vista=v; }catch(e){}
+  $("fecha").value=recep.fecha;
+  $("totalCajas").value=recep.totalCajas||"";
 }
 
 // ============================================================
 //  EXPORTAR A EXCEL  (mismo diseño DJI, un solo cuadro)
 // ============================================================
 async function exportExcel(){
-  if(session.order.length===0){ alert("No hay nada escaneado todavía."); return; }
+  const prods=porProducto();
+  if(!prods.length){ alert("Todavía no hay productos contados."); return; }
+  const reg=cajasConProductos(), tot=recep.totalCajas;
   const DARK="FF44546A", WHITE="FFFFFFFF", INK="FF4A4F59", SUBBG="FFEDEFF3", GRIDBG="FFF7F8FA";
   const wb=new ExcelJS.Workbook();
   const ws=wb.addWorksheet("Recepción",{views:[{showGridLines:false}]});
   ws.columns=[{width:3},{width:14},{width:62},{width:12},{width:26},{width:3}];
-  const B=2,C=3,D=4,E=5; // columnas Código/Descripción/Cantidad/Series en B..E
+  const B=2,C=3,D=4,E=5; // columnas Código/Descripción/Cantidad/Caja en B..E
 
   const thin={style:"thin",color:{argb:"FFB9C0CC"}};
   const border={top:thin,left:thin,bottom:thin,right:thin};
@@ -894,43 +948,41 @@ async function exportExcel(){
     ws.addImage(imgId,{tl:{col:E-0.05,row:0.25},ext:{width:95,height:52},editAs:"oneCell"});
   }catch(e){}
 
-  // --- fila Fecha (fila 4) ---
+  // --- fila Fecha y cajas (fila 4) ---
   const fr=4;
   ws.mergeCells(fr,B,fr,C);
-  const fc=ws.getCell(fr,B); fc.value="Fecha:   "+fmtFecha(session.fecha);
-  fc.fill={type:"pattern",pattern:"solid",fgColor:{argb:DARK}}; fc.font={name:"Calibri",size:12,bold:true,color:{argb:WHITE}};
-  fc.alignment={vertical:"middle",horizontal:"left",indent:1};
-  ws.getCell(fr,D).fill={type:"pattern",pattern:"solid",fgColor:{argb:DARK}};
-  ws.getCell(fr,E).fill={type:"pattern",pattern:"solid",fgColor:{argb:DARK}};
+  const fc=ws.getCell(fr,B); fc.value="Fecha:   "+fmtFecha(recep.fecha);
+  bandCell(fc); fc.alignment={vertical:"middle",horizontal:"left",indent:1};
+  ws.mergeCells(fr,D,fr,E);
+  const cc=ws.getCell(fr,D); cc.value="Cajas recibidas:   "+(tot&&tot!==reg?reg+" de "+tot:reg);
+  bandCell(cc); cc.alignment={vertical:"middle",horizontal:"right",indent:1};
   ws.getRow(fr).height=20;
 
   // --- encabezado de columnas (fila 5) ---
-  const hr=5; const heads={[B]:"Código",[C]:"Descripción",[D]:"Cantidad",[E]:"Series"};
+  const hr=5; const heads={[B]:"Código",[C]:"Descripción",[D]:"Cantidad",[E]:"Caja"};
   [B,C,D,E].forEach(c=>{ const cell=ws.getCell(hr,c); cell.value=heads[c]; bandCell(cell); cell.alignment={vertical:"middle",horizontal:c===C?"left":"center",indent:c===C?1:0}; cell.border=border; });
   ws.getRow(hr).height=20;
 
-  // --- filas de datos ---
+  // --- filas de datos: por producto, una fila por cada caja donde viene ---
   let r=hr+1, grand=0;
   const dataFont={name:"Calibri",size:11,color:{argb:INK}};
-  session.order.forEach(code=>{
-    const it=session.items[code]; if(!it||it.serials.length===0)return;
-    const n=it.serials.length; grand+=n;
-    it.serials.forEach(serie=>{
-      const cB=ws.getCell(r,B); cB.value=code;
-      const cC=ws.getCell(r,C); cC.value=it.descripcion;
-      const cD=ws.getCell(r,D); cD.value=1;
-      const cE=ws.getCell(r,E); cE.value=serie;
+  prods.forEach(a=>{
+    grand+=a.total;
+    a.cajas.forEach(x=>{
+      const cB=ws.getCell(r,B); cB.value=a.codigo;
+      const cC=ws.getCell(r,C); cC.value=a.descripcion;
+      const cD=ws.getCell(r,D); cD.value=x.cant;
+      const cE=ws.getCell(r,E); cE.value="Caja "+x.n;
       [cB,cC,cD,cE].forEach(c=>{c.font=dataFont;c.border=border;c.fill={type:"pattern",pattern:"solid",fgColor:{argb:GRIDBG}};});
       cB.alignment={horizontal:"center"}; cC.alignment={horizontal:"left",indent:1};
       cD.alignment={horizontal:"center"}; cE.alignment={horizontal:"left",indent:1};
-      cE.font={name:"Consolas",size:11,color:{argb:INK}};
       r++;
     });
     // subtotal del producto
     ws.mergeCells(r,B,r,C);
-    const sB=ws.getCell(r,B); sB.value="TOTAL  "+code+"  ·  "+it.descripcion;
-    const sD=ws.getCell(r,D); sD.value=n;
-    const sE=ws.getCell(r,E); sE.value="unidades";
+    const sB=ws.getCell(r,B); sB.value="TOTAL  "+a.codigo+"  ·  "+a.descripcion;
+    const sD=ws.getCell(r,D); sD.value=a.total;
+    const sE=ws.getCell(r,E); sE.value=a.total===1?"unidad":"unidades";
     [B,C,D,E].forEach(c=>{const cell=ws.getCell(r,c);cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:SUBBG}};cell.border=border;cell.font={name:"Calibri",size:11,bold:true,color:{argb:"FF2B3441"}};});
     sB.alignment={horizontal:"left",indent:1}; sD.alignment={horizontal:"center"}; sE.alignment={horizontal:"left",indent:1};
     r++;
@@ -940,7 +992,7 @@ async function exportExcel(){
   ws.mergeCells(r,B,r,C);
   const gB=ws.getCell(r,B); gB.value="TOTAL GENERAL";
   const gD=ws.getCell(r,D); gD.value=grand;
-  const gE=ws.getCell(r,E); gE.value=session.order.filter(c=>session.items[c]&&session.items[c].serials.length>0).length+" productos";
+  const gE=ws.getCell(r,E); gE.value=plural(prods.length,"producto","productos")+" · "+plural(reg,"caja","cajas");
   [B,C,D,E].forEach(c=>{const cell=ws.getCell(r,c);bandCell(cell);cell.border=border;});
   gB.alignment={horizontal:"left",indent:1}; gD.alignment={horizontal:"center"}; gE.alignment={horizontal:"left",indent:1};
   ws.getRow(r).height=22;
@@ -948,18 +1000,16 @@ async function exportExcel(){
   // descargar
   const buf=await wb.xlsx.writeBuffer();
   const blob=new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="Recepcion DJI "+fmtFecha(session.fecha).replace(/\//g,"-")+".xlsx";
-  document.body.appendChild(a); a.click(); a.remove();
-  setStatus("ok","⬇️","Excel exportado: "+a.download);
-  focusScan();
+  const link=document.createElement("a");
+  link.href=URL.createObjectURL(blob);
+  link.download="Recepcion DJI "+fmtFecha(recep.fecha).replace(/\//g,"-")+".xlsx";
+  document.body.appendChild(link); link.click(); link.remove();
+  setStatus("ok","⬇️","Excel exportado: "+link.download+(tot&&tot!==reg?` (ojo: ${reg} de ${tot} cajas registradas)`:""));
 }
 
 // ============================================================
-//  SONIDO (feedback sin mirar la pantalla)
+//  SONIDO
 // ============================================================
-let actx=null;
 function beep(ok){
   try{
     actx=actx||new (window.AudioContext||window.webkitAudioContext)();
@@ -972,61 +1022,35 @@ function beep(ok){
   }catch(e){}
 }
 
-// ============================================================
-//  EVENTOS
-// ============================================================
-function focusScan(){ const m=document.getElementById("catModal"); if(m&&m.classList.contains("show"))return; const i=document.getElementById("scanInput"); setTimeout(()=>i.focus(),10); }
-document.getElementById("scanForm").addEventListener("submit",e=>{
-  e.preventDefault();
-  const inp=document.getElementById("scanInput");
-  const v=inp.value; inp.value="";
-  handleScan(v); focusScan();
+// ---------- eventos ----------
+$("btnAdd").addEventListener("click",agregar);
+$("btnSig").addEventListener("click",siguienteCaja);
+$("btnExport").addEventListener("click",exportExcel);
+$("tabCajas").addEventListener("click",()=>setVista("cajas"));
+$("tabProd").addEventListener("click",()=>setVista("productos"));
+$("fecha").addEventListener("change",e=>{ recep.fecha=e.target.value||todayISO(); save(); });
+$("totalCajas").addEventListener("input",e=>{ const n=parseInt(e.target.value,10); recep.totalCajas=n>0?n:null; save(); renderAll(); });
+$("totalCajas").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); pq.focus(); } });
+$("btnClear").addEventListener("click",()=>{
+  if(!confirm("¿Borrar toda la recepción actual (todas las cajas)? Esto no borra el catálogo.")) return;
+  recep=nuevaRecepcion(recep.fecha); limpiarPick(); qn.value=1;
+  $("totalCajas").value="";
+  save(); renderAll(); setStatus("info","🗑️","Recepción vaciada. Podés empezar una nueva."); pq.focus();
 });
-document.getElementById("btnNueva").addEventListener("click",()=>{
-  activeCode=null; pending=null; clearDecide(); renderActive();
-  document.getElementById("manualSel").value="";
-  setStatus("info","📦","Caja cerrada. Escaneá la primera serie de la nueva caja y la detecto sola.");
-  focusScan();
-});
-document.getElementById("manualSel").addEventListener("change",e=>{
-  const v=e.target.value; e.target.size=0;
-  if(v){ setActiveManual(v); }
-});
-document.getElementById("fecha").addEventListener("change",e=>{ session.fecha=e.target.value||todayISO(); save(); });
-document.getElementById("btnExport").addEventListener("click",exportExcel);
-document.getElementById("btnExpand").addEventListener("click",()=>{
-  const anyClosed=session.order.some(c=>!openState[c]);
-  session.order.forEach(c=>openState[c]=anyClosed); renderAll();
-});
-document.getElementById("btnClear").addEventListener("click",()=>{
-  if(!confirm("¿Borrar toda la recepción actual? Esto no borra el catálogo, solo lo escaneado."))return;
-  session={fecha:session.fecha,order:[],items:{},serialMap:{}}; activeCode=null; pending=null; clearDecide();
-  save(); renderAll(); setStatus("info","🗑️","Recepción vaciada."); focusScan();
-});
-// gestor de catálogo
-document.getElementById("btnCat").addEventListener("click",openCatalog);
-document.getElementById("catModal").addEventListener("click",e=>{ if(e.target.id==="catModal") closeCatalog(); });
-document.getElementById("npDesc").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); onAddProduct(); } });
-// mantener foco en el escáner
-document.addEventListener("click",e=>{
-  if(e.target.closest("button,select,input,a,textarea,.opt,.phead,.ser,.modal")) return;
-  focusScan();
-});
+$("btnCat").addEventListener("click",()=>openCatalog());
+$("catModal").addEventListener("click",e=>{ if(e.target.id==="catModal") closeCatalog(); });
+$("npDesc").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); onAddProduct(); } });
+$("npCode").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); $("npDesc").focus(); } });
 document.addEventListener("keydown",e=>{
-  const modalOpen=document.getElementById("catModal").classList.contains("show");
-  if(e.key==="Escape"){ if(modalOpen) closeCatalog(); return; }
-  if(modalOpen) return;
-  const tag=document.activeElement.tagName;
-  if(tag!=="INPUT"&&tag!=="SELECT"&&tag!=="TEXTAREA"&&e.key.length===1){ focusScan(); }
+  if(e.key==="Escape" && $("catModal").classList.contains("show")) closeCatalog();
 });
 
-// ---------- init ----------
+// ---------- inicio ----------
 loadCatalog();
 load();
-buildManualSelect();
-if(activeCode) document.getElementById("manualSel").value=activeCode;
 renderAll();
-focusScan();
+revisarVieja();
+pq.focus();
 </script>
 </body>
 </html>
