@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recepción de Mercadería DJI</title>
+<style>
+  :root{
+    --bg:#f3f4f7; --card:#ffffff; --ink:#14171c; --ink-2:#3b424d; --muted:#8b93a1;
+    --line:#e9ebef; --line-2:#f1f3f6;
+    --black:#111318; --black-2:#1b1e26;
+    --accent:#2563eb; --accent-d:#1d4ed8; --accent-bg:#eef3fe;
+    --ok:#0e9f6e; --ok-bg:#e7f7f0; --ok-br:#bfe9d7;
+    --warn:#b7791f; --warn-bg:#fdf6e6; --warn-br:#f0e0b8;
+    --err:#e02424; --err-bg:#fdecec; --err-br:#f6c9c9;
+    /* compatibilidad */
+    --dji:#111318; --dji-2:#1b1e26; --dji-3:#2563eb;
+    --shadow-sm:0 1px 2px rgba(16,24,40,.06);
+    --shadow:0 1px 3px rgba(16,24,40,.06),0 10px 26px rgba(16,24,40,.05);
+    --shadow-lg:0 18px 44px rgba(16,24,40,.13);
+    --r:16px; --r-sm:11px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  svg{display:block}
+
+  /* ===== Top bar ===== */
+  .appbar{background:var(--black);color:#fff;padding:0 22px;display:flex;align-items:center;gap:16px;height:66px;position:sticky;top:0;z-index:50;box-shadow:0 1px 0 rgba(255,255,255,.04),0 6px 20px rgba(0,0,0,.16)}
+  .appbar .brand{display:flex;align-items:center;gap:12px}
+  .brand-badge{width:38px;height:38px;border-radius:11px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.4)}
+  .brand-badge svg{width:20px;height:20px}
+  .brand-txt{display:flex;flex-direction:column;line-height:1.18}
+  .brand-txt b{font-size:17px;font-weight:750;letter-spacing:.1px}
+  .brand-txt span{font-size:11.5px;color:rgba(255,255,255,.6);letter-spacing:.2px}
+  .ab-right{margin-left:auto;display:flex;align-items:center;gap:16px}
+  .fecha{display:flex;flex-direction:column;gap:2px;background:rgba(255,255,255,.08);padding:6px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.09)}
+  .fecha>span{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.55)}
+  .fecha input{border:none;background:transparent;color:#fff;font-size:13px;font-weight:600;padding:0;outline:none;color-scheme:dark}
+  .appbar .logo{height:26px;opacity:.95}
+
+  .wrap{max-width:1240px;margin:0 auto;padding:22px 20px 40px}
+
+  /* ===== KPIs ===== */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+  .kpi{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 16px 15px;box-shadow:var(--shadow);overflow:hidden}
+  .kpi-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .kpi-ic{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:var(--line-2);color:var(--ink-2)}
+  .kpi-ic svg{width:20px;height:20px}
+  .kpi-ic.blue{background:var(--accent-bg);color:var(--accent)}
+  .kpi-ic.amber{background:#fbf1dd;color:#b7791f}
+  .kpi-ic.green{background:var(--ok-bg);color:var(--ok)}
+  .kpi-n{font-size:30px;font-weight:800;letter-spacing:-.5px;color:var(--ink);line-height:1}
+  .kpi-n.code{font-size:22px;letter-spacing:.5px}
+  .kpi-n.small{font-size:15px;font-weight:700;color:var(--muted);letter-spacing:0;line-height:1.25;max-height:2.4em;overflow:hidden}
+  .kpi-l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:7px;font-weight:600}
+  .kpi.kpi-dark{background:var(--black);border-color:var(--black)}
+  .kpi.kpi-dark::after{content:"";position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,.35),transparent 70%)}
+  .kpi-dark .kpi-ic{background:rgba(255,255,255,.1);color:#fff}
+  .kpi-dark .kpi-n{color:#fff}
+  .kpi-dark .kpi-l{color:rgba(255,255,255,.55)}
+
+  /* ===== Layout ===== */
+  .layout{display:grid;grid-template-columns:1fr;gap:16px}
+  .colA,.colB{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+
+  /* ===== Scan station ===== */
+  .scan{padding:18px}
+  .scan-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:15px}
+  .scan .active{flex:1;min-width:220px}
+  .scan .active .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+  .scan .active .v{font-size:19px;font-weight:800;color:var(--ink);display:flex;align-items:center;gap:10px;margin-top:5px;flex-wrap:wrap;line-height:1.2}
+  .scan .active .v .badge{background:var(--black);color:#fff;font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;font-family:"Consolas",monospace}
+  .scan .active .v .cnt{background:var(--accent);color:#fff;font-size:13px;font-weight:800;padding:4px 11px;border-radius:20px}
+  .scan .active .none{color:var(--muted);font-weight:600;font-size:16px}
+  .scanbox{position:relative}
+  .scanbox .baricon{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--accent);pointer-events:none}
+  .scanbox .baricon svg{width:26px;height:26px}
+  .scanbox input{width:100%;font-size:25px;font-weight:700;letter-spacing:1px;padding:17px 20px 17px 54px;border:2px solid var(--line);border-radius:13px;outline:none;font-family:"Consolas","SF Mono",monospace;background:#fafbfc;text-transform:uppercase;color:var(--ink);transition:.14s}
+  .scanbox input::placeholder{color:#b7bdc8;font-weight:600;letter-spacing:.5px}
+  .scanbox input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.13)}
+  .scanbox .hint{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);pointer-events:none;background:var(--line-2);padding:4px 8px;border-radius:6px;font-weight:600}
+  .scan .tools{display:flex;gap:10px;margin-top:13px;flex-wrap:wrap;align-items:center}
+
+  /* ===== Buttons ===== */
+  select,button{font-family:inherit}
+  .btn{border:none;border-radius:10px;padding:11px 17px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.14s;white-space:nowrap}
+  .btn svg{width:16px;height:16px}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--accent);color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.28)}.btn.primary:hover{background:var(--accent-d)}
+  .btn.dark{background:var(--black);color:#fff}.btn.dark:hover{background:var(--black-2)}
+  .btn.ghost{background:var(--line-2);color:var(--ink-2)}.btn.ghost:hover{background:#e7eaef}
+  .btn.ok{background:var(--accent);color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.28)}.btn.ok:hover{background:var(--accent-d)}
+  .btn.danger{background:#fff;color:var(--err);border:1px solid var(--err-br)}.btn.danger:hover{background:var(--err-bg)}
+  .btn.sm{padding:8px 12px;font-size:13px;border-radius:9px}
+  select.msel{border:1px solid var(--line);border-radius:10px;padding:10px 13px;font-size:14px;font-weight:600;background:#fff;color:var(--ink);max-width:360px;cursor:pointer}
+  .spacer{flex:1}
+  .save-ind{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;font-weight:600}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px var(--ok-bg)}
+
+  /* ===== status ===== */
+  .status{margin-top:13px;border-radius:11px;padding:12px 15px;font-weight:600;display:none;align-items:center;gap:10px;font-size:14px}
+  .status .ic{font-size:17px}
+  .status.show{display:flex}
+  .status.ok{background:var(--ok-bg);color:#0b7a53;border:1px solid var(--ok-br)}
+  .status.err{background:var(--err-bg);color:#b71c1c;border:1px solid var(--err-br)}
+  .status.warn{background:var(--warn-bg);color:#8a5b12;border:1px solid var(--warn-br)}
+  .status.info{background:var(--accent-bg);color:#1e40af;border:1px solid #cfdcfb}
+
+  /* ===== decision panel ===== */
+  .decide{background:#fff;border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow);display:none}
+  .decide.show{display:block;animation:pop .18s ease}
+  @keyframes pop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .decide.mism{border-left-color:var(--err)}
+  .decide.unk{border-left-color:var(--accent)}
+  .decide .q{font-weight:800;font-size:16.5px;margin-bottom:4px;letter-spacing:-.2px}
+  .decide .sub{color:var(--ink-2);font-size:13.5px;margin-bottom:13px}
+  .decide .sub code{background:var(--line-2);padding:2px 7px;border-radius:6px;font-weight:700;color:var(--ink);font-family:"Consolas",monospace}
+  .opts{display:flex;flex-direction:column;gap:9px}
+  .opt{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:13px 15px;cursor:pointer;text-align:left;transition:.14s}
+  .opt:hover{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.best{border-color:var(--accent);background:var(--accent-bg)}
+  .opt .code{font-family:"Consolas",monospace;font-weight:800;color:var(--ink);font-size:14px;min-width:64px;background:var(--line-2);padding:4px 8px;border-radius:7px;text-align:center}
+  .opt.best .code{background:var(--accent);color:#fff}
+  .opt .dsc{flex:1;font-weight:650;font-size:14px}
+  .opt .tag{font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);padding:3px 9px;border-radius:20px;letter-spacing:.4px}
+  .decide .altrow{display:flex;gap:9px;margin-top:13px;flex-wrap:wrap}
+  .unkform{display:flex;gap:9px;flex-wrap:wrap;margin-top:11px}
+  .unkform input{border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:14px;outline:none}
+  .unkform input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .unkform input.c{width:130px;font-family:"Consolas",monospace;font-weight:700;text-transform:uppercase}
+  .unkform input.d{flex:1;min-width:220px}
+
+  /* ===== products ===== */
+  .sec-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 2px 2px}
+  .sec-h h2{font-size:13px;margin:0;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:700}
+  .plist{display:flex;flex-direction:column;gap:11px}
+  .pcard{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-sm);overflow:hidden;transition:.14s}
+  .pcard.active-p{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.1),var(--shadow-sm)}
+  .phead{display:flex;align-items:center;gap:13px;padding:14px 16px;cursor:pointer}
+  .phead:hover{background:var(--line-2)}
+  .phead .chev{color:var(--muted);transition:.16s;font-size:12px}
+  .pcard.open .chev{transform:rotate(90deg)}
+  .phead .code{font-family:"Consolas",monospace;font-weight:800;color:var(--ink);font-size:13px;background:var(--line-2);padding:5px 9px;border-radius:8px}
+  .phead .dsc{flex:1;font-weight:700;font-size:14.5px;line-height:1.25;min-width:0}
+  .phead .qty{background:var(--black);color:#fff;font-weight:800;font-size:14px;padding:5px 14px;border-radius:22px;white-space:nowrap}
+  .pcard.active-p .phead .qty{background:var(--accent)}
+  .phead .liveflag{font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);padding:3px 9px;border-radius:20px;letter-spacing:.4px}
+  .pbody{display:none;border-top:1px solid var(--line);padding:8px 10px 12px;background:#fcfcfd}
+  .pcard.open .pbody{display:block}
+  .serwrap{display:flex;flex-wrap:wrap;gap:7px;padding:6px}
+  .ser{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 7px 6px 11px;font-family:"Consolas",monospace;font-size:13px;font-weight:600;box-shadow:var(--shadow-sm)}
+  .ser .num{color:var(--muted);font-size:11px}
+  .ser .del{width:19px;height:19px;border-radius:6px;border:none;background:var(--line-2);color:#9aa2b0;cursor:pointer;font-weight:800;line-height:1;font-size:12px;display:flex;align-items:center;justify-content:center}
+  .ser .del:hover{background:var(--err);color:#fff}
+  .prowtools{display:flex;gap:7px;padding:5px 8px 3px;justify-content:flex-end}
+  .empty{background:var(--card);border:1.5px dashed var(--line);border-radius:var(--r);padding:52px 22px;text-align:center;color:var(--muted);box-shadow:var(--shadow-sm)}
+  .empty .emoji{font-size:34px;margin-bottom:10px;opacity:.5}
+  .empty b{color:var(--ink);display:block;font-size:16px;margin-bottom:5px}
+
+  .grand{display:none;align-items:center;justify-content:space-between;background:var(--black);color:#fff;border-radius:var(--r);padding:16px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .grand::after{content:"";position:absolute;right:-20px;top:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,.4),transparent 70%)}
+  .grand .l{font-weight:700;font-size:13px;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.7);position:relative}
+  .grand .n{font-weight:800;font-size:22px;position:relative;letter-spacing:-.3px}
+  .grand .n b{color:#fff}
+
+  .footer-actions{display:flex;gap:11px;margin-top:4px;flex-wrap:wrap;align-items:center}
+
+  /* ===== mobile bottom bar ===== */
+  .mobilebar{display:none}
+
+  /* ===== botón catálogo (appbar) ===== */
+  .btn-cat{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 13px;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+  .btn-cat:hover{background:rgba(255,255,255,.18)}
+  .btn-cat svg{width:17px;height:17px}
+
+  /* ===== modal catálogo ===== */
+  .modal-ov{position:fixed;inset:0;background:rgba(17,19,24,.55);backdrop-filter:blur(3px);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:5vh 16px;overflow:auto}
+  .modal-ov.show{display:flex}
+  .modal{background:var(--card);border-radius:18px;box-shadow:var(--shadow-lg);width:100%;max-width:680px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;animation:pop .18s ease}
+  .modal-h{display:flex;align-items:center;justify-content:space-between;padding:17px 20px;border-bottom:1px solid var(--line)}
+  .modal-title b{font-size:18px;letter-spacing:-.2px}
+  .modal-title span{color:var(--muted);font-size:13px;margin-left:8px;font-weight:600}
+  .modal-x{border:none;background:var(--line-2);width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:14px;color:var(--ink-2);font-weight:700}
+  .modal-x:hover{background:var(--err);color:#fff}
+  .modal-add{padding:16px 20px;background:#f8fafc;border-bottom:1px solid var(--line)}
+  .modal-add-l{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:700;margin-bottom:9px}
+  .modal-add-row{display:flex;gap:9px;flex-wrap:wrap}
+  .modal-add-row .c{width:160px;font-family:"Consolas",monospace;font-weight:700;text-transform:uppercase}
+  .modal-add-row .d{flex:1;min-width:200px}
+  .modal-add-row input{border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:14px;outline:none}
+  .modal-add-row input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .modal-hint{font-size:12px;color:var(--muted);margin-top:9px}
+  .modal-search{padding:13px 20px 2px}
+  .modal-search input{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 13px;font-size:14px;outline:none}
+  .modal-search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .modal-body{padding:12px 20px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:9px}
+  .modal-foot{padding:13px 20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end}
+  .crow{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+  .crow:hover{background:var(--line-2)}
+  .crow.editing{gap:8px;flex-wrap:wrap;border-color:var(--accent);background:var(--accent-bg)}
+  .ccode{font-family:"Consolas",monospace;font-weight:800;color:var(--ink);font-size:13px;background:var(--line-2);padding:5px 9px;border-radius:8px;min-width:72px;text-align:center;flex-shrink:0}
+  .cinfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .cdesc{font-weight:700;font-size:14px;line-height:1.25}
+  .cmeta{font-size:12px;color:var(--muted)}
+  .cmeta b{color:var(--accent)}
+  .ctag{font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;letter-spacing:.3px;text-transform:uppercase;margin-left:4px;white-space:nowrap}
+  .ctag.base{background:var(--line-2);color:var(--muted)}
+  .ctag.new{background:var(--ok-bg);color:#0b7a53}
+  .ctag.edit{background:#fbf1dd;color:#b7791f}
+  .cacts{display:flex;gap:6px;flex-shrink:0}
+  .ccode-in{width:130px;font-family:"Consolas",monospace;font-weight:700;text-transform:uppercase;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:14px;outline:none}
+  .cdesc-in{flex:1;min-width:170px;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:14px;outline:none}
+  .ccode-in:focus,.cdesc-in:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12);background:#fff}
+  .cempty{text-align:center;color:var(--muted);padding:30px}
+
+  /* ===== responsive ===== */
+  @media(min-width:960px){
+    .layout{grid-template-columns:1.02fr .98fr;align-items:start}
+    .colA{position:sticky;top:88px}
+  }
+  @media(max-width:720px){
+    .kpis{grid-template-columns:repeat(2,1fr);gap:11px}
+    .kpi{padding:13px 13px 12px}
+    .kpi-n{font-size:26px}
+    .wrap{padding:16px 14px 90px}
+    .brand-txt span{display:none}
+    .fecha>span{display:none}
+    .appbar{padding:0 14px;height:60px}
+    .scanbox input{font-size:20px;padding:15px 16px 15px 48px}
+    .scanbox .baricon svg{width:22px;height:22px}
+    .scanbox .hint{display:none}
+    .footer-actions{display:none}
+    .mobilebar{display:flex;gap:10px;position:fixed;left:0;right:0;bottom:0;z-index:60;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom))}
+    .mobilebar .btn{flex:1;padding:13px}
+    .btn-cat span{display:none}
+    .btn-cat{padding:9px}
+    .modal-ov{padding:0}
+    .modal{max-width:100%;height:100vh;max-height:100vh;border-radius:0}
+    .modal-add-row .c{width:100%}
+    .cacts{width:100%;justify-content:flex-end}
+  }
+  @media(max-width:400px){
+    .kpi-n{font-size:23px}
+    .brand-txt b{font-size:15px}
+  }
+</style>
+</head>
+<body>
+<div class="appbar">
+  <div class="brand">
+    <span class="brand-txt"><b>Recepción de Mercadería</b></span>
+  </div>
+  <div class="ab-right">
+    <button class="btn-cat" id="btnCat" title="Catálogo de productos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.5 1.5 0 015.5 4H10a1 1 0 011 1v14a1 1 0 00-1-1H5.5A1.5 1.5 0 014 16.5v-11z"/><path d="M20 5.5A1.5 1.5 0 0018.5 4H14a1 1 0 00-1 1v14a1 1 0 011-1h4.5a1.5 1.5 0 001.5-1.5v-11z"/></svg>
+      <span>Catálogo</span>
+    </button>
+    <div class="fecha"><span>Fecha</span><input type="date" id="fecha"></div>
+    <img src="logo.png" class="logo" alt="DJI">
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="kpis">
+    <div class="kpi kpi-dark">
+      <div class="kpi-h"><span class="kpi-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5l8 4.5 8-4.5"/><path d="M12 12v9"/></svg></span></div>
+      <div class="kpi-n" id="st-art">0</div>
+      <div class="kpi-l">Artículos contados</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-h"><span class="kpi-ic blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg></span></div>
+      <div class="kpi-n" id="st-prod">0</div>
+      <div class="kpi-l">Productos distintos</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-h"><span class="kpi-ic amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3 8l9-5 9 5v8l-9 5-9-5V8z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg></span></div>
+      <div class="kpi-n code" id="st-caja">—</div>
+      <div class="kpi-l">Caja / producto activo</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-h"><span class="kpi-ic green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></div>
+      <div class="kpi-n small" id="st-last">Listo para escanear</div>
+      <div class="kpi-l">Último escaneo</div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="colA">
+      <!-- decision panel -->
+      <div class="decide" id="decide"></div>
+
+      <!-- scan station -->
+      <div class="scan card">
+        <div class="scan-head">
+          <div class="active">
+            <div class="k">Caja abierta / producto activo</div>
+            <div class="v" id="activeView"><span class="none">Ninguna — escaneá la primera serie para detectar</span></div>
+          </div>
+          <button class="btn dark" id="btnNueva"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nueva caja</button>
+        </div>
+        <form id="scanForm" autocomplete="off">
+          <div class="scanbox">
+            <span class="baricon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6v12M8 6v12M11 6v12M14 6v12M17 6v12M20 6v12"/></svg></span>
+            <input id="scanInput" placeholder="Escaneá aquí la serie…" spellcheck="false" autocomplete="off">
+            <span class="hint">Enter ↵</span>
+          </div>
+        </form>
+        <div class="tools">
+          <select class="msel" id="manualSel"><option value="">— Fijar producto manualmente —</option></select>
+          <span class="spacer"></span>
+          <span class="save-ind"><span class="dot"></span><span id="saveTxt">Guardado automático</span></span>
+        </div>
+        <div class="status" id="status"><span class="ic"></span><span class="msg"></span></div>
+      </div>
+    </div>
+
+    <div class="colB">
+      <div class="sec-h">
+        <h2>Productos escaneados</h2>
+        <button class="btn ghost sm" id="btnExpand">Expandir / contraer</button>
+      </div>
+      <div class="plist" id="plist"></div>
+
+      <div class="grand" id="grand">
+        <span class="l">Total general</span>
+        <span class="n"><b id="gtot">0</b> artículos · <b id="gprod">0</b> productos</span>
+      </div>
+
+      <div class="footer-actions">
+        <button class="btn ok" id="btnExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Exportar a Excel</button>
+        <span class="spacer"></span>
+        <button class="btn danger sm" id="btnClear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Limpiar todo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal: Gestor de catálogo ===== -->
+<div class="modal-ov" id="catModal">
+  <div class="modal">
+    <div class="modal-h">
+      <div class="modal-title"><b>Catálogo de productos</b><span id="catCount"></span></div>
+      <button class="modal-x" onclick="closeCatalog()" title="Cerrar">✕</button>
+    </div>
+    <div class="modal-add">
+      <div class="modal-add-l">Agregar producto nuevo</div>
+      <div class="modal-add-row">
+        <input id="npCode" class="c" placeholder="Código (ej. D00099)" maxlength="14" spellcheck="false">
+        <input id="npDesc" class="d" placeholder="Nombre del producto" spellcheck="false">
+        <button class="btn primary" onclick="onAddProduct()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Agregar
+        </button>
+      </div>
+      <div class="modal-hint">El producto nuevo aprende sus series a medida que las vas escaneando.</div>
+    </div>
+    <div class="modal-search"><input id="catSearch" placeholder="Buscar por código o nombre…" oninput="renderCatalog()" spellcheck="false"></div>
+    <div class="modal-body" id="catList"></div>
+    <div class="modal-foot"><button class="btn dark" onclick="closeCatalog()">Cerrar</button></div>
+  </div>
+</div>
+
+<div class="mobilebar">
+  <button class="btn dark" onclick="document.getElementById('btnNueva').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nueva caja</button>
+  <button class="btn ok" onclick="document.getElementById('btnExport').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Exportar</button>
+</div>
+
+<script src="lib/exceljs.min.js"></script>
+<script src="catalog.js"></script>
+<script>
+/* ============================================================
+   Recepción de Mercadería DJI — motor de escaneo y detección
+   ============================================================ */
+"use strict";
+
+// ---------- estado ----------
+const LS_SESSION = "recepcion_dji_session_v1";
+const LS_CATALOG = "recepcion_dji_catalogo_extra_v1"; // productos aprendidos
+
+let PRODUCTS = [];          // catálogo: {codigo, descripcion, serials:[...ref]}
+let byCode = {};            // codigo -> product
+let families = {};          // codigo -> [codigos hermanos confusables incluido él]
+let pref8index = {};        // codigo -> Set de prefijos de 8
+
+let session = {
+  fecha: todayISO(),
+  order: [],                 // códigos en orden de aparición
+  items: {},                 // codigo -> {codigo, descripcion, serials:[...] }
+  serialMap: {}              // serie -> codigo (para duplicados)
+};
+let activeCode = null;
+let pending = null;          // { serial, res } cuando esperamos una decisión
+let openState = {};          // codigo -> abierto?
+let catDelta = null;         // cambios del catálogo: {overrides, added, learned}
+let catEditing = null;       // codigo en edición dentro del gestor de catálogo
+
+// ---------- utilidades ----------
+function todayISO(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function fmtFecha(iso){const [y,m,d]=iso.split("-");return d+"/"+m+"/"+y;}
+function norm(s){return (s||"").trim().toUpperCase().replace(/\s+/g,"");}
+function commonPrefix(a,b){let i=0,n=Math.min(a.length,b.length);while(i<n&&a[i]===b[i])i++;return i;}
+function esc(s){return (s+"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+// ---------- carga del catálogo + familias ----------
+function saveCatalogDelta(){ try{ localStorage.setItem(LS_CATALOG,JSON.stringify(catDelta)); }catch(e){} }
+
+function loadCatalog(){
+  // cargar / migrar los cambios del catálogo
+  catDelta={v:2,overrides:{},added:[],learned:{}};
+  try{
+    const raw=JSON.parse(localStorage.getItem(LS_CATALOG)||"null");
+    if(Array.isArray(raw)){ // formato viejo (array) -> migrar
+      raw.forEach(e=>{
+        const isBase=(window.CATALOGO_BASE||[]).some(b=>b.codigo===e.codigo);
+        if(!isBase && !catDelta.added.some(a=>a.codigo===e.codigo)) catDelta.added.push({codigo:e.codigo,descripcion:e.descripcion||e.codigo});
+        (e.serials||[]).forEach(s=>{ catDelta.learned[e.codigo]=catDelta.learned[e.codigo]||[]; if(!catDelta.learned[e.codigo].includes(s)) catDelta.learned[e.codigo].push(s); });
+      });
+      saveCatalogDelta();
+    } else if(raw && raw.v===2){ catDelta={v:2,overrides:raw.overrides||{},added:raw.added||[],learned:raw.learned||{}}; }
+  }catch(e){}
+  // construir catálogo: base (con overrides) + agregados
+  PRODUCTS=[];
+  (window.CATALOGO_BASE||[]).forEach(b=>{
+    const ov=catDelta.overrides[b.codigo];
+    PRODUCTS.push({origCodigo:b.codigo,base:true,codigo:ov?ov.codigo:b.codigo,descripcion:ov?ov.descripcion:b.descripcion,serials:b.serials.slice()});
+  });
+  catDelta.added.forEach(a=>{
+    if(!PRODUCTS.some(p=>p.codigo===a.codigo)) PRODUCTS.push({origCodigo:null,base:false,codigo:a.codigo,descripcion:a.descripcion,serials:[]});
+  });
+  // aplicar series aprendidas
+  PRODUCTS.forEach(p=>{ const ls=catDelta.learned[p.codigo]; if(ls) ls.forEach(s=>{ if(!p.serials.includes(s)) p.serials.push(s); }); });
+  byCode={}; pref8index={};
+  PRODUCTS.forEach(p=>{
+    byCode[p.codigo]=p;
+    const set=new Set(); p.serials.forEach(s=>{ if(s.length>=8) set.add(s.slice(0,8)); });
+    pref8index[p.codigo]=set;
+  });
+  computeFamilies();
+  buildManualSelect();
+}
+
+function reinforceFromSession(){
+  session.order.forEach(c=>{ if(byCode[c]&&session.items[c]) session.items[c].serials.forEach(s=>{ if(!byCode[c].serials.includes(s)){ byCode[c].serials.push(s); if(s.length>=8) pref8index[c].add(s.slice(0,8)); } }); });
+  computeFamilies();
+}
+function rebuildCatalog(){ loadCatalog(); reinforceFromSession(); renderAll(); }
+
+// ---------- alta / edición / borrado de productos ----------
+function addProductCatalog(codigo,desc){
+  codigo=norm(codigo); desc=(desc||"").trim();
+  if(!codigo){ alert("Escribí un código para el producto."); return false; }
+  if(!desc){ alert("Escribí el nombre del producto."); return false; }
+  if(byCode[codigo]){ alert("Ya existe un producto con el código "+codigo+"."); return false; }
+  catDelta.added.push({codigo,descripcion:desc});
+  saveCatalogDelta(); rebuildCatalog();
+  return true;
+}
+function editProductCatalog(cur,nc,nd){
+  nc=norm(nc); nd=(nd||"").trim();
+  if(!nc){ alert("El código no puede quedar vacío."); return false; }
+  if(!nd){ alert("El nombre no puede quedar vacío."); return false; }
+  if(nc!==cur && byCode[nc]){ alert("Ya existe otro producto con el código "+nc+"."); return false; }
+  const p=byCode[cur]; if(!p) return false;
+  if(p.base){ catDelta.overrides[p.origCodigo]={codigo:nc,descripcion:nd}; }
+  else { const a=catDelta.added.find(x=>x.codigo===cur); if(a){ a.codigo=nc; a.descripcion=nd; } }
+  if(nc!==cur && catDelta.learned[cur]){ catDelta.learned[nc]=(catDelta.learned[nc]||[]).concat(catDelta.learned[cur]); delete catDelta.learned[cur]; }
+  // migrar lo ya escaneado en la sesión
+  if(session.items[cur]){
+    const it=session.items[cur]; it.codigo=nc; it.descripcion=nd;
+    if(nc!==cur){
+      session.items[nc]=it; delete session.items[cur];
+      session.order=session.order.map(c=>c===cur?nc:c);
+      Object.keys(session.serialMap).forEach(s=>{ if(session.serialMap[s]===cur) session.serialMap[s]=nc; });
+      if(openState[cur]!==undefined){ openState[nc]=openState[cur]; delete openState[cur]; }
+      if(activeCode===cur) activeCode=nc;
+    }
+  } else if(activeCode===cur && nc!==cur){ activeCode=nc; }
+  saveCatalogDelta(); save(); rebuildCatalog();
+  const sel=document.getElementById("manualSel"); if(sel) sel.value=activeCode||"";
+  return true;
+}
+function deleteProductCatalog(codigo){
+  const p=byCode[codigo]; if(!p) return;
+  if(p.base){
+    // Restablecer un producto base a su código/nombre originales (migra de vuelta lo escaneado)
+    if(!catDelta.overrides[p.origCodigo]){ alert("Los productos base no se pueden eliminar, solo editar."); return; }
+    if(!confirm("¿Restablecer "+p.origCodigo+" a su código y nombre originales?")) return;
+    const orig=(window.CATALOGO_BASE||[]).find(b=>b.codigo===p.origCodigo);
+    const cur=p.codigo;
+    delete catDelta.overrides[p.origCodigo];
+    if(cur!==p.origCodigo && catDelta.learned[cur]){ catDelta.learned[p.origCodigo]=(catDelta.learned[p.origCodigo]||[]).concat(catDelta.learned[cur]); delete catDelta.learned[cur]; }
+    if(session.items[cur] && cur!==p.origCodigo){ const it=session.items[cur]; it.codigo=p.origCodigo; it.descripcion=orig.descripcion; session.items[p.origCodigo]=it; delete session.items[cur]; session.order=session.order.map(c=>c===cur?p.origCodigo:c); Object.keys(session.serialMap).forEach(s=>{ if(session.serialMap[s]===cur) session.serialMap[s]=p.origCodigo; }); if(openState[cur]!==undefined){ openState[p.origCodigo]=openState[cur]; delete openState[cur]; } if(activeCode===cur) activeCode=p.origCodigo; }
+    else if(session.items[cur]){ session.items[cur].descripcion=orig.descripcion; }
+    saveCatalogDelta(); save(); rebuildCatalog();
+    const sel=document.getElementById("manualSel"); if(sel) sel.value=activeCode||"";
+  } else {
+    // Eliminar un producto agregado (bloqueado si tiene series escaneadas en la recepción actual)
+    if(session.items[codigo] && session.items[codigo].serials.length){
+      alert("Este producto tiene "+session.items[codigo].serials.length+" serie(s) escaneadas en la recepción actual. Quitalas primero (desde la lista de Productos escaneados) para poder eliminarlo del catálogo.");
+      return;
+    }
+    if(!confirm("¿Eliminar el producto "+codigo+" del catálogo? (No borra recepciones ya exportadas.)")) return;
+    catDelta.added=catDelta.added.filter(a=>a.codigo!==codigo);
+    delete catDelta.learned[codigo];
+    saveCatalogDelta(); rebuildCatalog();
+  }
+}
+
+function computeFamilies(){
+  // union-find: dos productos son "hermanos confusables" si comparten algún prefijo de 8
+  const parent={}; PRODUCTS.forEach(p=>parent[p.codigo]=p.codigo);
+  function find(x){while(parent[x]!==x){parent[x]=parent[parent[x]];x=parent[x];}return x;}
+  function union(a,b){parent[find(a)]=find(b);}
+  for(let i=0;i<PRODUCTS.length;i++)for(let j=i+1;j<PRODUCTS.length;j++){
+    const A=pref8index[PRODUCTS[i].codigo], B=pref8index[PRODUCTS[j].codigo];
+    let hit=false; for(const x of A){ if(B.has(x)){hit=true;break;} }
+    if(hit) union(PRODUCTS[i].codigo,PRODUCTS[j].codigo);
+  }
+  const groups={};
+  PRODUCTS.forEach(p=>{const r=find(p.codigo);(groups[r]=groups[r]||[]).push(p.codigo);});
+  families={};
+  PRODUCTS.forEach(p=>{ families[p.codigo]=groups[find(p.codigo)].slice(); });
+}
+
+// ---------- clasificador ----------
+function scoreFor(codigo, serial){
+  let best=0; const s=byCode[codigo].serials;
+  for(let i=0;i<s.length;i++){const c=commonPrefix(serial,s[i]); if(c>best){best=c; if(best===serial.length)break;}}
+  return best;
+}
+function classify(serial){
+  let scored=PRODUCTS.map(p=>({codigo:p.codigo,score:scoreFor(p.codigo,serial)}));
+  scored.sort((a,b)=>b.score-a.score);
+  const best=scored[0];
+  if(!best || best.score<5) return {status:"desconocido",best:null,candidates:[]};
+  const fam=families[best.codigo]||[best.codigo];
+  let cands=fam.map(c=>({codigo:c,score:scoreFor(c,serial)})).sort((a,b)=>b.score-a.score);
+  const status = cands.length>1 ? "ambiguo" : (best.score>=8 ? "seguro" : "probable");
+  return {status,best,candidates:cands};
+}
+
+// ============================================================
+//  ESCANEO
+// ============================================================
+function handleScan(raw){
+  const serial=norm(raw);
+  if(!serial) return;
+  clearDecide();
+
+  // 1) duplicado
+  if(session.serialMap[serial]){
+    const c=session.serialMap[serial];
+    beep(false);
+    setStatus("err","⛔","Serie repetida: "+serial+" — ya estaba en "+shortDesc(c)+" ("+c+"). No se agregó.");
+    flashLast("Repetida ✕","var(--err)");
+    return;
+  }
+
+  const res=classify(serial);
+
+  // 2) sin caja activa → hay que decidir/confirmar producto
+  if(!activeCode){
+    if(res.status==="desconocido"){ askUnknown(serial); return; }
+    if(res.status==="ambiguo"){ askAmbiguous(serial,res); return; }
+    // seguro / probable → abrir caja con el mejor y confirmar de forma no bloqueante
+    setActive(res.best.codigo);
+    addSerial(serial,activeCode,true);
+    showBoxDetected(res.best.codigo,res.status);
+    return;
+  }
+
+  // 3) con caja activa
+  if(res.status==="desconocido"){
+    // serie rara pero seguimos en la misma caja (probable serie nueva del mismo producto)
+    addSerial(serial,activeCode,true);
+    setStatus("warn","➕","Serie poco común, agregada a "+shortDesc(activeCode)+". Verificá si es de esta caja.");
+    return;
+  }
+  const activeInCands = res.candidates.some(c=>c.codigo===activeCode);
+  const bestIsActive = res.best.codigo===activeCode;
+  if(bestIsActive || activeInCands){
+    addSerial(serial,activeCode,true);
+    return;
+  }
+  // 4) mismatch: parece de otro producto distinto al activo
+  askMismatch(serial,res);
+}
+
+function addSerial(serial,codigo,quiet){
+  if(!session.items[codigo]){
+    session.items[codigo]={codigo,descripcion:byCode[codigo]?byCode[codigo].descripcion:codigo,serials:[]};
+    if(!session.order.includes(codigo)) session.order.push(codigo);
+    openState[codigo]=true;
+  }
+  session.items[codigo].serials.push(serial);
+  session.serialMap[serial]=codigo;
+  // el producto aprende esta serie (mejora la detección futura, se guarda en el catálogo)
+  learn(codigo,serial);
+  save(); renderAll();
+  if(quiet){
+    beep(true);
+    const n=session.items[codigo].serials.length;
+    setStatus("ok","✔","Agregada a "+shortDesc(codigo)+" — serie "+serial+"  ·  llevás "+n+" en esta caja.");
+    flashLast(serial,"var(--ok)");
+  }
+}
+
+function setActive(codigo){
+  activeCode=codigo;
+  document.getElementById("manualSel").value=codigo;
+  renderActive();
+}
+
+// ============================================================
+//  PANELES DE DECISIÓN
+// ============================================================
+function showBoxDetected(codigo,status){
+  const p=byCode[codigo];
+  beep(true);
+  flashLast("Caja detectada","var(--ok)");
+  const d=document.getElementById("decide");
+  d.className="decide unk show";
+  d.innerHTML=`
+    <div class="q">📦 Caja detectada: ${esc(p.descripcion)}</div>
+    <div class="sub">Código <code>${codigo}</code>. Todas las series que escanees ahora se sumarán aquí.
+      ${status==="probable"?"<b style='color:var(--warn)'> (coincidencia parcial — confirmá que es correcto)</b>":""}</div>
+    <div class="altrow">
+      <button class="btn ok sm" onclick="clearDecide()">✔ Sí, es esta caja</button>
+      <button class="btn ghost sm" onclick="openManualPick()">↺ No, elegir otro producto</button>
+    </div>`;
+  focusScan();
+}
+
+function askAmbiguous(serial,res){
+  pending={serial,res};
+  const d=document.getElementById("decide");
+  d.className="decide show";
+  let opts=res.candidates.map((c,i)=>{
+    const p=byCode[c.codigo];
+    return `<button class="opt ${i===0?'best':''}" onclick="resolvePick('${c.codigo}')">
+      <span class="code">${c.codigo}</span><span class="dsc">${esc(p.descripcion)}</span>
+      ${i===0?'<span class="tag">SUGERIDO</span>':''}</button>`;
+  }).join("");
+  d.innerHTML=`
+    <div class="q">🤔 ¿Cuál de estos es? Son productos hermanos</div>
+    <div class="sub">La serie <code>${serial}</code> pertenece a esta familia, pero no se puede distinguir sola. Elegí según la etiqueta de la caja:</div>
+    <div class="opts">${opts}</div>
+    <div class="altrow"><button class="btn ghost sm" onclick="openManualPick()">Ver todos los productos…</button></div>`;
+  flashLast("Confirmá producto","var(--warn)"); beep(false); focusScan();
+}
+function resolvePick(codigo){
+  if(!pending) return;
+  const serial=pending.serial; pending=null;
+  setActive(codigo);
+  addSerial(serial,codigo,true);
+  clearDecide();
+}
+
+function askMismatch(serial,res){
+  pending={serial,res};
+  const best=byCode[res.best.codigo];
+  const d=document.getElementById("decide");
+  d.className="decide mism show";
+  d.innerHTML=`
+    <div class="q">⚠️ ¿Serie de otra caja?</div>
+    <div class="sub">Estás en <code>${activeCode} · ${esc(shortDesc(activeCode))}</code> pero <code>${serial}</code>
+      parece ser de <b>${esc(best.descripcion)}</b> (${res.best.codigo}).</div>
+    <div class="altrow">
+      <button class="btn dark sm" onclick="mismSwitch('${res.best.codigo}')">📦 Cambiar caja a ${res.best.codigo}</button>
+      <button class="btn ghost sm" onclick="mismKeep()">Agregar igual a ${activeCode}</button>
+      <button class="btn danger sm" onclick="clearDecide();focusScan()">Ignorar serie</button>
+    </div>`;
+  beep(false); flashLast("Revisar serie","var(--warn)"); focusScan();
+}
+function mismSwitch(codigo){ if(!pending)return; const s=pending.serial;pending=null;setActive(codigo);addSerial(s,codigo,true);clearDecide(); }
+function mismKeep(){ if(!pending)return; const s=pending.serial;pending=null;addSerial(s,activeCode,true);clearDecide(); }
+
+function askUnknown(serial){
+  pending={serial};
+  const d=document.getElementById("decide");
+  d.className="decide unk show";
+  let opts=PRODUCTS.map(p=>`<option value="${p.codigo}">${p.codigo} · ${esc(p.descripcion)}</option>`).join("");
+  d.innerHTML=`
+    <div class="q">❓ Serie no reconocida</div>
+    <div class="sub">No pude identificar <code>${serial}</code>. Asignala a un producto del catálogo o registrá uno nuevo:</div>
+    <div class="unkform">
+      <select class="msel" id="unkSel" style="flex:1;min-width:240px">${opts}</select>
+      <button class="btn primary sm" onclick="unkAssignExisting()">Asignar</button>
+    </div>
+    <div class="sub" style="margin:12px 0 0">…o producto nuevo:</div>
+    <div class="unkform">
+      <input class="c" id="unkCode" placeholder="Código" maxlength="12">
+      <input class="d" id="unkDesc" placeholder="Descripción del producto">
+      <button class="btn dark sm" onclick="unkAssignNew()">Crear y asignar</button>
+    </div>
+    <div class="altrow"><button class="btn ghost sm" onclick="clearDecide();focusScan()">Cancelar</button></div>`;
+  beep(false); flashLast("Serie desconocida","var(--warn)"); focusScan();
+}
+function unkAssignExisting(){
+  const codigo=document.getElementById("unkSel").value; if(!codigo||!pending)return;
+  const s=pending.serial; pending=null;
+  setActive(codigo); addSerial(s,codigo,true); clearDecide();
+}
+function unkAssignNew(){
+  const codigo=norm(document.getElementById("unkCode").value);
+  const desc=document.getElementById("unkDesc").value.trim();
+  if(!codigo){alert("Escribí un código");return;}
+  if(!desc){alert("Escribí la descripción");return;}
+  if(byCode[codigo]){ alert("Ese código ya existe en el catálogo. Elegilo de la lista de arriba."); return; }
+  if(!pending)return;
+  const s=pending.serial; pending=null;
+  addProductCatalog(codigo,desc);
+  setActive(codigo); addSerial(s,codigo,true); clearDecide();
+}
+function learn(codigo,serial){
+  const p=byCode[codigo]; if(!p||!serial) return;
+  if(!p.serials.includes(serial)){ p.serials.push(serial); if(serial.length>=8) pref8index[codigo].add(serial.slice(0,8)); }
+  if(!catDelta) return;
+  if(!catDelta.learned[codigo]) catDelta.learned[codigo]=[];
+  if(!catDelta.learned[codigo].includes(serial)){ catDelta.learned[codigo].push(serial); saveCatalogDelta(); }
+}
+
+function clearDecide(){ const d=document.getElementById("decide"); d.className="decide"; d.innerHTML=""; }
+function openManualPick(){ clearDecide(); const sel=document.getElementById("manualSel"); sel.focus(); sel.size=Math.min(10,sel.options.length); setStatus("info","👉","Elegí el producto en la lista de arriba."); }
+
+// ============================================================
+//  RENDER
+// ============================================================
+function shortDesc(codigo){ const p=byCode[codigo]; if(!p)return codigo; return p.descripcion.length>42?p.descripcion.slice(0,42)+"…":p.descripcion; }
+
+function renderActive(){
+  const v=document.getElementById("activeView");
+  if(!activeCode){ v.innerHTML=`<span class="none">Ninguna — escaneá la primera serie para detectar</span>`; document.getElementById("st-caja").textContent="—"; return; }
+  const p=byCode[activeCode]; const n=session.items[activeCode]?session.items[activeCode].serials.length:0;
+  v.innerHTML=`<span class="badge">${activeCode}</span> ${esc(p.descripcion)} <span class="cnt">${n} uds</span>`;
+  document.getElementById("st-caja").textContent=activeCode;
+  document.getElementById("st-caja").style.fontSize="20px";
+}
+
+function renderAll(){
+  renderActive();
+  const list=document.getElementById("plist");
+  if(session.order.length===0){
+    list.innerHTML=`<div class="empty"><b>Todavía no escaneás nada</b>Poné el cursor en la caja de escaneo y dispará la pistola. El programa detecta el producto solo.</div>`;
+    document.getElementById("grand").style.display="none";
+  }else{
+    list.innerHTML=session.order.map(code=>{
+      const it=session.items[code]; if(!it)return"";
+      const open=openState[code]?"open":""; const act=code===activeCode?"active-p":"";
+      const sers=it.serials.map((s,i)=>`<span class="ser"><span class="num">${i+1}.</span>${s}<button class="del" title="Quitar" onclick="delSerial('${code}',${i})">✕</button></span>`).join("");
+      return `<div class="pcard ${open} ${act}">
+        <div class="phead" onclick="toggleCard('${code}')">
+          <span class="chev">▶</span>
+          <span class="code">${code}</span>
+          <span class="dsc">${esc(it.descripcion)}</span>
+          ${code===activeCode?'<span class="liveflag">ACTIVA</span>':''}
+          <span class="qty">${it.serials.length}</span>
+        </div>
+        <div class="pbody">
+          <div class="prowtools">
+            <button class="btn ghost sm" onclick="setActiveManual('${code}')">Reabrir esta caja</button>
+            <button class="btn danger sm" onclick="delProduct('${code}')">Eliminar producto</button>
+          </div>
+          <div class="serwrap">${sers}</div>
+        </div>
+      </div>`;
+    }).join("");
+    let tot=0; session.order.forEach(c=>{ if(session.items[c])tot+=session.items[c].serials.length; });
+    document.getElementById("grand").style.display="flex";
+    document.getElementById("gtot").textContent=tot;
+    document.getElementById("gprod").textContent=session.order.filter(c=>session.items[c]&&session.items[c].serials.length>0).length;
+  }
+  // stats
+  let art=0; session.order.forEach(c=>{ if(session.items[c])art+=session.items[c].serials.length; });
+  document.getElementById("st-art").textContent=art;
+  document.getElementById("st-prod").textContent=session.order.filter(c=>session.items[c]&&session.items[c].serials.length>0).length;
+}
+
+function setStatus(type,ic,msg){ const s=document.getElementById("status"); s.className="status show "+type; s.querySelector(".ic").textContent=ic; s.querySelector(".msg").textContent=msg; }
+function flashLast(txt,color){ const e=document.getElementById("st-last"); e.textContent=txt; e.style.color=color; }
+
+function toggleCard(code){ openState[code]=!openState[code]; renderAll(); }
+function delSerial(code,i){
+  const it=session.items[code]; if(!it)return;
+  const s=it.serials[i]; it.serials.splice(i,1); delete session.serialMap[s];
+  if(it.serials.length===0){ delete session.items[code]; session.order=session.order.filter(c=>c!==code); if(activeCode===code)activeCode=null; }
+  save(); renderAll(); setStatus("info","↩","Serie "+s+" eliminada."); focusScan();
+}
+function delProduct(code){
+  const it=session.items[code]; if(!it)return;
+  if(!confirm("¿Eliminar "+code+" y sus "+it.serials.length+" series de esta recepción?"))return;
+  it.serials.forEach(s=>delete session.serialMap[s]);
+  delete session.items[code]; session.order=session.order.filter(c=>c!==code);
+  if(activeCode===code)activeCode=null;
+  save(); renderAll(); focusScan();
+}
+function setActiveManual(code){ setActive(code); clearDecide(); setStatus("info","📦","Caja activa: "+shortDesc(code)+". Escaneá sus series."); focusScan(); }
+
+function buildManualSelect(){
+  const sel=document.getElementById("manualSel");
+  const cur=sel.value;
+  sel.innerHTML=`<option value="">— Fijar producto manualmente —</option>`+
+    PRODUCTS.slice().sort((a,b)=>a.codigo.localeCompare(b.codigo)).map(p=>`<option value="${p.codigo}">${p.codigo} · ${p.descripcion}</option>`).join("");
+  sel.value=cur;
+}
+
+// ============================================================
+//  GESTOR DE CATÁLOGO (agregar / editar / eliminar productos)
+// ============================================================
+function openCatalog(){ catEditing=null; const s=document.getElementById("catSearch"); if(s)s.value=""; document.getElementById("catModal").classList.add("show"); renderCatalog(); }
+function closeCatalog(){ document.getElementById("catModal").classList.remove("show"); catEditing=null; focusScan(); }
+function onAddProduct(){
+  const c=document.getElementById("npCode").value, d=document.getElementById("npDesc").value;
+  if(addProductCatalog(c,d)){ document.getElementById("npCode").value=""; document.getElementById("npDesc").value=""; renderCatalog(); document.getElementById("npCode").focus(); }
+}
+function startEdit(c){ catEditing=c; renderCatalog(); const i=document.getElementById("edDesc"); if(i)i.focus(); }
+function saveEdit(cur){
+  const nc=document.getElementById("edCode").value, nd=document.getElementById("edDesc").value;
+  if(editProductCatalog(cur,nc,nd)){ catEditing=null; renderCatalog(); }
+}
+function renderCatalog(){
+  const q=norm((document.getElementById("catSearch")||{}).value||"");
+  const list=PRODUCTS.slice().sort((a,b)=>a.codigo.localeCompare(b.codigo))
+    .filter(p=> !q || p.codigo.includes(q) || p.descripcion.toUpperCase().replace(/\s/g,"").includes(q));
+  const rows=list.map(p=>{
+    const scanned=session.items[p.codigo]?session.items[p.codigo].serials.length:0;
+    const tag = p.base ? (catDelta.overrides[p.origCodigo]?'<span class="ctag edit">editado</span>':'<span class="ctag base">base</span>')
+                       : '<span class="ctag new">agregado</span>';
+    if(catEditing===p.codigo){
+      return `<div class="crow editing">
+        <input class="ccode-in" id="edCode" value="${esc(p.codigo)}" maxlength="14" spellcheck="false">
+        <input class="cdesc-in" id="edDesc" value="${esc(p.descripcion)}" spellcheck="false">
+        <div class="cacts">
+          <button class="btn primary sm" onclick="saveEdit('${p.codigo}')">Guardar</button>
+          <button class="btn ghost sm" onclick="catEditing=null;renderCatalog()">Cancelar</button>
+        </div></div>`;
+    }
+    let del="";
+    if(p.base){ if(catDelta.overrides[p.origCodigo]) del=`<button class="btn ghost sm" onclick="deleteProductCatalog('${p.codigo}')">Restablecer</button>`; }
+    else del=`<button class="btn danger sm" onclick="deleteProductCatalog('${p.codigo}')">Eliminar</button>`;
+    return `<div class="crow">
+      <span class="ccode">${esc(p.codigo)}</span>
+      <span class="cinfo"><span class="cdesc">${esc(p.descripcion)}</span>
+        <span class="cmeta">${p.serials.length} series ref.${scanned?` · <b>${scanned}</b> escaneadas`:''} ${tag}</span></span>
+      <span class="cacts"><button class="btn ghost sm" onclick="startEdit('${p.codigo}')">Editar</button>${del}</span>
+    </div>`;
+  }).join("");
+  document.getElementById("catList").innerHTML=rows||`<div class="cempty">Sin resultados para “${esc(q)}”.</div>`;
+  document.getElementById("catCount").textContent=PRODUCTS.length+" productos";
+}
+
+// ============================================================
+//  PERSISTENCIA
+// ============================================================
+function save(){ try{ localStorage.setItem(LS_SESSION,JSON.stringify({fecha:session.fecha,order:session.order,items:session.items,activeCode})); }catch(e){} }
+function load(){
+  try{
+    const d=JSON.parse(localStorage.getItem(LS_SESSION)||"null");
+    if(d){
+      session.fecha=d.fecha||todayISO();
+      session.order=d.order||[]; session.items=d.items||{}; session.serialMap={};
+      session.order.forEach(c=>{ (session.items[c]?session.items[c].serials:[]).forEach(s=>session.serialMap[s]=c); openState[c]=false; });
+      activeCode=d.activeCode||null;
+      // reforzar aprendizaje de series de la sesión sobre el catálogo
+      session.order.forEach(c=>{ if(byCode[c]) (session.items[c].serials||[]).forEach(s=>{ if(!byCode[c].serials.includes(s)){byCode[c].serials.push(s); if(s.length>=8)pref8index[c].add(s.slice(0,8));} }); });
+    }
+  }catch(e){}
+  document.getElementById("fecha").value=session.fecha;
+}
+
+// ============================================================
+//  EXPORTAR A EXCEL  (mismo diseño DJI, un solo cuadro)
+// ============================================================
+async function exportExcel(){
+  if(session.order.length===0){ alert("No hay nada escaneado todavía."); return; }
+  const DARK="FF44546A", WHITE="FFFFFFFF", INK="FF4A4F59", SUBBG="FFEDEFF3", GRIDBG="FFF7F8FA";
+  const wb=new ExcelJS.Workbook();
+  const ws=wb.addWorksheet("Recepción",{views:[{showGridLines:false}]});
+  ws.columns=[{width:3},{width:14},{width:62},{width:12},{width:26},{width:3}];
+  const B=2,C=3,D=4,E=5; // columnas Código/Descripción/Cantidad/Series en B..E
+
+  const thin={style:"thin",color:{argb:"FFB9C0CC"}};
+  const border={top:thin,left:thin,bottom:thin,right:thin};
+  function bandCell(cell){ cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:DARK}}; cell.font={name:"Calibri",size:12,bold:true,color:{argb:WHITE}}; }
+
+  // --- franja superior con logo (filas 1-3) ---
+  ws.mergeCells(1,B,3,E);
+  bandCell(ws.getCell(1,B));
+  for(let r=1;r<=3;r++)for(let c=B;c<=E;c++){ws.getCell(r,c).fill={type:"pattern",pattern:"solid",fgColor:{argb:DARK}};}
+  try{
+    const imgId=wb.addImage({base64:window.DJI_LOGO_B64,extension:"png"});
+    ws.addImage(imgId,{tl:{col:E-0.05,row:0.25},ext:{width:95,height:52},editAs:"oneCell"});
+  }catch(e){}
+
+  // --- fila Fecha (fila 4) ---
+  const fr=4;
+  ws.mergeCells(fr,B,fr,C);
+  const fc=ws.getCell(fr,B); fc.value="Fecha:   "+fmtFecha(session.fecha);
+  fc.fill={type:"pattern",pattern:"solid",fgColor:{argb:DARK}}; fc.font={name:"Calibri",size:12,bold:true,color:{argb:WHITE}};
+  fc.alignment={vertical:"middle",horizontal:"left",indent:1};
+  ws.getCell(fr,D).fill={type:"pattern",pattern:"solid",fgColor:{argb:DARK}};
+  ws.getCell(fr,E).fill={type:"pattern",pattern:"solid",fgColor:{argb:DARK}};
+  ws.getRow(fr).height=20;
+
+  // --- encabezado de columnas (fila 5) ---
+  const hr=5; const heads={[B]:"Código",[C]:"Descripción",[D]:"Cantidad",[E]:"Series"};
+  [B,C,D,E].forEach(c=>{ const cell=ws.getCell(hr,c); cell.value=heads[c]; bandCell(cell); cell.alignment={vertical:"middle",horizontal:c===C?"left":"center",indent:c===C?1:0}; cell.border=border; });
+  ws.getRow(hr).height=20;
+
+  // --- filas de datos ---
+  let r=hr+1, grand=0;
+  const dataFont={name:"Calibri",size:11,color:{argb:INK}};
+  session.order.forEach(code=>{
+    const it=session.items[code]; if(!it||it.serials.length===0)return;
+    const n=it.serials.length; grand+=n;
+    it.serials.forEach(serie=>{
+      const cB=ws.getCell(r,B); cB.value=code;
+      const cC=ws.getCell(r,C); cC.value=it.descripcion;
+      const cD=ws.getCell(r,D); cD.value=1;
+      const cE=ws.getCell(r,E); cE.value=serie;
+      [cB,cC,cD,cE].forEach(c=>{c.font=dataFont;c.border=border;c.fill={type:"pattern",pattern:"solid",fgColor:{argb:GRIDBG}};});
+      cB.alignment={horizontal:"center"}; cC.alignment={horizontal:"left",indent:1};
+      cD.alignment={horizontal:"center"}; cE.alignment={horizontal:"left",indent:1};
+      cE.font={name:"Consolas",size:11,color:{argb:INK}};
+      r++;
+    });
+    // subtotal del producto
+    ws.mergeCells(r,B,r,C);
+    const sB=ws.getCell(r,B); sB.value="TOTAL  "+code+"  ·  "+it.descripcion;
+    const sD=ws.getCell(r,D); sD.value=n;
+    const sE=ws.getCell(r,E); sE.value="unidades";
+    [B,C,D,E].forEach(c=>{const cell=ws.getCell(r,c);cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:SUBBG}};cell.border=border;cell.font={name:"Calibri",size:11,bold:true,color:{argb:"FF2B3441"}};});
+    sB.alignment={horizontal:"left",indent:1}; sD.alignment={horizontal:"center"}; sE.alignment={horizontal:"left",indent:1};
+    r++;
+  });
+
+  // --- total general ---
+  ws.mergeCells(r,B,r,C);
+  const gB=ws.getCell(r,B); gB.value="TOTAL GENERAL";
+  const gD=ws.getCell(r,D); gD.value=grand;
+  const gE=ws.getCell(r,E); gE.value=session.order.filter(c=>session.items[c]&&session.items[c].serials.length>0).length+" productos";
+  [B,C,D,E].forEach(c=>{const cell=ws.getCell(r,c);bandCell(cell);cell.border=border;});
+  gB.alignment={horizontal:"left",indent:1}; gD.alignment={horizontal:"center"}; gE.alignment={horizontal:"left",indent:1};
+  ws.getRow(r).height=22;
+
+  // descargar
+  const buf=await wb.xlsx.writeBuffer();
+  const blob=new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="Recepcion DJI "+fmtFecha(session.fecha).replace(/\//g,"-")+".xlsx";
+  document.body.appendChild(a); a.click(); a.remove();
+  setStatus("ok","⬇️","Excel exportado: "+a.download);
+  focusScan();
+}
+
+// ============================================================
+//  SONIDO (feedback sin mirar la pantalla)
+// ============================================================
+let actx=null;
+function beep(ok){
+  try{
+    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(),g=actx.createGain();
+    o.connect(g); g.connect(actx.destination);
+    o.type="square"; o.frequency.value=ok?880:220;
+    g.gain.setValueAtTime(.06,actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+(ok?.09:.22));
+    o.start(); o.stop(actx.currentTime+(ok?.09:.22));
+  }catch(e){}
+}
+
+// ============================================================
+//  EVENTOS
+// ============================================================
+function focusScan(){ const m=document.getElementById("catModal"); if(m&&m.classList.contains("show"))return; const i=document.getElementById("scanInput"); setTimeout(()=>i.focus(),10); }
+document.getElementById("scanForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const inp=document.getElementById("scanInput");
+  const v=inp.value; inp.value="";
+  handleScan(v); focusScan();
+});
+document.getElementById("btnNueva").addEventListener("click",()=>{
+  activeCode=null; pending=null; clearDecide(); renderActive();
+  document.getElementById("manualSel").value="";
+  setStatus("info","📦","Caja cerrada. Escaneá la primera serie de la nueva caja y la detecto sola.");
+  focusScan();
+});
+document.getElementById("manualSel").addEventListener("change",e=>{
+  const v=e.target.value; e.target.size=0;
+  if(v){ setActiveManual(v); }
+});
+document.getElementById("fecha").addEventListener("change",e=>{ session.fecha=e.target.value||todayISO(); save(); });
+document.getElementById("btnExport").addEventListener("click",exportExcel);
+document.getElementById("btnExpand").addEventListener("click",()=>{
+  const anyClosed=session.order.some(c=>!openState[c]);
+  session.order.forEach(c=>openState[c]=anyClosed); renderAll();
+});
+document.getElementById("btnClear").addEventListener("click",()=>{
+  if(!confirm("¿Borrar toda la recepción actual? Esto no borra el catálogo, solo lo escaneado."))return;
+  session={fecha:session.fecha,order:[],items:{},serialMap:{}}; activeCode=null; pending=null; clearDecide();
+  save(); renderAll(); setStatus("info","🗑️","Recepción vaciada."); focusScan();
+});
+// gestor de catálogo
+document.getElementById("btnCat").addEventListener("click",openCatalog);
+document.getElementById("catModal").addEventListener("click",e=>{ if(e.target.id==="catModal") closeCatalog(); });
+document.getElementById("npDesc").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); onAddProduct(); } });
+// mantener foco en el escáner
+document.addEventListener("click",e=>{
+  if(e.target.closest("button,select,input,a,textarea,.opt,.phead,.ser,.modal")) return;
+  focusScan();
+});
+document.addEventListener("keydown",e=>{
+  const modalOpen=document.getElementById("catModal").classList.contains("show");
+  if(e.key==="Escape"){ if(modalOpen) closeCatalog(); return; }
+  if(modalOpen) return;
+  const tag=document.activeElement.tagName;
+  if(tag!=="INPUT"&&tag!=="SELECT"&&tag!=="TEXTAREA"&&e.key.length===1){ focusScan(); }
+});
+
+// ---------- init ----------
+loadCatalog();
+load();
+buildManualSelect();
+if(activeCode) document.getElementById("manualSel").value=activeCode;
+renderAll();
+focusScan();
+</script>
+</body>
+</html>
