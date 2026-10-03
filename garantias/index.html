@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Garantías y mantenimientos · DJI</title>
+<style>
+  :root{
+    --bg:#f3f4f7; --card:#ffffff; --ink:#14171c; --ink-2:#3b424d; --muted:#8b93a1;
+    --line:#e9ebef; --line-2:#f1f3f6;
+    --black:#111318; --black-2:#1b1e26;
+    --accent:#2563eb; --accent-d:#1d4ed8; --accent-bg:#eef3fe;
+    --ok:#0e9f6e; --ok-bg:#e7f7f0; --ok-br:#bfe9d7;
+    --warn:#b7791f; --warn-bg:#fdf6e6; --warn-br:#f0e0b8;
+    --teal:#0e7490; --teal-bg:#e6f6f9; --teal-br:#b6e3ec;
+    --violet:#6d28d9; --violet-bg:#f3edfe; --violet-br:#ddd0fb;
+    --err:#e02424; --err-bg:#fdecec; --err-br:#f6c9c9;
+    --shadow-sm:0 1px 2px rgba(16,24,40,.06);
+    --shadow:0 1px 3px rgba(16,24,40,.06),0 10px 26px rgba(16,24,40,.05);
+    --shadow-lg:0 18px 44px rgba(16,24,40,.13);
+    --r:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  [hidden]{display:none!important}
+  input,select,textarea,button{font-family:inherit}
+
+  /* ===== Top bar ===== */
+  .appbar{background:var(--black);color:#fff;padding:0 22px;display:flex;align-items:center;gap:14px;height:66px;position:sticky;top:0;z-index:50;box-shadow:0 1px 0 rgba(255,255,255,.04),0 6px 20px rgba(0,0,0,.16)}
+  .appbar b{font-size:17px;font-weight:750;letter-spacing:.1px}
+  .ab-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .ab-btn{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 13px;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+  .ab-btn:hover{background:rgba(255,255,255,.18)}
+  .ab-btn svg{width:17px;height:17px}
+  .appbar .logo{height:26px;opacity:.95;margin-left:6px}
+
+  .wrap{max-width:1240px;margin:0 auto;padding:22px 20px 40px}
+
+  /* ===== KPIs ===== */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+  .kpi{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);overflow:hidden;cursor:pointer;text-align:left;font:inherit;color:inherit}
+  .kpi:hover{border-color:#d7dce4}
+  .kpi-n{font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1}
+  .kpi-l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:8px;font-weight:600}
+  .kpi .bar{position:absolute;left:0;top:0;bottom:0;width:4px}
+  .kpi.k-cita .bar{background:var(--warn)}
+  .kpi.k-recibido .bar{background:var(--accent)}
+  .kpi.k-enviado .bar{background:var(--violet)}
+  .kpi.k-listo .bar{background:var(--ok)}
+
+  /* ===== Layout ===== */
+  .layout{display:grid;grid-template-columns:1fr;gap:16px}
+  .colA,.colB{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+
+  /* ===== formulario ===== */
+  .fcard{padding:18px}
+  .fcard.editing{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12),var(--shadow)}
+  .f-h{margin-bottom:6px}
+  .f-h b{display:block;font-size:18px;font-weight:800;letter-spacing:-.2px}
+  .f-h span{font-size:13px;color:var(--muted)}
+  .f-sec{font-size:12px;font-weight:800;color:var(--ink-2);text-transform:uppercase;letter-spacing:.6px;margin:18px 0 0;padding-top:14px;border-top:1px solid var(--line)}
+  .fl{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin:12px 0 6px 2px}
+  .fl i{font-style:normal;text-transform:none;letter-spacing:0;font-weight:600}
+  .in{width:100%;font-size:15.5px;font-weight:600;padding:12px 13px;border:2px solid var(--line);border-radius:12px;outline:none;background:#fafbfc;color:var(--ink)}
+  .in:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.13)}
+  textarea.in{resize:vertical;min-height:52px;font-weight:500;font-size:14.5px}
+  .in.up{text-transform:uppercase;font-family:"Consolas","SF Mono",monospace}
+  .in.up::placeholder{text-transform:none;font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .seg{display:flex;flex-wrap:wrap;gap:8px}
+  .seg button{border:2px solid var(--line);background:#fafbfc;border-radius:11px;padding:10px 14px;font-size:14.5px;font-weight:700;color:var(--ink-2);cursor:pointer}
+  .seg button:hover{border-color:#cdd3dd}
+  .seg button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:#fff}
+  .seg .edit-n{border-style:dashed;color:var(--muted);font-weight:600;font-size:13px}
+  .chk{display:flex;align-items:center;gap:9px;margin-top:12px;font-weight:700;font-size:14.5px;cursor:pointer;user-select:none}
+  .chk input{width:19px;height:19px;accent-color:var(--accent)}
+  .f-acts{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .f-acts .btn.primary{flex:1}
+
+  /* ===== Buttons ===== */
+  .btn{border:none;border-radius:10px;padding:12px 17px;font-size:14.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+  .btn svg{width:16px;height:16px}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--accent);color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.28)}.btn.primary:hover{background:var(--accent-d)}
+  .btn.dark{background:var(--black);color:#fff}.btn.dark:hover{background:var(--black-2)}
+  .btn.ghost{background:var(--line-2);color:var(--ink-2)}.btn.ghost:hover{background:#e7eaef}
+  .btn.sm{padding:8px 12px;font-size:13px;border-radius:9px}
+
+  .status{margin-top:13px;border-radius:11px;padding:11px 14px;font-weight:600;display:none;align-items:center;gap:10px;font-size:14px}
+  .status.show{display:flex}
+  .status.ok{background:var(--ok-bg);color:#0b7a53;border:1px solid var(--ok-br)}
+  .status.warn{background:var(--warn-bg);color:#8a5b12;border:1px solid var(--warn-br)}
+  .save-ind{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;font-weight:600;margin-top:12px;justify-content:flex-end}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px var(--ok-bg)}
+
+  /* ===== filtros ===== */
+  .tools{display:flex;gap:10px;flex-wrap:wrap}
+  .sbox{flex:1;min-width:220px;position:relative}
+  .sbox svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted)}
+  .sbox input{width:100%;padding:11px 12px 11px 40px;border:1px solid var(--line);border-radius:11px;font-size:14.5px;outline:none;background:#fff}
+  .sbox input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .chips{display:flex;gap:7px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 12px;font-size:13px;font-weight:700;color:var(--ink-2);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .chip:hover{border-color:#cdd3dd}
+  .chip .n{background:var(--line-2);border-radius:20px;padding:0 7px;font-size:12px;color:var(--ink-2)}
+  .chip[aria-pressed="true"]{background:var(--black);border-color:var(--black);color:#fff}
+  .chip[aria-pressed="true"] .n{background:rgba(255,255,255,.18);color:#fff}
+  .chip.t[aria-pressed="true"]{background:var(--accent);border-color:var(--accent)}
+
+  /* ===== tarjetas ===== */
+  .sec-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 2px 0}
+  .sec-h h2{font-size:13px;margin:0;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:700}
+  .sec-h span{font-size:13px;color:var(--muted);font-weight:600}
+  .list{display:flex;flex-direction:column;gap:10px}
+  .gc{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:14px;box-shadow:var(--shadow-sm);padding:13px 14px 12px 15px}
+  .gc.e-cita{border-left-color:var(--warn)}
+  .gc.e-recibido{border-left-color:var(--accent)}
+  .gc.e-enviado{border-left-color:var(--violet)}
+  .gc.e-listo{border-left-color:var(--ok)}
+  .gc.e-entregado{border-left-color:#c3c9d3;opacity:.86}
+  .gc-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .tipo{font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:20px;letter-spacing:.3px;white-space:nowrap}
+  .tipo.garantia{background:var(--accent-bg);color:#1e40af}
+  .tipo.mantenimiento{background:var(--teal-bg);color:#0b5566}
+  .tipo.reparacion{background:var(--warn-bg);color:#8a5b12}
+  .num{font-family:"Consolas","SF Mono",monospace;font-weight:800;font-size:12.5px;color:var(--muted)}
+  .gc-acts{margin-left:auto;display:flex;gap:6px}
+  .ib{width:32px;height:32px;border-radius:9px;border:none;background:var(--line-2);color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .ib svg{width:15px;height:15px}
+  .ib:hover{background:#e3e7ee}
+  .ib.del:hover{background:var(--err);color:#fff}
+  .gc-prod{font-weight:800;font-size:15.5px;line-height:1.25;margin-top:7px}
+  .gc-prod span{font-family:"Consolas","SF Mono",monospace;font-weight:600;font-size:12.5px;color:var(--muted);margin-left:6px}
+  .gc-who{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:5px;font-size:14.5px}
+  .gc-who b{font-weight:700}
+  .gc-who a.tel{color:var(--ink-2);font-weight:600;text-decoration:none;font-family:"Consolas","SF Mono",monospace;font-size:14px}
+  .wa{display:inline-flex;align-items:center;gap:5px;background:#e8f8ee;color:#128c4a;border:1px solid #bfe8cf;border-radius:20px;padding:3px 10px;font-size:12.5px;font-weight:800;text-decoration:none}
+  .wa:hover{background:#d5f2e0}
+  .wa svg{width:13px;height:13px}
+  .gc-info{margin-top:8px;font-size:13.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:3px}
+  .gc-info b{font-weight:700;color:var(--ink)}
+  .gc-meta{font-size:12.5px;color:var(--muted);margin-top:6px;font-weight:600}
+  .gc-meta b{color:var(--ink-2)}
+  .cita{display:inline-flex;align-items:center;gap:5px;background:var(--warn-bg);color:#8a5b12;border:1px solid var(--warn-br);border-radius:8px;padding:2px 8px;font-weight:700;font-size:12.5px}
+  .cita.hoy{background:var(--warn);color:#fff;border-color:var(--warn)}
+  .cita.tarde{background:var(--err-bg);color:#b71c1c;border-color:var(--err-br)}
+
+  /* pasos del proceso */
+  .pasos{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:12px}
+  .paso{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:7px 4px 6px;font-size:11.5px;font-weight:700;color:var(--muted);cursor:pointer;text-align:center;line-height:1.2;display:flex;flex-direction:column;align-items:center;gap:3px}
+  .paso:hover{border-color:#cdd3dd;color:var(--ink-2)}
+  .paso i{font-style:normal;font-size:14px;line-height:1}
+  .paso small{font-weight:600;font-size:10.5px;color:var(--muted)}
+  .paso.hecho{background:var(--line-2);color:var(--ink-2);border-color:var(--line-2)}
+  .paso.actual{color:#fff}
+  .paso.actual small{color:rgba(255,255,255,.85)}
+  .paso.actual.p-cita{background:var(--warn);border-color:var(--warn)}
+  .paso.actual.p-recibido{background:var(--accent);border-color:var(--accent)}
+  .paso.actual.p-enviado{background:var(--violet);border-color:var(--violet)}
+  .paso.actual.p-listo{background:var(--ok);border-color:var(--ok)}
+  .paso.actual.p-entregado{background:var(--ink-2);border-color:var(--ink-2)}
+  .empty{background:var(--card);border:1.5px dashed var(--line);border-radius:var(--r);padding:44px 22px;text-align:center;color:var(--muted)}
+  .empty b{color:var(--ink);display:block;font-size:16px;margin-bottom:5px}
+
+  /* ===== modal ===== */
+  @keyframes pop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .modal-ov{position:fixed;inset:0;background:rgba(17,19,24,.55);backdrop-filter:blur(3px);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:5vh 16px;overflow:auto}
+  .modal-ov.show{display:flex}
+  .modal{background:var(--card);border-radius:18px;box-shadow:var(--shadow-lg);width:100%;max-width:560px;display:flex;flex-direction:column;overflow:hidden;animation:pop .18s ease}
+  .modal-h{display:flex;align-items:center;justify-content:space-between;padding:17px 20px;border-bottom:1px solid var(--line)}
+  .modal-h b{font-size:18px}
+  .modal-x{border:none;background:var(--line-2);width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:14px;color:var(--ink-2);font-weight:700}
+  .modal-x:hover{background:var(--err);color:#fff}
+  .msec{padding:16px 20px;border-bottom:1px solid var(--line)}
+  .msec:last-child{border-bottom:none}
+  .msec h3{margin:0 0 4px;font-size:15px}
+  .msec p{margin:0 0 12px;font-size:13px;color:var(--muted)}
+  .mrow{display:flex;gap:9px;flex-wrap:wrap}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--black);color:#fff;padding:11px 16px;border-radius:11px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:200;box-shadow:var(--shadow-lg);max-width:calc(100% - 32px)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* ===== responsive ===== */
+  @media(min-width:960px){
+    .layout{grid-template-columns:.9fr 1.1fr;align-items:start}
+    .colA{position:sticky;top:88px;max-height:calc(100vh - 104px);overflow:auto;border-radius:var(--r)}
+  }
+  @media(max-width:720px){
+    .kpis{grid-template-columns:repeat(2,1fr);gap:11px}
+    .kpi{padding:13px}
+    .kpi-n{font-size:26px}
+    .wrap{padding:16px 14px 40px}
+    .appbar{padding:0 14px;height:60px}
+    .appbar b{font-size:15px}
+    .ab-btn span{display:none}
+    .ab-btn{padding:9px}
+    .row2{grid-template-columns:1fr}
+    .pasos{grid-template-columns:repeat(5,minmax(0,1fr))}
+    .paso{font-size:10.5px;padding:6px 2px}
+    .paso small{display:none}
+    .modal-ov{padding:0}
+    .modal{max-width:100%;min-height:100vh;border-radius:0}
+  }
+</style>
+</head>
+<body>
+<div class="appbar">
+  <b>Garantías y mantenimientos</b>
+  <div class="ab-right">
+    <span id="nubeEstado"></span>
+    <button class="ab-btn" id="btnExport" title="Exportar a Excel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg><span>Excel</span></button>
+    <button class="ab-btn" id="btnAjustes" title="Respaldo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg><span>Ajustes</span></button>
+    <img src="../recepcion/logo.png" class="logo" alt="DJI">
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="kpis">
+    <button class="kpi k-cita" data-f="cita"><i class="bar"></i><div class="kpi-n" id="k-cita">0</div><div class="kpi-l">Por recibir</div></button>
+    <button class="kpi k-recibido" data-f="recibido"><i class="bar"></i><div class="kpi-n" id="k-recibido">0</div><div class="kpi-l">Recibidos en tienda</div></button>
+    <button class="kpi k-enviado" data-f="enviado"><i class="bar"></i><div class="kpi-n" id="k-enviado">0</div><div class="kpi-l">En servicio técnico</div></button>
+    <button class="kpi k-listo" data-f="listo"><i class="bar"></i><div class="kpi-n" id="k-listo">0</div><div class="kpi-l">Listos para entregar</div></button>
+  </div>
+
+  <div class="layout">
+    <!-- formulario -->
+    <div class="colA">
+      <div class="card fcard" id="fcard">
+        <div class="f-h"><b id="fTitle">Nuevo ingreso</b><span id="fSub">Anotá a quien deja (o va a dejar) su equipo a garantía o mantenimiento.</span></div>
+
+        <span class="fl">¿Qué necesita?</span>
+        <div class="seg" id="fTipo"></div>
+
+        <div class="f-sec">Equipo</div>
+        <label class="fl" for="fProd">Producto</label>
+        <input class="in" id="fProd" list="dlProd" placeholder="Ej: DJI Mini 5 Pro" autocomplete="off" spellcheck="false">
+        <datalist id="dlProd"></datalist>
+        <label class="fl" for="fSerie">Número de serie <i>(opcional)</i></label>
+        <input class="in up" id="fSerie" placeholder="Viene en la caja o debajo del equipo" autocomplete="off" spellcheck="false">
+        <label class="fl" for="fMotivo">Falla o motivo</label>
+        <textarea class="in" id="fMotivo" rows="2" placeholder="Ej: el gimbal no se estabiliza / mantenimiento general"></textarea>
+        <label class="fl" for="fAcc">Lo que deja <i>(opcional)</i></label>
+        <input class="in" id="fAcc" placeholder="Ej: dron, control, 2 baterías, cargador, estuche" autocomplete="off">
+        <label class="fl" for="fNota">Cómo viene / notas <i>(opcional)</i></label>
+        <textarea class="in" id="fNota" rows="2" placeholder="Ej: rayón en el brazo izquierdo, hélice quebrada"></textarea>
+
+        <div id="fCompraBox">
+          <div class="f-sec">Datos de compra (para la garantía)</div>
+          <div class="row2">
+            <div><label class="fl" for="fCompra">Fecha de compra <i>(opcional)</i></label><input class="in" id="fCompra" type="date"></div>
+            <div><label class="fl" for="fFactura">N.º de factura <i>(opcional)</i></label><input class="in" id="fFactura" autocomplete="off"></div>
+          </div>
+          <label class="chk"><input type="checkbox" id="fPP"> Tiene Protection Plus</label>
+        </div>
+
+        <div class="f-sec">Cliente</div>
+        <div class="row2">
+          <div><label class="fl" for="fNom">Nombre</label><input class="in" id="fNom" placeholder="Nombre y apellido" autocomplete="off"></div>
+          <div><label class="fl" for="fTel">Teléfono</label><input class="in" id="fTel" type="tel" inputmode="tel" placeholder="Ej: 5517-4104" autocomplete="off"></div>
+        </div>
+        <label class="fl" for="fCorreo">Correo <i>(opcional)</i></label>
+        <input class="in" id="fCorreo" type="email" inputmode="email" autocomplete="off">
+
+        <div class="f-sec">Entrega del equipo</div>
+        <div id="fLlegadaBox">
+          <span class="fl">¿Ya dejó el equipo?</span>
+          <div class="seg" id="fLlegada">
+            <button type="button" data-v="recibido">Sí, lo dejó hoy</button>
+            <button type="button" data-v="cita">No, viene después</button>
+          </div>
+          <div id="fCitaBox" hidden><label class="fl" for="fCita">¿Qué día viene?</label><input class="in" id="fCita" type="date"></div>
+        </div>
+        <div id="fCitaEdit" hidden><label class="fl" for="fCita2">Día en que viene <i>(si todavía no lo trae)</i></label><input class="in" id="fCita2" type="date"></div>
+
+        <span class="fl">¿Quién lo registró?</span>
+        <div class="seg" id="fReg"></div>
+
+        <div class="f-acts">
+          <button class="btn primary" id="fGuardar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span id="fGuardarTxt">Guardar ingreso</span></button>
+          <button class="btn ghost" id="fCancelar" hidden>Cancelar</button>
+        </div>
+        <div class="status" id="status"><span class="ic"></span><span class="msg"></span></div>
+        <div class="save-ind"><span class="dot"></span><span id="saveTxt">Se guarda en este equipo</span></div>
+      </div>
+    </div>
+
+    <!-- listado -->
+    <div class="colB">
+      <div class="tools">
+        <div class="sbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="Buscar cliente, teléfono, producto, serie o N.º…" autocomplete="off" spellcheck="false"></div>
+      </div>
+      <div class="chips" id="chipsEstado"></div>
+      <div class="chips" id="chipsTipo"></div>
+      <div class="sec-h"><h2 id="listTitle">Ingresos</h2><span id="listCount"></span></div>
+      <div class="list" id="list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal: ajustes ===== -->
+<div class="modal-ov" id="ajModal">
+  <div class="modal">
+    <div class="modal-h"><b>Ajustes</b><button class="modal-x" onclick="cerrarAjustes()" title="Cerrar">✕</button></div>
+    <div class="msec">
+      <h3>¿Quién registra?</h3>
+      <p>Son los mismos nombres de <b>Clientes</b>. Para agregar o cambiar un nombre, hacelo en Clientes → ⚙️ Ajustes.</p>
+      <button class="btn ghost sm" onclick="irANombres()">Ir a cambiar nombres</button>
+    </div>
+    <div class="msec">
+      <h3>Respaldo</h3>
+      <p id="respaldoTxt">Los ingresos se guardan en este navegador. Con el respaldo podés pasarlos a otra computadora (al cargarlo se suman, no se borra nada).</p>
+      <div class="mrow">
+        <button class="btn dark sm" onclick="descargarRespaldo()">⬇️ Descargar respaldo</button>
+        <button class="btn ghost sm" onclick="document.getElementById('archivo').click()">⬆️ Cargar respaldo</button>
+      </div>
+    </div>
+  </div>
+</div>
+<input type="file" id="archivo" accept=".json,application/json" hidden>
+<div class="toast" id="toast"></div>
+
+<script src="../nube.js"></script>
+<script src="../recepcion/lib/exceljs.min.js"></script>
+<script src="../recepcion/catalog.js"></script>
+<script>
+/* ============================================================
+   Garantías y mantenimientos — clientes que dejan (o van a
+   dejar) su equipo, y en qué paso va cada uno.
+   ============================================================ */
+"use strict";
+
+const LS_DATOS    = "garantias_dji_v1";     // {v, registros:[...]}
+const LS_CLIENTES = "clientes_dji_v1";      // de aquí salen los nombres de quién registra
+const LS_ULTIMO   = "clientes_dji_ultimo";  // último que registró en este equipo (compartido con Clientes)
+const VENDEDORES_INICIALES = ["Enrique","Byron","Audelino"];
+
+const TIPOS = [
+  {k:"garantia",      l:"Garantía",      ic:"🛡️"},
+  {k:"mantenimiento", l:"Mantenimiento", ic:"🧰"},
+  {k:"reparacion",    l:"Reparación",    ic:"🔧"}
+];
+const PASOS = [
+  {k:"cita",      l:"Por recibir",          c:"Por recibir",   ic:"📅"},
+  {k:"recibido",  l:"Recibido en tienda",   c:"Recibido",      ic:"📥"},
+  {k:"enviado",   l:"En servicio técnico",  c:"En servicio",   ic:"🛠️"},
+  {k:"listo",     l:"Listo para entregar",  c:"Listo",         ic:"✅"},
+  {k:"entregado", l:"Entregado al cliente", c:"Entregado",     ic:"🤝"}
+];
+const PRODUCTOS_DJI = ["DJI Neo 2","DJI Lito 1","DJI Lito X1","DJI Mini 5 Pro","DJI Mini 4 Pro","DJI Mini 3","DJI Avata 360","DJI Avata 2","DJI Flip","DJI Air 3S","DJI Air 3","DJI Mavic 4 Pro","DJI Mavic 3 Pro","DJI Osmo Pocket 3","DJI Osmo Pocket 4","DJI Osmo Pocket 4P","DJI Osmo Nano","DJI Osmo Action 6","DJI Osmo Action 5 Pro","DJI Osmo 360 II","DJI Osmo 360","DJI Osmo Mobile 8P","DJI Osmo Mobile 8","DJI Osmo Mobile 7","DJI RS 5","DJI RS 4 Pro","DJI RS 4 Mini","DJI Mic Mini 2","DJI Mic Mini 2S","DJI Mic 2","DJI Goggles 3","DJI Goggles N3","Control DJI RC 2","Control DJI RC-N3","Batería de vuelo inteligente"];
+
+let datos = {v:1, registros:[]};
+let vendedores = VENDEDORES_INICIALES.slice();
+let tipo = "garantia", llegada = null, registro = null, editId = null;
+let filtro = "activos", filtroTipo = "", query = "";
+
+const $ = id => document.getElementById(id);
+
+// ---------- utilidades ----------
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function jsq(s){return esc(JSON.stringify(String(s)));}
+function fold(s){return (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/([a-z])(\d)/g,"$1 $2").replace(/(\d)([a-z])/g,"$1 $2").replace(/[^a-z0-9]+/g," ").trim();}
+function plural(n,uno,varios){return n+" "+(n===1?uno:varios);}
+function nuevoId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+const soloDigitos = t => String(t||"").replace(/\D/g,"");
+function telBonito(t){ const d=soloDigitos(t); return d.length===8 ? d.slice(0,4)+"-"+d.slice(4) : (t||"").trim(); }
+function telWa(t){ const d=soloDigitos(t); return d.length===8 ? "502"+d : d; }
+function fechaBonita(iso){ try{ return new Date(iso).toLocaleString("es-GT",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}); }catch(e){ return iso; } }
+function fechaCorta(iso){ const d=new Date(iso); return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+d.getFullYear(); }
+function hoyISO(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function diaBonito(ymd){ if(!ymd) return ""; const [y,m,d]=ymd.split("-").map(Number); return new Date(y,m-1,d).toLocaleDateString("es-GT",{weekday:"short",day:"numeric",month:"short"}); }
+function ymdCorto(ymd){ if(!ymd) return ""; const [y,m,d]=ymd.split("-"); return d+"/"+m+"/"+y; }
+const numTxt = n => "G-"+String(n||0).padStart(4,"0");
+const tipoDe = k => TIPOS.find(t=>t.k===k)||TIPOS[0];
+const pasoDe = k => PASOS.find(p=>p.k===k)||PASOS[1];
+let tToast;
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tToast); tToast=setTimeout(()=>t.classList.remove("show"),2600); }
+function setStatus(type,ic,msg){ const s=$("status"); s.className="status show "+type; s.querySelector(".ic").textContent=ic; s.querySelector(".msg").textContent=msg; }
+
+// ---------- guardado ----------
+function limpiarRegistro(r){
+  if(!r || typeof r!=="object") return null;
+  const S=v=>String(v??"").trim();
+  const o={
+    id:S(r.id)||nuevoId(), numero:Number(r.numero)||0, fecha:S(r.fecha)||new Date().toISOString(),
+    tipo:TIPOS.some(t=>t.k===r.tipo)?r.tipo:"garantia",
+    producto:S(r.producto), serie:S(r.serie).toUpperCase(), motivo:S(r.motivo), accesorios:S(r.accesorios), nota:S(r.nota),
+    compra:S(r.compra), factura:S(r.factura), pp:!!r.pp,
+    nombre:S(r.nombre), telefono:S(r.telefono), correo:S(r.correo),
+    cita:S(r.cita), registro:S(r.registro),
+    estado:PASOS.some(p=>p.k===r.estado)?r.estado:"recibido",
+    pasos:(r.pasos && typeof r.pasos==="object") ? Object.fromEntries(Object.entries(r.pasos).filter(([k,v])=>PASOS.some(p=>p.k===k)&&typeof v==="string")) : {}
+  };
+  if(r.actualizado) o.actualizado=S(r.actualizado);
+  return (o.producto||o.nombre) ? o : null;
+}
+function cargar(){
+  try{
+    const d=JSON.parse(localStorage.getItem(LS_DATOS)||"null");
+    if(d && Array.isArray(d.registros)) datos.registros=d.registros.map(limpiarRegistro).filter(Boolean);
+  }catch(e){}
+  cargarVendedores();
+}
+function cargarVendedores(){
+  try{ const c=JSON.parse(localStorage.getItem(LS_CLIENTES)||"null"); if(c && Array.isArray(c.vendedores) && c.vendedores.length) vendedores=c.vendedores.map(v=>String(v).trim()).filter(Boolean); }catch(e){}
+  if(!registro){ try{ const u=localStorage.getItem(LS_ULTIMO); if(u && vendedores.includes(u)) registro=u; }catch(e){} }
+}
+function guardarLocal(){ try{ localStorage.setItem(LS_DATOS,JSON.stringify(datos)); }catch(e){ toast("⚠️ No se pudo guardar en este navegador"); } }
+function guardar(){ guardarLocal(); subirNube(); }
+
+// ---------- nube (todas las computadoras conectadas ven lo mismo) ----------
+let nubeReg=null, cambiosSinSubir=false;
+const mapaRegistros = lista => { const m={}; lista.forEach(r=>{ m[r.id]=r; }); return m; };
+const masNuevo = (a,b) => (a.actualizado||a.fecha) > (b.actualizado||b.fecha);
+function unirRegistros(nube, locales){
+  const out={};
+  for(const id in nube){ const r=limpiarRegistro(Object.assign({id},nube[id])); if(r) out[r.id]=r; }
+  locales.forEach(r=>{ const c=out[r.id]; if(!c || masNuevo(r,c)) out[r.id]=r; });
+  return Object.values(out);
+}
+function subirNube(){
+  if(!window.Nube || !Nube.conectado()) return;
+  if(nubeReg===null){ cambiosSinSubir=true; return; }
+  Nube.guardarColeccion("garantias", mapaRegistros(datos.registros), nubeReg);
+}
+async function conectarNube(){
+  if(!window.Nube) return;
+  if(!conectarNube.pintado){ Nube.pintar($("nubeEstado")); conectarNube.pintado=true; }
+  if(!Nube.conectado()) return;
+  $("saveTxt").textContent="Se guarda en la nube";
+  $("respaldoTxt").textContent="Los ingresos ya se guardan en la nube y los ven todas las computadoras conectadas. El respaldo sirve para tener una copia en un archivo.";
+  if(!await Nube.iniciar()) return;
+  const unido=await Nube.unirUnaVez("garantias", async ()=>{
+    const nube=await Nube.leerColeccion("garantias");
+    await Nube.guardarColeccion("garantias", mapaRegistros(unirRegistros(nube, datos.registros)), nube);
+  });
+  if(!unido && localStorage.getItem("dji_nube_unido_garantias")!==Nube.clave()){
+    addEventListener("online", ()=>conectarNube(), {once:true});
+    return;
+  }
+  Nube.escucharColeccion("garantias",(mapa)=>{
+    let lista=Object.keys(mapa).map(id=>limpiarRegistro(Object.assign({id},mapa[id]))).filter(Boolean);
+    nubeReg=mapa;
+    if(cambiosSinSubir){ cambiosSinSubir=false; lista=unirRegistros(mapa, datos.registros); Nube.guardarColeccion("garantias", mapaRegistros(lista), mapa); }
+    const orden=l=>l.slice().sort((a,b)=>a.id.localeCompare(b.id));
+    if(Nube.estable(orden(lista))===Nube.estable(orden(datos.registros))) return;
+    datos.registros=lista; guardarLocal(); render(); renderDatalist();
+  });
+  // los nombres de quién registra son los de Clientes
+  Nube.escucharMapa("ajustes","clientes",(m)=>{
+    if(!Array.isArray(m.vendedores) || !m.vendedores.length || Nube.estable(m.vendedores)===Nube.estable(vendedores)) return;
+    vendedores=m.vendedores.map(v=>String(v).trim()).filter(Boolean); renderVendedoresForm();
+  });
+}
+// si en Clientes cambian los nombres (en esta misma computadora)
+addEventListener("storage",e=>{ if(e.key===LS_CLIENTES){ cargarVendedores(); renderVendedoresForm(); } });
+
+// ============================================================
+//  FORMULARIO
+// ============================================================
+function renderTipos(){
+  $("fTipo").innerHTML=TIPOS.map(t=>`<button type="button" aria-pressed="${t.k===tipo}" onclick="elegirTipo('${t.k}')">${t.ic} ${t.l}</button>`).join("");
+  $("fCompraBox").hidden = tipo!=="garantia";
+}
+function elegirTipo(k){ tipo=k; renderTipos(); }
+function renderLlegada(){
+  document.querySelectorAll("#fLlegada button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===llegada));
+  $("fCitaBox").hidden = llegada!=="cita";
+}
+function renderVendedoresForm(){
+  const nombres=vendedores.slice();
+  if(registro && !nombres.includes(registro)) nombres.push(registro);
+  $("fReg").innerHTML=nombres.map(n=>`<button type="button" aria-pressed="${n===registro}" onclick="elegirVendedor(${jsq(n)})">${esc(n)}</button>`).join("")
+    +`<button type="button" class="edit-n" onclick="irANombres()" title="Agregar o cambiar nombres">✎ Nombres</button>`;
+}
+function elegirVendedor(n){ registro=n; if(!editId){ try{ localStorage.setItem(LS_ULTIMO,n); }catch(e){} } renderVendedoresForm(); }
+function irANombres(){
+  cerrarAjustes();
+  try{ if(window.parent!==window){ window.parent.location.hash="clientes"; toast("En Clientes tocá ⚙️ Ajustes para cambiar los nombres"); return; } }catch(e){}
+  location.href="../index.html#clientes";
+}
+function renderDatalist(){
+  const vistos=new Set(), out=[];
+  [...datos.registros.map(r=>r.producto), ...PRODUCTOS_DJI].forEach(p=>{ const k=fold(p); if(p && !vistos.has(k)){ vistos.add(k); out.push(p); } });
+  $("dlProd").innerHTML=out.map(p=>`<option value="${esc(p)}">`).join("");
+}
+function productoCanonico(t){ const k=fold(t); return [...PRODUCTOS_DJI, ...datos.registros.map(r=>r.producto)].find(p=>fold(p)===k) || t; }
+const CAMPOS={fProd:"producto",fSerie:"serie",fMotivo:"motivo",fAcc:"accesorios",fNota:"nota",fCompra:"compra",fFactura:"factura",fNom:"nombre",fTel:"telefono",fCorreo:"correo"};
+function limpiarForm(){
+  editId=null; tipo="garantia"; llegada=null;
+  Object.keys(CAMPOS).forEach(id=>$(id).value=""); $("fPP").checked=false; $("fCita").value=""; $("fCita2").value="";
+  try{ const u=localStorage.getItem(LS_ULTIMO); registro=(u && vendedores.includes(u)) ? u : null; }catch(e){ registro=null; }
+  $("fcard").classList.remove("editing");
+  $("fTitle").textContent="Nuevo ingreso";
+  $("fSub").textContent="Anotá a quien deja (o va a dejar) su equipo a garantía o mantenimiento.";
+  $("fGuardarTxt").textContent="Guardar ingreso";
+  $("fCancelar").hidden=true; $("fLlegadaBox").hidden=false; $("fCitaEdit").hidden=true;
+  renderTipos(); renderLlegada(); renderVendedoresForm();
+}
+function leerForm(){ const o={}; for(const id in CAMPOS) o[CAMPOS[id]]=$(id).value.trim(); o.serie=o.serie.toUpperCase(); o.pp=$("fPP").checked; return o; }
+function guardarIngreso(){
+  const f=leerForm(); f.producto=productoCanonico(f.producto);
+  if(!f.producto){ setStatus("warn","📦","Escribí el producto (ej: DJI Mini 5 Pro)."); $("fProd").focus(); return; }
+  if(!f.motivo){ setStatus("warn","📝","Escribí la falla o el motivo (ej: mantenimiento general)."); $("fMotivo").focus(); return; }
+  if(!f.nombre){ setStatus("warn","👤","Escribí el nombre del cliente."); $("fNom").focus(); return; }
+  if(soloDigitos(f.telefono).length<8){ setStatus("warn","📱","Escribí el número de teléfono completo (8 dígitos)."); $("fTel").focus(); return; }
+  if(!editId && !llegada){ setStatus("warn","📥","Indicá si ya dejó el equipo o viene después."); return; }
+  if(!editId && llegada==="cita" && !$("fCita").value){ setStatus("warn","📅","Elegí el día en que viene a dejarlo."); $("fCita").focus(); return; }
+  if(!registro){ setStatus("warn","🙋","Elegí quién lo está registrando."); return; }
+  const ahora=new Date().toISOString();
+  if(editId){
+    const r=datos.registros.find(x=>x.id===editId);
+    if(r){ Object.assign(r,f,{tipo,registro,actualizado:ahora}); if(!(tipo==="garantia")){ r.compra=""; r.factura=""; r.pp=false; } r.cita=$("fCita2").value; }
+    guardar(); limpiarForm(); render(); renderDatalist();
+    setStatus("ok","✔","Cambios guardados."); return;
+  }
+  const numero=datos.registros.reduce((m,x)=>Math.max(m,x.numero||0),0)+1;
+  const r=Object.assign({id:nuevoId(),numero,fecha:ahora,tipo,registro,estado:llegada,cita:llegada==="cita"?$("fCita").value:"",pasos:{[llegada]:ahora}},f);
+  if(tipo!=="garantia"){ r.compra=""; r.factura=""; r.pp=false; }
+  datos.registros.push(limpiarRegistro(r));
+  guardar();
+  const reg=registro; limpiarForm(); registro=reg; renderVendedoresForm();
+  render(); renderDatalist();
+  setStatus("ok","✔",`Listo, quedó anotado: ${numTxt(numero)} · ${r.producto} de ${r.nombre}.`+(r.estado==="recibido"?" Podés imprimir la boleta desde la lista.":""));
+}
+function editarIngreso(id){
+  const r=datos.registros.find(x=>x.id===id); if(!r) return;
+  editId=id; tipo=r.tipo;
+  for(const fid in CAMPOS) $(fid).value=r[CAMPOS[fid]]||"";
+  $("fPP").checked=!!r.pp; $("fCita2").value=r.cita||"";
+  registro=r.registro||null;
+  renderTipos(); renderVendedoresForm();
+  $("fLlegadaBox").hidden=true; $("fCitaEdit").hidden=false;
+  $("fcard").classList.add("editing");
+  $("fTitle").textContent="Editar "+numTxt(r.numero);
+  $("fSub").textContent=`Registrado el ${fechaBonita(r.fecha)}. El paso en que va se cambia en la tarjeta.`;
+  $("fGuardarTxt").textContent="Guardar cambios";
+  $("fCancelar").hidden=false; $("status").className="status";
+  $("fcard").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function borrarIngreso(id){
+  const r=datos.registros.find(x=>x.id===id); if(!r) return;
+  if(!confirm(`¿Borrar ${numTxt(r.numero)} (${r.producto} de ${r.nombre})? No se puede deshacer.`)) return;
+  datos.registros=datos.registros.filter(x=>x.id!==id);
+  if(editId===id) limpiarForm();
+  guardar(); render(); renderDatalist(); toast("Ingreso borrado");
+}
+function setPaso(id,k){
+  const r=datos.registros.find(x=>x.id===id); if(!r || r.estado===k) return;
+  const ahora=new Date().toISOString();
+  r.estado=k; r.pasos=Object.assign({},r.pasos,{[k]:ahora}); r.actualizado=ahora;
+  guardar(); render(); toast(`${numTxt(r.numero)}: ${pasoDe(k).l}`);
+}
+
+// ============================================================
+//  LISTADO
+// ============================================================
+function pasaEstado(r,f){
+  if(f==="todos") return true;
+  if(f==="activos") return r.estado!=="entregado";
+  return r.estado===f;
+}
+function filtrados(sinEstado){
+  const qs=fold(query).split(" ").filter(Boolean);
+  return datos.registros.filter(r=>{
+    if(!sinEstado && !pasaEstado(r,filtro)) return false;
+    if(filtroTipo && r.tipo!==filtroTipo) return false;
+    if(qs.length){
+      const k=fold([r.nombre,r.producto,r.serie,r.motivo,r.registro,r.nota,r.accesorios,r.factura,numTxt(r.numero),tipoDe(r.tipo).l].join(" "))+" "+soloDigitos(r.telefono);
+      if(!qs.every(q=>k.includes(q))) return false;
+    }
+    return true;
+  });
+}
+const IC_EDIT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>';
+const IC_DEL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>';
+const IC_PRINT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>';
+const IC_WA='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15.1L2 22l5-1.3A10 10 0 1012 2zm0 18.2a8.2 8.2 0 01-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1112 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 01-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 00-.7.3 3 3 0 00-.9 2.2 5.2 5.2 0 001.1 2.7 11.8 11.8 0 004.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 001.8-1.3 2.2 2.2 0 00.1-1.3c0-.1-.2-.2-.4-.3z"/></svg>';
+
+function textoWa(r){
+  const n=(r.nombre||"").split(/\s+/)[0]||"", p=`*${r.producto}*`, t=tipoDe(r.tipo).l.toLowerCase();
+  switch(r.estado){
+    case "cita": return `¡Hola ${n}! 👋 Le escribimos de la tienda DJI para confirmar que nos trae su ${p} para ${t}${r.cita?" el "+diaBonito(r.cita):""}. ¡Lo esperamos! 😊`;
+    case "recibido": return `¡Hola ${n}! 👋 Le escribimos de la tienda DJI: recibimos su ${p} para ${t} (boleta ${numTxt(r.numero)}). Le avisaremos cuando tengamos noticias.`;
+    case "enviado": return `¡Hola ${n}! 👋 Le escribimos de la tienda DJI: su ${p} ya fue enviado al servicio técnico. Le avisaremos en cuanto esté listo.`;
+    case "listo": return `¡Hola ${n}! 👋 Le escribimos de la tienda DJI: ¡su ${p} ya está listo! 🎉 Puede pasar a recogerlo con su boleta ${numTxt(r.numero)}.`;
+    default: return `¡Hola ${n}! 👋 Le escribimos de la tienda DJI. ¡Gracias por su confianza! Cualquier cosa con su ${p}, con gusto le ayudamos. 😊`;
+  }
+}
+function htmlCita(r){
+  if(!r.cita || r.estado!=="cita") return "";
+  const hoy=hoyISO(), cls=r.cita===hoy?"hoy":(r.cita<hoy?"tarde":"");
+  return `<span class="cita ${cls}">📅 ${r.cita===hoy?"Viene HOY":(r.cita<hoy?"Iba a venir el "+diaBonito(r.cita):"Viene el "+diaBonito(r.cita))}</span>`;
+}
+
+function render(){
+  const R=datos.registros;
+  PASOS.slice(0,4).forEach(p=>$("k-"+p.k).textContent=R.filter(r=>r.estado===p.k).length);
+
+  const base=filtrados(true);
+  const chips=[["activos","Pendientes"],...PASOS.map(p=>[p.k,p.c]),["todos","Todos"]];
+  $("chipsEstado").innerHTML=chips.map(([k,l])=>`<button class="chip" aria-pressed="${filtro===k}" onclick="setFiltro('${k}')">${l} <span class="n">${base.filter(r=>pasaEstado(r,k)).length}</span></button>`).join("");
+  $("chipsTipo").innerHTML=[["","Todos los tipos"],...TIPOS.map(t=>[t.k,t.ic+" "+t.l])].map(([k,l])=>`<button class="chip t" aria-pressed="${filtroTipo===k}" onclick="setTipoF('${k}')">${l}</button>`).join("");
+
+  let L=filtrados();
+  if(filtro==="cita") L.sort((a,b)=>(a.cita||"9").localeCompare(b.cita||"9")||a.numero-b.numero);
+  else L.sort((a,b)=>b.numero-a.numero||b.fecha.localeCompare(a.fecha));
+  const hayFiltro=filtro!=="activos"||filtroTipo||query;
+  $("listTitle").textContent=filtro==="activos"?"Pendientes":(filtro==="todos"?"Todos los ingresos":pasoDe(filtro).l);
+  $("listCount").textContent=hayFiltro?`${L.length} de ${R.length}`:plural(L.length,"ingreso","ingresos");
+  if(!R.length){ $("list").innerHTML=`<div class="empty"><b>Todavía no hay ingresos</b>Cuando alguien deje (o vaya a dejar) su equipo a garantía o mantenimiento, anotalo con el formulario.</div>`; return; }
+  if(!L.length){ $("list").innerHTML=`<div class="empty"><b>No hay ingresos aquí</b><button class="btn ghost sm" style="margin-top:10px" onclick="quitarFiltros()">Ver todos</button></div>`; return; }
+  $("list").innerHTML=L.map(r=>{
+    const t=tipoDe(r.tipo), iAct=PASOS.findIndex(p=>p.k===r.estado);
+    const compra=[r.compra?"comprado el "+ymdCorto(r.compra):"", r.factura?"factura "+esc(r.factura):"", r.pp?"✔ Protection Plus":""].filter(Boolean).join(" · ");
+    return `<div class="gc e-${r.estado}">
+      <div class="gc-top"><span class="tipo ${t.k}">${t.ic} ${t.l}</span><span class="num">${numTxt(r.numero)}</span>${htmlCita(r)}
+        <div class="gc-acts"><button class="ib" onclick="imprimirBoleta(${jsq(r.id)})" title="Imprimir boleta">${IC_PRINT}</button><button class="ib" onclick="editarIngreso(${jsq(r.id)})" title="Editar">${IC_EDIT}</button><button class="ib del" onclick="borrarIngreso(${jsq(r.id)})" title="Borrar">${IC_DEL}</button></div></div>
+      <div class="gc-prod">${esc(r.producto)}${r.serie?`<span>S/N ${esc(r.serie)}</span>`:""}</div>
+      <div class="gc-who"><b>${esc(r.nombre)}</b><a class="tel" href="tel:${esc(soloDigitos(r.telefono))}">${esc(telBonito(r.telefono))}</a>
+        <a class="wa" href="https://wa.me/${esc(telWa(r.telefono))}?text=${esc(encodeURIComponent(textoWa(r)))}" target="_blank" rel="noopener" title="Abrir chat de WhatsApp con mensaje listo">${IC_WA}WhatsApp</a></div>
+      <div class="gc-info">
+        <div><b>Falla / motivo:</b> ${esc(r.motivo)}</div>
+        ${r.accesorios?`<div><b>Deja:</b> ${esc(r.accesorios)}</div>`:""}
+        ${r.nota?`<div><b>Notas:</b> ${esc(r.nota)}</div>`:""}
+        ${compra?`<div><b>Compra:</b> ${compra}</div>`:""}
+      </div>
+      <div class="gc-meta">Registró <b>${esc(r.registro||"—")}</b> · ${esc(fechaBonita(r.fecha))}</div>
+      <div class="pasos">${PASOS.map((p,i)=>`<button class="paso p-${p.k}${i===iAct?" actual":(i<iAct?" hecho":"")}" onclick="setPaso(${jsq(r.id)},'${p.k}')" title="${p.l}"><i>${p.ic}</i>${p.c}${r.pasos[p.k]?`<small>${fechaCorta(r.pasos[p.k]).slice(0,5)}</small>`:""}</button>`).join("")}</div>
+    </div>`;
+  }).join("");
+}
+function setFiltro(k){ filtro=k; render(); }
+function setTipoF(k){ filtroTipo=k; render(); }
+function quitarFiltros(){ filtro="todos"; filtroTipo=""; query=""; $("q").value=""; render(); }
+
+// ============================================================
+//  BOLETA (para imprimir y entregar al cliente)
+// ============================================================
+function imprimirBoleta(id){
+  const r=datos.registros.find(x=>x.id===id); if(!r) return;
+  const logo=new URL("../recepcion/logo.png", location.href).href, t=tipoDe(r.tipo);
+  const fila=(k,v)=>v?`<tr><th>${k}</th><td>${esc(v)}</td></tr>`:"";
+  const copia=quien=>`<section>
+    <header><img src="${logo}" alt="DJI"><div><b>Boleta de recepción · ${t.l}</b><span>${quien}</span></div><div class="n">${numTxt(r.numero)}<small>${fechaCorta(r.pasos.recibido||r.fecha)}</small></div></header>
+    <table>
+      ${fila("Cliente",r.nombre)}${fila("Teléfono",telBonito(r.telefono))}${fila("Correo",r.correo)}
+      ${fila("Equipo",r.producto)}${fila("N.º de serie",r.serie)}${fila("Falla / motivo",r.motivo)}${fila("Deja",r.accesorios)}${fila("Cómo viene",r.nota)}
+      ${r.tipo==="garantia"?fila("Compra",[r.compra?ymdCorto(r.compra):"",r.factura?"Factura "+r.factura:""].filter(Boolean).join(" · ")):""}
+      ${r.tipo==="garantia"&&r.pp?fila("Protection Plus","Sí"):""}
+      ${fila("Recibió",r.registro)}
+    </table>
+    <p class="nota">Presente esta boleta al recoger su equipo.</p>
+    <div class="firmas"><div>Firma del cliente</div><div>Firma de la tienda</div></div>
+  </section>`;
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Boleta ${numTxt(r.numero)}</title><style>
+    @page{size:letter;margin:12mm}
+    *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#14171c;font-size:12.5px}
+    section{border:1.5px solid #14171c;border-radius:10px;padding:14px 16px;page-break-inside:avoid}
+    .corte{border-top:1.5px dashed #8b93a1;margin:16px 0;text-align:center;color:#8b93a1;font-size:10px;line-height:0}.corte span{background:#fff;padding:0 8px}
+    header{display:flex;align-items:center;gap:14px;border-bottom:1.5px solid #14171c;padding-bottom:10px;margin-bottom:8px}
+    header img{height:26px;filter:invert(1)}header div{flex:1;display:flex;flex-direction:column}header b{font-size:15px}header span{font-size:11px;color:#3b424d;text-transform:uppercase;letter-spacing:.5px}
+    .n{flex:0;text-align:right;font:800 17px "Consolas",monospace;white-space:nowrap}.n small{display:block;font:600 11px -apple-system,"Segoe UI",sans-serif;color:#3b424d}
+    table{width:100%;border-collapse:collapse}th{width:120px;text-align:left;font-weight:700;color:#3b424d;padding:4px 8px 4px 0;vertical-align:top}td{padding:4px 0;border-bottom:1px solid #e9ebef}
+    .nota{margin:10px 0 0;font-size:11px;color:#3b424d}
+    .firmas{display:flex;gap:30px;margin-top:34px}.firmas div{flex:1;border-top:1px solid #14171c;text-align:center;padding-top:4px;font-size:11px;color:#3b424d}
+  </style></head><body>${copia("Copia del cliente")}<div class="corte"><span>✂ cortar aquí</span></div>${copia("Copia de la tienda")}
+  <script>window.onload=function(){setTimeout(function(){window.print();},250);};<\/script></body></html>`;
+  const w=window.open("","_blank");
+  if(!w){ alert("El navegador bloqueó la ventana de la boleta. Permití las ventanas emergentes para esta página."); return; }
+  w.document.open(); w.document.write(html); w.document.close();
+}
+
+// ============================================================
+//  AJUSTES: respaldo
+// ============================================================
+function abrirAjustes(){ $("ajModal").classList.add("show"); }
+function cerrarAjustes(){ $("ajModal").classList.remove("show"); }
+function descargarRespaldo(){
+  const blob=new Blob([JSON.stringify({tipo:"garantias_dji",exportado:new Date().toISOString(),...datos},null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download="Respaldo garantias DJI "+fechaCorta(new Date().toISOString()).replace(/\//g,"-")+".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  toast("Respaldo descargado");
+}
+$("archivo").addEventListener("change",async e=>{
+  const f=e.target.files[0]; e.target.value=""; if(!f) return;
+  try{
+    const d=JSON.parse(await f.text());
+    if(!d || !Array.isArray(d.registros)) throw new Error("formato");
+    let nuevos=0, act=0;
+    d.registros.map(limpiarRegistro).filter(Boolean).forEach(r=>{
+      const ex=datos.registros.find(x=>x.id===r.id);
+      if(!ex){ datos.registros.push(r); nuevos++; }
+      else if((r.actualizado||r.fecha)>(ex.actualizado||ex.fecha)){ Object.assign(ex,r); act++; }
+    });
+    guardar(); render(); renderDatalist();
+    alert(`Respaldo cargado: ${plural(nuevos,"ingreso nuevo","ingresos nuevos")}${act?`, ${plural(act,"actualizado","actualizados")}`:""}.`);
+  }catch(err){ alert("Ese archivo no es un respaldo de garantías válido."); }
+});
+
+// ============================================================
+//  EXPORTAR A EXCEL (diseño DJI)
+// ============================================================
+async function exportExcel(){
+  const L=filtrados().sort((a,b)=>a.numero-b.numero);
+  if(!L.length){ alert(datos.registros.length?"No hay ingresos con el filtro actual.":"Todavía no hay ingresos registrados."); return; }
+  const DARK="FF44546A", WHITE="FFFFFFFF", INK="FF4A4F59", GRIDBG="FFF7F8FA";
+  const wb=new ExcelJS.Workbook();
+  const ws=wb.addWorksheet("Garantías",{views:[{showGridLines:false,state:"frozen",ySplit:5}]});
+  const heads=["N.º","Fecha","Tipo","Paso","Producto","N.º de serie","Falla / motivo","Deja","Notas","Compra","Factura","Protection Plus","Cliente","Teléfono","Correo","Viene el","Registró"];
+  const widths=[9,11,14,19,26,18,34,26,26,11,12,10,24,12,24,11,12];
+  ws.columns=[{width:3},...widths.map(w=>({width:w})),{width:3}];
+  const B=2, K=B+heads.length-1;
+  const thin={style:"thin",color:{argb:"FFB9C0CC"}}, border={top:thin,left:thin,bottom:thin,right:thin};
+  const band=c=>{ c.fill={type:"pattern",pattern:"solid",fgColor:{argb:DARK}}; c.font={name:"Calibri",size:12,bold:true,color:{argb:WHITE}}; };
+  ws.mergeCells(1,B,3,K);
+  for(let r=1;r<=3;r++) for(let c=B;c<=K;c++) band(ws.getCell(r,c));
+  try{ const img=wb.addImage({base64:window.DJI_LOGO_B64,extension:"png"}); ws.addImage(img,{tl:{col:K-1.2,row:0.25},ext:{width:95,height:52},editAs:"oneCell"}); }catch(e){}
+  ws.mergeCells(4,B,4,B+6); const t=ws.getCell(4,B); t.value="Garantías y mantenimientos   ·   Exportado: "+fechaCorta(new Date().toISOString()); band(t); t.alignment={vertical:"middle",indent:1};
+  ws.mergeCells(4,B+7,4,K); const tr=ws.getCell(4,B+7); tr.value=plural(L.length,"ingreso","ingresos"); band(tr); tr.alignment={vertical:"middle",horizontal:"right",indent:1};
+  ws.getRow(4).height=20;
+  heads.forEach((h,i)=>{ const c=ws.getCell(5,B+i); c.value=h; band(c); c.border=border; c.alignment={vertical:"middle",horizontal:"center",wrapText:true}; });
+  ws.getRow(5).height=30;
+  const font={name:"Calibri",size:11,color:{argb:INK}};
+  let r=6;
+  L.forEach(x=>{
+    const vals=[numTxt(x.numero),fechaCorta(x.fecha),tipoDe(x.tipo).l,pasoDe(x.estado).l,x.producto,x.serie,x.motivo,x.accesorios,x.nota,x.compra?ymdCorto(x.compra):"",x.factura,x.pp?"Sí":"",x.nombre,telBonito(x.telefono),x.correo,x.cita?ymdCorto(x.cita):"",x.registro];
+    vals.forEach((v,i)=>{ const c=ws.getCell(r,B+i); c.value=v; c.font=font; c.border=border; c.fill={type:"pattern",pattern:"solid",fgColor:{argb:GRIDBG}}; c.alignment={vertical:"top",wrapText:[6,7,8].includes(i),horizontal:[0,1,9,11,13,15].includes(i)?"center":"left",indent:[0,1,9,11,13,15].includes(i)?0:1}; });
+    r++;
+  });
+  ws.mergeCells(r,B,r,B+6); const g1=ws.getCell(r,B); g1.value="TOTAL";
+  ws.mergeCells(r,B+7,r,K); const g2=ws.getCell(r,B+7);
+  g2.value=PASOS.map(p=>[p.c,L.filter(x=>x.estado===p.k).length]).filter(([,n])=>n).map(([l,n])=>`${l}: ${n}`).join("  ·  ");
+  for(let c=B;c<=K;c++){ const cell=ws.getCell(r,c); band(cell); cell.border=border; }
+  g1.alignment={horizontal:"left",indent:1}; g2.alignment={horizontal:"right",indent:1};
+  ws.getRow(r).height=22;
+  const buf=await wb.xlsx.writeBuffer();
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
+  a.download="Garantias DJI "+fechaCorta(new Date().toISOString()).replace(/\//g,"-")+".xlsx";
+  document.body.appendChild(a); a.click(); a.remove();
+  toast("Excel exportado");
+}
+
+// ---------- eventos ----------
+$("fGuardar").addEventListener("click",guardarIngreso);
+$("fCancelar").addEventListener("click",()=>{ limpiarForm(); $("status").className="status"; });
+document.querySelectorAll("#fLlegada button").forEach(b=>b.addEventListener("click",()=>{ llegada=b.dataset.v; renderLlegada(); if(llegada==="cita") $("fCita").focus(); }));
+$("q").addEventListener("input",e=>{ query=e.target.value; render(); });
+$("btnExport").addEventListener("click",exportExcel);
+$("btnAjustes").addEventListener("click",abrirAjustes);
+$("ajModal").addEventListener("click",e=>{ if(e.target.id==="ajModal") cerrarAjustes(); });
+document.querySelectorAll(".kpi").forEach(k=>k.addEventListener("click",()=>{ filtro=k.dataset.f; render(); }));
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && $("ajModal").classList.contains("show")) cerrarAjustes(); });
+
+// ---------- inicio ----------
+cargar();
+limpiarForm();
+renderDatalist();
+render();
+conectarNube();
+</script>
+</body>
+</html>
