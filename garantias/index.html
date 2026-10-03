@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Garantías y mantenimientos · DJI</title>
+<title>Garantías y Protection Plus · DJI</title>
 <style>
   :root{
     --bg:#f3f4f7; --card:#ffffff; --ink:#14171c; --ink-2:#3b424d; --muted:#8b93a1;
@@ -124,8 +124,7 @@
   .gc-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .tipo{font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:20px;letter-spacing:.3px;white-space:nowrap}
   .tipo.garantia{background:var(--accent-bg);color:#1e40af}
-  .tipo.mantenimiento{background:var(--teal-bg);color:#0b5566}
-  .tipo.reparacion{background:var(--warn-bg);color:#8a5b12}
+  .tipo.protection{background:var(--violet-bg);color:#5b21b6}
   .num{font-family:"Consolas","SF Mono",monospace;font-weight:800;font-size:12.5px;color:var(--muted)}
   .gc-acts{margin-left:auto;display:flex;gap:6px}
   .ib{width:32px;height:32px;border-radius:9px;border:none;background:var(--line-2);color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center}
@@ -208,7 +207,7 @@
 </head>
 <body>
 <div class="appbar">
-  <b>Garantías y mantenimientos</b>
+  <b>Garantías y Protection Plus</b>
   <div class="ab-right">
     <span id="nubeEstado"></span>
     <button class="ab-btn" id="btnExport" title="Exportar a Excel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg><span>Excel</span></button>
@@ -229,7 +228,7 @@
     <!-- formulario -->
     <div class="colA">
       <div class="card fcard" id="fcard">
-        <div class="f-h"><b id="fTitle">Nuevo ingreso</b><span id="fSub">Anotá a quien deja (o va a dejar) su equipo a garantía o mantenimiento.</span></div>
+        <div class="f-h"><b id="fTitle">Nuevo ingreso</b><span id="fSub">Anotá a quien deja (o va a dejar) su equipo por garantía o Protection Plus.</span></div>
 
         <span class="fl">¿Qué necesita?</span>
         <div class="seg" id="fTipo"></div>
@@ -241,19 +240,18 @@
         <label class="fl" for="fSerie">Número de serie <i>(opcional)</i></label>
         <input class="in up" id="fSerie" placeholder="Viene en la caja o debajo del equipo" autocomplete="off" spellcheck="false">
         <label class="fl" for="fMotivo">Falla o motivo</label>
-        <textarea class="in" id="fMotivo" rows="2" placeholder="Ej: el gimbal no se estabiliza / mantenimiento general"></textarea>
+        <textarea class="in" id="fMotivo" rows="2" placeholder="Ej: el gimbal no se estabiliza / se cayó y se quebró un brazo"></textarea>
         <label class="fl" for="fAcc">Lo que deja <i>(opcional)</i></label>
         <input class="in" id="fAcc" placeholder="Ej: dron, control, 2 baterías, cargador, estuche" autocomplete="off">
         <label class="fl" for="fNota">Cómo viene / notas <i>(opcional)</i></label>
         <textarea class="in" id="fNota" rows="2" placeholder="Ej: rayón en el brazo izquierdo, hélice quebrada"></textarea>
 
         <div id="fCompraBox">
-          <div class="f-sec">Datos de compra (para la garantía)</div>
+          <div class="f-sec">Datos de compra</div>
           <div class="row2">
             <div><label class="fl" for="fCompra">Fecha de compra <i>(opcional)</i></label><input class="in" id="fCompra" type="date"></div>
             <div><label class="fl" for="fFactura">N.º de factura <i>(opcional)</i></label><input class="in" id="fFactura" autocomplete="off"></div>
           </div>
-          <label class="chk"><input type="checkbox" id="fPP"> Tiene Protection Plus</label>
         </div>
 
         <div class="f-sec">Cliente</div>
@@ -327,7 +325,7 @@
 <script src="../recepcion/catalog.js"></script>
 <script>
 /* ============================================================
-   Garantías y mantenimientos — clientes que dejan (o van a
+   Garantías y Protection Plus — clientes que dejan (o van a
    dejar) su equipo, y en qué paso va cada uno.
    ============================================================ */
 "use strict";
@@ -338,9 +336,8 @@ const LS_ULTIMO   = "clientes_dji_ultimo";  // último que registró en este equ
 const VENDEDORES_INICIALES = ["Enrique","Byron","Audelino"];
 
 const TIPOS = [
-  {k:"garantia",      l:"Garantía",      ic:"🛡️"},
-  {k:"mantenimiento", l:"Mantenimiento", ic:"🧰"},
-  {k:"reparacion",    l:"Reparación",    ic:"🔧"}
+  {k:"garantia",   l:"Garantía",        ic:"📋", frase:"la garantía"},
+  {k:"protection", l:"Protection Plus", ic:"🛡️", frase:"el Protection Plus"}
 ];
 const PASOS = [
   {k:"cita",      l:"Por recibir",          c:"Por recibir",   ic:"📅"},
@@ -385,7 +382,7 @@ function limpiarRegistro(r){
   const S=v=>String(v??"").trim();
   const o={
     id:S(r.id)||nuevoId(), numero:Number(r.numero)||0, fecha:S(r.fecha)||new Date().toISOString(),
-    tipo:TIPOS.some(t=>t.k===r.tipo)?r.tipo:"garantia",
+    tipo:TIPOS.some(t=>t.k===r.tipo)?r.tipo:(r.pp?"protection":"garantia"),
     producto:S(r.producto), serie:S(r.serie).toUpperCase(), motivo:S(r.motivo), accesorios:S(r.accesorios), nota:S(r.nota),
     compra:S(r.compra), factura:S(r.factura), pp:!!r.pp,
     nombre:S(r.nombre), telefono:S(r.telefono), correo:S(r.correo),
@@ -462,7 +459,6 @@ addEventListener("storage",e=>{ if(e.key===LS_CLIENTES){ cargarVendedores(); ren
 // ============================================================
 function renderTipos(){
   $("fTipo").innerHTML=TIPOS.map(t=>`<button type="button" aria-pressed="${t.k===tipo}" onclick="elegirTipo('${t.k}')">${t.ic} ${t.l}</button>`).join("");
-  $("fCompraBox").hidden = tipo!=="garantia";
 }
 function elegirTipo(k){ tipo=k; renderTipos(); }
 function renderLlegada(){
@@ -490,20 +486,20 @@ function productoCanonico(t){ const k=fold(t); return [...PRODUCTOS_DJI, ...dato
 const CAMPOS={fProd:"producto",fSerie:"serie",fMotivo:"motivo",fAcc:"accesorios",fNota:"nota",fCompra:"compra",fFactura:"factura",fNom:"nombre",fTel:"telefono",fCorreo:"correo"};
 function limpiarForm(){
   editId=null; tipo="garantia"; llegada=null;
-  Object.keys(CAMPOS).forEach(id=>$(id).value=""); $("fPP").checked=false; $("fCita").value=""; $("fCita2").value="";
+  Object.keys(CAMPOS).forEach(id=>$(id).value=""); $("fCita").value=""; $("fCita2").value="";
   try{ const u=localStorage.getItem(LS_ULTIMO); registro=(u && vendedores.includes(u)) ? u : null; }catch(e){ registro=null; }
   $("fcard").classList.remove("editing");
   $("fTitle").textContent="Nuevo ingreso";
-  $("fSub").textContent="Anotá a quien deja (o va a dejar) su equipo a garantía o mantenimiento.";
+  $("fSub").textContent="Anotá a quien deja (o va a dejar) su equipo por garantía o Protection Plus.";
   $("fGuardarTxt").textContent="Guardar ingreso";
   $("fCancelar").hidden=true; $("fLlegadaBox").hidden=false; $("fCitaEdit").hidden=true;
   renderTipos(); renderLlegada(); renderVendedoresForm();
 }
-function leerForm(){ const o={}; for(const id in CAMPOS) o[CAMPOS[id]]=$(id).value.trim(); o.serie=o.serie.toUpperCase(); o.pp=$("fPP").checked; return o; }
+function leerForm(){ const o={}; for(const id in CAMPOS) o[CAMPOS[id]]=$(id).value.trim(); o.serie=o.serie.toUpperCase(); return o; }
 function guardarIngreso(){
   const f=leerForm(); f.producto=productoCanonico(f.producto);
   if(!f.producto){ setStatus("warn","📦","Escribí el producto (ej: DJI Mini 5 Pro)."); $("fProd").focus(); return; }
-  if(!f.motivo){ setStatus("warn","📝","Escribí la falla o el motivo (ej: mantenimiento general)."); $("fMotivo").focus(); return; }
+  if(!f.motivo){ setStatus("warn","📝","Escribí la falla o lo que le pasó al equipo."); $("fMotivo").focus(); return; }
   if(!f.nombre){ setStatus("warn","👤","Escribí el nombre del cliente."); $("fNom").focus(); return; }
   if(soloDigitos(f.telefono).length<8){ setStatus("warn","📱","Escribí el número de teléfono completo (8 dígitos)."); $("fTel").focus(); return; }
   if(!editId && !llegada){ setStatus("warn","📥","Indicá si ya dejó el equipo o viene después."); return; }
@@ -512,13 +508,13 @@ function guardarIngreso(){
   const ahora=new Date().toISOString();
   if(editId){
     const r=datos.registros.find(x=>x.id===editId);
-    if(r){ Object.assign(r,f,{tipo,registro,actualizado:ahora}); if(!(tipo==="garantia")){ r.compra=""; r.factura=""; r.pp=false; } r.cita=$("fCita2").value; }
+    if(r){ Object.assign(r,f,{tipo,registro,pp:tipo==="protection",actualizado:ahora}); r.cita=$("fCita2").value; }
     guardar(); limpiarForm(); render(); renderDatalist();
     setStatus("ok","✔","Cambios guardados."); return;
   }
   const numero=datos.registros.reduce((m,x)=>Math.max(m,x.numero||0),0)+1;
   const r=Object.assign({id:nuevoId(),numero,fecha:ahora,tipo,registro,estado:llegada,cita:llegada==="cita"?$("fCita").value:"",pasos:{[llegada]:ahora}},f);
-  if(tipo!=="garantia"){ r.compra=""; r.factura=""; r.pp=false; }
+  r.pp = tipo==="protection";
   datos.registros.push(limpiarRegistro(r));
   guardar();
   const reg=registro; limpiarForm(); registro=reg; renderVendedoresForm();
@@ -529,7 +525,7 @@ function editarIngreso(id){
   const r=datos.registros.find(x=>x.id===id); if(!r) return;
   editId=id; tipo=r.tipo;
   for(const fid in CAMPOS) $(fid).value=r[CAMPOS[fid]]||"";
-  $("fPP").checked=!!r.pp; $("fCita2").value=r.cita||"";
+  $("fCita2").value=r.cita||"";
   registro=r.registro||null;
   renderTipos(); renderVendedoresForm();
   $("fLlegadaBox").hidden=true; $("fCitaEdit").hidden=false;
@@ -580,7 +576,7 @@ const IC_PRINT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
 const IC_WA='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15.1L2 22l5-1.3A10 10 0 1012 2zm0 18.2a8.2 8.2 0 01-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1112 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 01-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 00-.7.3 3 3 0 00-.9 2.2 5.2 5.2 0 001.1 2.7 11.8 11.8 0 004.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 001.8-1.3 2.2 2.2 0 00.1-1.3c0-.1-.2-.2-.4-.3z"/></svg>';
 
 function textoWa(r){
-  const n=(r.nombre||"").split(/\s+/)[0]||"", p=`*${r.producto}*`, t=tipoDe(r.tipo).l.toLowerCase();
+  const n=(r.nombre||"").split(/\s+/)[0]||"", p=`*${r.producto}*`, t=tipoDe(r.tipo).frase;
   switch(r.estado){
     case "cita": return `¡Hola ${n}! 👋 Le escribimos de la tienda DJI para confirmar que nos trae su ${p} para ${t}${r.cita?" el "+diaBonito(r.cita):""}. ¡Lo esperamos! 😊`;
     case "recibido": return `¡Hola ${n}! 👋 Le escribimos de la tienda DJI: recibimos su ${p} para ${t} (boleta ${numTxt(r.numero)}). Le avisaremos cuando tengamos noticias.`;
@@ -610,11 +606,11 @@ function render(){
   const hayFiltro=filtro!=="activos"||filtroTipo||query;
   $("listTitle").textContent=filtro==="activos"?"Pendientes":(filtro==="todos"?"Todos los ingresos":pasoDe(filtro).l);
   $("listCount").textContent=hayFiltro?`${L.length} de ${R.length}`:plural(L.length,"ingreso","ingresos");
-  if(!R.length){ $("list").innerHTML=`<div class="empty"><b>Todavía no hay ingresos</b>Cuando alguien deje (o vaya a dejar) su equipo a garantía o mantenimiento, anotalo con el formulario.</div>`; return; }
+  if(!R.length){ $("list").innerHTML=`<div class="empty"><b>Todavía no hay ingresos</b>Cuando alguien deje (o vaya a dejar) su equipo por garantía o Protection Plus, anotalo con el formulario.</div>`; return; }
   if(!L.length){ $("list").innerHTML=`<div class="empty"><b>No hay ingresos aquí</b><button class="btn ghost sm" style="margin-top:10px" onclick="quitarFiltros()">Ver todos</button></div>`; return; }
   $("list").innerHTML=L.map(r=>{
     const t=tipoDe(r.tipo), iAct=PASOS.findIndex(p=>p.k===r.estado);
-    const compra=[r.compra?"comprado el "+ymdCorto(r.compra):"", r.factura?"factura "+esc(r.factura):"", r.pp?"✔ Protection Plus":""].filter(Boolean).join(" · ");
+    const compra=[r.compra?"comprado el "+ymdCorto(r.compra):"", r.factura?"factura "+esc(r.factura):""].filter(Boolean).join(" · ");
     return `<div class="gc e-${r.estado}">
       <div class="gc-top"><span class="tipo ${t.k}">${t.ic} ${t.l}</span><span class="num">${numTxt(r.numero)}</span>${htmlCita(r)}
         <div class="gc-acts"><button class="ib" onclick="imprimirBoleta(${jsq(r.id)})" title="Imprimir boleta">${IC_PRINT}</button><button class="ib" onclick="editarIngreso(${jsq(r.id)})" title="Editar">${IC_EDIT}</button><button class="ib del" onclick="borrarIngreso(${jsq(r.id)})" title="Borrar">${IC_DEL}</button></div></div>
@@ -648,8 +644,7 @@ function imprimirBoleta(id){
     <table>
       ${fila("Cliente",r.nombre)}${fila("Teléfono",telBonito(r.telefono))}${fila("Correo",r.correo)}
       ${fila("Equipo",r.producto)}${fila("N.º de serie",r.serie)}${fila("Falla / motivo",r.motivo)}${fila("Deja",r.accesorios)}${fila("Cómo viene",r.nota)}
-      ${r.tipo==="garantia"?fila("Compra",[r.compra?ymdCorto(r.compra):"",r.factura?"Factura "+r.factura:""].filter(Boolean).join(" · ")):""}
-      ${r.tipo==="garantia"&&r.pp?fila("Protection Plus","Sí"):""}
+      ${fila("Compra",[r.compra?ymdCorto(r.compra):"",r.factura?"Factura "+r.factura:""].filter(Boolean).join(" · "))}
       ${fila("Recibió",r.registro)}
     </table>
     <p class="nota">Presente esta boleta al recoger su equipo.</p>
@@ -710,8 +705,8 @@ async function exportExcel(){
   const DARK="FF44546A", WHITE="FFFFFFFF", INK="FF4A4F59", GRIDBG="FFF7F8FA";
   const wb=new ExcelJS.Workbook();
   const ws=wb.addWorksheet("Garantías",{views:[{showGridLines:false,state:"frozen",ySplit:5}]});
-  const heads=["N.º","Fecha","Tipo","Paso","Producto","N.º de serie","Falla / motivo","Deja","Notas","Compra","Factura","Protection Plus","Cliente","Teléfono","Correo","Viene el","Registró"];
-  const widths=[9,11,14,19,26,18,34,26,26,11,12,10,24,12,24,11,12];
+  const heads=["N.º","Fecha","Tipo","Paso","Producto","N.º de serie","Falla / motivo","Deja","Notas","Compra","Factura","Cliente","Teléfono","Correo","Viene el","Registró"];
+  const widths=[9,11,16,19,26,18,34,26,26,11,12,24,12,24,11,12];
   ws.columns=[{width:3},...widths.map(w=>({width:w})),{width:3}];
   const B=2, K=B+heads.length-1;
   const thin={style:"thin",color:{argb:"FFB9C0CC"}}, border={top:thin,left:thin,bottom:thin,right:thin};
@@ -719,7 +714,7 @@ async function exportExcel(){
   ws.mergeCells(1,B,3,K);
   for(let r=1;r<=3;r++) for(let c=B;c<=K;c++) band(ws.getCell(r,c));
   try{ const img=wb.addImage({base64:window.DJI_LOGO_B64,extension:"png"}); ws.addImage(img,{tl:{col:K-1.2,row:0.25},ext:{width:95,height:52},editAs:"oneCell"}); }catch(e){}
-  ws.mergeCells(4,B,4,B+6); const t=ws.getCell(4,B); t.value="Garantías y mantenimientos   ·   Exportado: "+fechaCorta(new Date().toISOString()); band(t); t.alignment={vertical:"middle",indent:1};
+  ws.mergeCells(4,B,4,B+6); const t=ws.getCell(4,B); t.value="Garantías y Protection Plus   ·   Exportado: "+fechaCorta(new Date().toISOString()); band(t); t.alignment={vertical:"middle",indent:1};
   ws.mergeCells(4,B+7,4,K); const tr=ws.getCell(4,B+7); tr.value=plural(L.length,"ingreso","ingresos"); band(tr); tr.alignment={vertical:"middle",horizontal:"right",indent:1};
   ws.getRow(4).height=20;
   heads.forEach((h,i)=>{ const c=ws.getCell(5,B+i); c.value=h; band(c); c.border=border; c.alignment={vertical:"middle",horizontal:"center",wrapText:true}; });
@@ -727,8 +722,8 @@ async function exportExcel(){
   const font={name:"Calibri",size:11,color:{argb:INK}};
   let r=6;
   L.forEach(x=>{
-    const vals=[numTxt(x.numero),fechaCorta(x.fecha),tipoDe(x.tipo).l,pasoDe(x.estado).l,x.producto,x.serie,x.motivo,x.accesorios,x.nota,x.compra?ymdCorto(x.compra):"",x.factura,x.pp?"Sí":"",x.nombre,telBonito(x.telefono),x.correo,x.cita?ymdCorto(x.cita):"",x.registro];
-    vals.forEach((v,i)=>{ const c=ws.getCell(r,B+i); c.value=v; c.font=font; c.border=border; c.fill={type:"pattern",pattern:"solid",fgColor:{argb:GRIDBG}}; c.alignment={vertical:"top",wrapText:[6,7,8].includes(i),horizontal:[0,1,9,11,13,15].includes(i)?"center":"left",indent:[0,1,9,11,13,15].includes(i)?0:1}; });
+    const vals=[numTxt(x.numero),fechaCorta(x.fecha),tipoDe(x.tipo).l,pasoDe(x.estado).l,x.producto,x.serie,x.motivo,x.accesorios,x.nota,x.compra?ymdCorto(x.compra):"",x.factura,x.nombre,telBonito(x.telefono),x.correo,x.cita?ymdCorto(x.cita):"",x.registro];
+    vals.forEach((v,i)=>{ const c=ws.getCell(r,B+i); c.value=v; c.font=font; c.border=border; c.fill={type:"pattern",pattern:"solid",fgColor:{argb:GRIDBG}}; c.alignment={vertical:"top",wrapText:[6,7,8].includes(i),horizontal:[0,1,9,12,14].includes(i)?"center":"left",indent:[0,1,9,12,14].includes(i)?0:1}; });
     r++;
   });
   ws.mergeCells(r,B,r,B+6); const g1=ws.getCell(r,B); g1.value="TOTAL";
