@@ -459,9 +459,9 @@
   <button class="btn ok" onclick="exportExcel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Exportar</button>
 </div>
 
-<script src="../nube.js"></script>
+<script src="../nube.js?v=20261004b"></script>
 <script src="lib/exceljs.min.js"></script>
-<script src="catalog.js"></script>
+<script src="catalog.js?v=20261004b"></script>
 <script>
 /* ============================================================
    Recepción de Mercadería DJI — conteo por cajas
@@ -543,13 +543,14 @@ function loadCatalog(){
 const IC_CAJA='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5l8 4.5 8-4.5"/><path d="M12 12v9"/></svg>';
 function foto(codigo, tam){   // tam: "" (36px) · "s" · "xs" · "l"
   const p=byCode[codigo], cls="th"+(tam?" "+tam:"");
-  return p && p.img ? `<img class="${cls}" src="${esc(p.img)}" alt="" loading="lazy">` : `<span class="${cls}">${IC_CAJA}</span>`;
+  return p && p.img ? `<img class="${cls}" src="${esc(p.img)}" alt="" loading="lazy" onerror="sinFoto(this)">` : `<span class="${cls}">${IC_CAJA}</span>`;
 }
+function sinFoto(img){ const s=document.createElement("span"); s.className=img.className; s.innerHTML=IC_CAJA; img.replaceWith(s); }
 function renderFicha(){
   const f=$("ficha"), p=pick&&byCode[pick];
   if(!p){ f.hidden=true; f.innerHTML=""; f.dataset.cod=""; return; }
   const tot=unidadesDe(p.codigo);
-  f.innerHTML=(p.img?`<img class="foto" src="${esc(p.img)}" alt="">`:`<span class="foto">${IC_CAJA}</span>`)+
+  f.innerHTML=(p.img?`<img class="foto" src="${esc(p.img)}" alt="" onerror="sinFoto(this)">`:`<span class="foto">${IC_CAJA}</span>`)+
     `<div class="fi"><b>${esc(p.descripcion)}</b><span><span class="code">${esc(p.codigo)}</span>${p.ean?` · ▮▯▮ ${esc(p.ean)}`:""}</span></div>`+
     (tot?`<span class="ya">${tot} ya contados</span>`:"");
   f.hidden=false;
