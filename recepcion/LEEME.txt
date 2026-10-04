@@ -64,10 +64,13 @@ actual (no el catálogo).
 
 EXPORTAR
 --------
-"⬇️ Exportar a Excel" genera un archivo con el MISMO diseño DJI, en UN
-SOLO cuadro: los productos agrupados, con la cantidad que vino en cada
-caja, el subtotal de cada producto (TOTAL D000xx), el TOTAL GENERAL al
-final y el número de cajas recibidas arriba, junto a la fecha.
+"⬇️ Exportar a Excel" genera un archivo con el MISMO diseño DJI y DOS hojas:
+  1. "Resumen por producto": una fila por producto con el total que
+     ingresó (ej. Osmo Mobile 7 → 20) y el TOTAL GENERAL.
+  2. "Detalle por caja": los productos agrupados, con la cantidad que
+     vino en cada caja, el subtotal de cada producto (TOTAL D000xx) y el
+     TOTAL GENERAL.
+En las dos hojas aparece arriba la fecha y el número de cajas recibidas.
 Ya no lleva series.
 El archivo se llama "Recepcion DJI <fecha>.xlsx" y cae en tus Descargas.
 

@@ -459,9 +459,9 @@
   <button class="btn ok" onclick="exportExcel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Exportar</button>
 </div>
 
-<script src="../nube.js?v=20261004b"></script>
+<script src="../nube.js?v=20261005a"></script>
 <script src="lib/exceljs.min.js"></script>
-<script src="catalog.js?v=20261004b"></script>
+<script src="catalog.js?v=20261005a"></script>
 <script>
 /* ============================================================
    Recepción de Mercadería DJI — conteo por cajas
@@ -1169,72 +1169,92 @@ async function exportExcel(){
   if(!prods.length){ alert("Todavía no hay productos contados."); return; }
   const reg=cajasConProductos(), tot=recep.totalCajas;
   const DARK="FF44546A", WHITE="FFFFFFFF", INK="FF4A4F59", SUBBG="FFEDEFF3", GRIDBG="FFF7F8FA";
-  const wb=new ExcelJS.Workbook();
-  const ws=wb.addWorksheet("Recepción",{views:[{showGridLines:false}]});
-  ws.columns=[{width:3},{width:14},{width:62},{width:12},{width:26},{width:3}];
-  const B=2,C=3,D=4,E=5; // columnas Código/Descripción/Cantidad/Caja en B..E
-
   const thin={style:"thin",color:{argb:"FFB9C0CC"}};
   const border={top:thin,left:thin,bottom:thin,right:thin};
-  function bandCell(cell){ cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:DARK}}; cell.font={name:"Calibri",size:12,bold:true,color:{argb:WHITE}}; }
-
-  // --- franja superior con logo (filas 1-3) ---
-  ws.mergeCells(1,B,3,E);
-  bandCell(ws.getCell(1,B));
-  for(let r=1;r<=3;r++)for(let c=B;c<=E;c++){ws.getCell(r,c).fill={type:"pattern",pattern:"solid",fgColor:{argb:DARK}};}
-  try{
-    const imgId=wb.addImage({base64:window.DJI_LOGO_B64,extension:"png"});
-    ws.addImage(imgId,{tl:{col:E-0.05,row:0.25},ext:{width:95,height:52},editAs:"oneCell"});
-  }catch(e){}
-
-  // --- fila Fecha y cajas (fila 4) ---
-  const fr=4;
-  ws.mergeCells(fr,B,fr,C);
-  const fc=ws.getCell(fr,B); fc.value="Fecha:   "+fmtFecha(recep.fecha);
-  bandCell(fc); fc.alignment={vertical:"middle",horizontal:"left",indent:1};
-  ws.mergeCells(fr,D,fr,E);
-  const cc=ws.getCell(fr,D); cc.value="Cajas recibidas:   "+(tot&&tot!==reg?reg+" de "+tot:reg);
-  bandCell(cc); cc.alignment={vertical:"middle",horizontal:"right",indent:1};
-  ws.getRow(fr).height=20;
-
-  // --- encabezado de columnas (fila 5) ---
-  const hr=5; const heads={[B]:"Código",[C]:"Descripción",[D]:"Cantidad",[E]:"Caja"};
-  [B,C,D,E].forEach(c=>{ const cell=ws.getCell(hr,c); cell.value=heads[c]; bandCell(cell); cell.alignment={vertical:"middle",horizontal:c===C?"left":"center",indent:c===C?1:0}; cell.border=border; });
-  ws.getRow(hr).height=20;
-
-  // --- filas de datos: por producto, una fila por cada caja donde viene ---
-  let r=hr+1, grand=0;
   const dataFont={name:"Calibri",size:11,color:{argb:INK}};
-  prods.forEach(a=>{
-    grand+=a.total;
-    a.cajas.forEach(x=>{
+  const fill=argb=>({type:"pattern",pattern:"solid",fgColor:{argb}});
+  function bandCell(cell){ cell.fill=fill(DARK); cell.font={name:"Calibri",size:12,bold:true,color:{argb:WHITE}}; }
+  const grand=prods.reduce((a,x)=>a+x.total,0);
+  const cajasTxt=tot&&tot!==reg?reg+" de "+tot:String(reg);
+
+  const wb=new ExcelJS.Workbook();
+  let logo=null; try{ logo=wb.addImage({base64:window.DJI_LOGO_B64,extension:"png"}); }catch(e){}
+  // franja con logo (filas 1-3), fecha y cajas (fila 4) y encabezado de columnas (fila 5)
+  function encabezado(ws, ultima, heads, cajasCol){
+    const B=2;
+    ws.mergeCells(1,B,3,ultima);
+    for(let r=1;r<=3;r++)for(let c=B;c<=ultima;c++) ws.getCell(r,c).fill=fill(DARK);
+    bandCell(ws.getCell(1,B));
+    if(logo!==null){ try{ ws.addImage(logo,{tl:{col:ultima-0.05,row:0.25},ext:{width:95,height:52},editAs:"oneCell"}); }catch(e){} }
+    ws.mergeCells(4,B,4,cajasCol-1);
+    const fc=ws.getCell(4,B); fc.value="Fecha:   "+fmtFecha(recep.fecha);
+    bandCell(fc); fc.alignment={vertical:"middle",horizontal:"left",indent:1};
+    if(cajasCol<ultima) ws.mergeCells(4,cajasCol,4,ultima);
+    const cc=ws.getCell(4,cajasCol); cc.value=(cajasCol<ultima?"Cajas recibidas:   ":"Cajas: ")+cajasTxt;
+    bandCell(cc); cc.alignment={vertical:"middle",horizontal:"right",indent:1};
+    ws.getRow(4).height=20;
+    heads.forEach((h,i)=>{ const cell=ws.getCell(5,B+i); cell.value=h; bandCell(cell); cell.alignment={vertical:"middle",horizontal:i===1?"left":"center",indent:i===1?1:0}; cell.border=border; });
+    ws.getRow(5).height=20;
+  }
+
+  // ===== Hoja 1: Resumen por producto (cuánto ingresó de cada uno) =====
+  {
+    const ws=wb.addWorksheet("Resumen por producto",{views:[{showGridLines:false,state:"frozen",ySplit:5}]});
+    ws.columns=[{width:3},{width:14},{width:62},{width:18},{width:3}];
+    const B=2,C=3,D=4;
+    encabezado(ws, D, ["Código","Descripción","Cantidad"], D);
+    let r=6;
+    prods.forEach(a=>{
       const cB=ws.getCell(r,B); cB.value=a.codigo;
       const cC=ws.getCell(r,C); cC.value=a.descripcion;
-      const cD=ws.getCell(r,D); cD.value=x.cant;
-      const cE=ws.getCell(r,E); cE.value="Caja "+x.n;
-      [cB,cC,cD,cE].forEach(c=>{c.font=dataFont;c.border=border;c.fill={type:"pattern",pattern:"solid",fgColor:{argb:GRIDBG}};});
-      cB.alignment={horizontal:"center"}; cC.alignment={horizontal:"left",indent:1};
-      cD.alignment={horizontal:"center"}; cE.alignment={horizontal:"left",indent:1};
+      const cD=ws.getCell(r,D); cD.value=a.total;
+      [cB,cC,cD].forEach(c=>{ c.font=dataFont; c.border=border; c.fill=fill(GRIDBG); });
+      cB.alignment={horizontal:"center"}; cC.alignment={horizontal:"left",indent:1}; cD.alignment={horizontal:"center"};
       r++;
     });
-    // subtotal del producto
     ws.mergeCells(r,B,r,C);
-    const sB=ws.getCell(r,B); sB.value="TOTAL  "+a.codigo+"  ·  "+a.descripcion;
-    const sD=ws.getCell(r,D); sD.value=a.total;
-    const sE=ws.getCell(r,E); sE.value=a.total===1?"unidad":"unidades";
-    [B,C,D,E].forEach(c=>{const cell=ws.getCell(r,c);cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:SUBBG}};cell.border=border;cell.font={name:"Calibri",size:11,bold:true,color:{argb:"FF2B3441"}};});
-    sB.alignment={horizontal:"left",indent:1}; sD.alignment={horizontal:"center"}; sE.alignment={horizontal:"left",indent:1};
-    r++;
-  });
+    const gB=ws.getCell(r,B); gB.value="TOTAL GENERAL   ·   "+plural(prods.length,"producto","productos")+"   ·   "+plural(reg,"caja","cajas");
+    const gD=ws.getCell(r,D); gD.value=grand;
+    [B,C,D].forEach(c=>{ const cell=ws.getCell(r,c); bandCell(cell); cell.border=border; });
+    gB.alignment={horizontal:"left",indent:1}; gD.alignment={horizontal:"center"};
+    ws.getRow(r).height=22;
+  }
 
-  // --- total general ---
-  ws.mergeCells(r,B,r,C);
-  const gB=ws.getCell(r,B); gB.value="TOTAL GENERAL";
-  const gD=ws.getCell(r,D); gD.value=grand;
-  const gE=ws.getCell(r,E); gE.value=plural(prods.length,"producto","productos")+" · "+plural(reg,"caja","cajas");
-  [B,C,D,E].forEach(c=>{const cell=ws.getCell(r,c);bandCell(cell);cell.border=border;});
-  gB.alignment={horizontal:"left",indent:1}; gD.alignment={horizontal:"center"}; gE.alignment={horizontal:"left",indent:1};
-  ws.getRow(r).height=22;
+  // ===== Hoja 2: Detalle por caja (el mismo cuadro de siempre) =====
+  {
+    const ws=wb.addWorksheet("Detalle por caja",{views:[{showGridLines:false,state:"frozen",ySplit:5}]});
+    ws.columns=[{width:3},{width:14},{width:62},{width:12},{width:26},{width:3}];
+    const B=2,C=3,D=4,E=5; // columnas Código/Descripción/Cantidad/Caja en B..E
+    encabezado(ws, E, ["Código","Descripción","Cantidad","Caja"], D);
+    let r=6;
+    prods.forEach(a=>{
+      a.cajas.forEach(x=>{
+        const cB=ws.getCell(r,B); cB.value=a.codigo;
+        const cC=ws.getCell(r,C); cC.value=a.descripcion;
+        const cD=ws.getCell(r,D); cD.value=x.cant;
+        const cE=ws.getCell(r,E); cE.value="Caja "+x.n;
+        [cB,cC,cD,cE].forEach(c=>{ c.font=dataFont; c.border=border; c.fill=fill(GRIDBG); });
+        cB.alignment={horizontal:"center"}; cC.alignment={horizontal:"left",indent:1};
+        cD.alignment={horizontal:"center"}; cE.alignment={horizontal:"left",indent:1};
+        r++;
+      });
+      // subtotal del producto
+      ws.mergeCells(r,B,r,C);
+      const sB=ws.getCell(r,B); sB.value="TOTAL  "+a.codigo+"  ·  "+a.descripcion;
+      const sD=ws.getCell(r,D); sD.value=a.total;
+      const sE=ws.getCell(r,E); sE.value=a.total===1?"unidad":"unidades";
+      [B,C,D,E].forEach(c=>{ const cell=ws.getCell(r,c); cell.fill=fill(SUBBG); cell.border=border; cell.font={name:"Calibri",size:11,bold:true,color:{argb:"FF2B3441"}}; });
+      sB.alignment={horizontal:"left",indent:1}; sD.alignment={horizontal:"center"}; sE.alignment={horizontal:"left",indent:1};
+      r++;
+    });
+    ws.mergeCells(r,B,r,C);
+    const gB=ws.getCell(r,B); gB.value="TOTAL GENERAL";
+    const gD=ws.getCell(r,D); gD.value=grand;
+    const gE=ws.getCell(r,E); gE.value=plural(prods.length,"producto","productos")+" · "+plural(reg,"caja","cajas");
+    [B,C,D,E].forEach(c=>{ const cell=ws.getCell(r,c); bandCell(cell); cell.border=border; });
+    gB.alignment={horizontal:"left",indent:1}; gD.alignment={horizontal:"center"}; gE.alignment={horizontal:"left",indent:1};
+    ws.getRow(r).height=22;
+  }
 
   // descargar
   const buf=await wb.xlsx.writeBuffer();
@@ -1243,7 +1263,7 @@ async function exportExcel(){
   link.href=URL.createObjectURL(blob);
   link.download="Recepcion DJI "+fmtFecha(recep.fecha).replace(/\//g,"-")+".xlsx";
   document.body.appendChild(link); link.click(); link.remove();
-  setStatus("ok","⬇️","Excel exportado: "+link.download+(tot&&tot!==reg?` (ojo: ${reg} de ${tot} cajas registradas)`:""));
+  setStatus("ok","⬇️","Excel exportado: "+link.download+" (hojas: Resumen por producto y Detalle por caja)"+(tot&&tot!==reg?` · ojo: ${reg} de ${tot} cajas registradas`:""));
 }
 
 // ============================================================
