@@ -27,6 +27,8 @@ CÓMO SE USA
        · seguí escaneando: cada escaneo del mismo producto suma 1.
      Si escaneás OTRO producto, el que venías contando se guarda solo
      y se elige el nuevo.
+   - Al elegir o escanear un producto aparece su foto, el código y
+     cuántos van contados, para confirmar que es el correcto.
    - Si un mismo producto viene en varias cajas, se va sumando: la app
      te muestra el total que llevás de ese producto en la recepción.
 3. Tocá "Siguiente caja" y seguí con la caja 2, 3, …
@@ -77,4 +79,5 @@ ARCHIVOS (no borrar)
   catalog.js   -> catálogo base con códigos de barras (y el logo para el Excel)
   logo.png     -> logo DJI
   lib/exceljs.min.js -> motor para crear el Excel
-Mantené los 4 juntos en la misma carpeta.
+  img/         -> fotos chicas de cada producto (se ven al escanear)
+Mantené todo junto en la misma carpeta.

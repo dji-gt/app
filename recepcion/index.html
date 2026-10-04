@@ -126,6 +126,20 @@
   .stepper.sm input{width:50px;font-size:15px;padding:5px 0}
   .f-add{padding:15px 20px;font-size:15px}
 
+  /* fotos de producto */
+  .th{width:36px;height:36px;border-radius:8px;object-fit:contain;background:#fff;border:1px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#c3c9d3}
+  .th svg{width:55%;height:55%}
+  .th.s{width:30px;height:30px;border-radius:7px}
+  .th.xs{width:24px;height:24px;border-radius:6px}
+  .th.l{width:44px;height:44px;border-radius:10px}
+  .ficha{display:flex;align-items:center;gap:14px;margin-top:10px;padding:10px 12px;border:1.5px solid var(--ok-br);background:var(--ok-bg);border-radius:12px;animation:pop .2s ease}
+  .ficha .foto{width:84px;height:84px;border-radius:11px;object-fit:contain;background:#fff;border:1px solid var(--ok-br);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#c3c9d3}
+  .ficha .foto svg{width:46%;height:46%}
+  .ficha .fi{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+  .ficha .fi b{font-size:15.5px;line-height:1.25;color:#0b3d2c}
+  .ficha .fi span{font-size:12.5px;color:#2f6b55;font-weight:600}
+  .ficha .fi .code{font-family:"Consolas",monospace;font-weight:800}
+  .ficha .ya{font-size:12px;font-weight:800;color:#fff;background:var(--ok);border-radius:20px;padding:3px 10px;white-space:nowrap;align-self:flex-start}
   .box-now{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
   .box-now .bn-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
   .box-now .bn-h b{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:700}
@@ -266,6 +280,7 @@
     .colA{position:sticky;top:88px}
   }
   @media(max-width:720px){
+    .ficha .foto{width:64px;height:64px}
     .kpis{grid-template-columns:repeat(2,1fr);gap:11px}
     .kpi{padding:13px 13px 12px}
     .kpi-n{font-size:26px}
@@ -366,6 +381,7 @@
               <input id="pq" placeholder="Buscá o escaneá el producto…   ej: mobile 7 · D00017" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="sugg" aria-autocomplete="list">
               <div class="sugg" id="sugg" role="listbox"></div>
             </div>
+            <div class="ficha" id="ficha" hidden></div>
           </div>
           <div class="f-qty">
             <label for="qn">Unidades</label>
@@ -515,13 +531,31 @@ function loadCatalog(){
   PRODUCTS=[];
   (window.CATALOGO_BASE||[]).forEach(b=>{
     const ov=catDelta.overrides[b.codigo];
-    PRODUCTS.push({origCodigo:b.codigo,base:true,codigo:ov?ov.codigo:b.codigo,descripcion:ov?ov.descripcion:b.descripcion,ean:ov&&ov.ean!==undefined?ov.ean:(b.ean||"")});
+    PRODUCTS.push({origCodigo:b.codigo,base:true,codigo:ov?ov.codigo:b.codigo,descripcion:ov?ov.descripcion:b.descripcion,ean:ov&&ov.ean!==undefined?ov.ean:(b.ean||""),img:b.img||""});
   });
   catDelta.added.forEach(a=>{
-    if(!PRODUCTS.some(p=>p.codigo===a.codigo)) PRODUCTS.push({origCodigo:null,base:false,codigo:a.codigo,descripcion:a.descripcion,ean:a.ean||""});
+    if(!PRODUCTS.some(p=>p.codigo===a.codigo)) PRODUCTS.push({origCodigo:null,base:false,codigo:a.codigo,descripcion:a.descripcion,ean:a.ean||"",img:""});
   });
   byCode={};
   PRODUCTS.forEach(p=>{ byCode[p.codigo]=p; p.k=fold(p.codigo+" "+p.descripcion).split(" "); p.ean=String(p.ean||"").replace(/\D/g,""); });
+}
+// ---------- foto del producto ----------
+const IC_CAJA='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5l8 4.5 8-4.5"/><path d="M12 12v9"/></svg>';
+function foto(codigo, tam){   // tam: "" (36px) · "s" · "xs" · "l"
+  const p=byCode[codigo], cls="th"+(tam?" "+tam:"");
+  return p && p.img ? `<img class="${cls}" src="${esc(p.img)}" alt="" loading="lazy">` : `<span class="${cls}">${IC_CAJA}</span>`;
+}
+function renderFicha(){
+  const f=$("ficha"), p=pick&&byCode[pick];
+  if(!p){ f.hidden=true; f.innerHTML=""; f.dataset.cod=""; return; }
+  const tot=unidadesDe(p.codigo);
+  f.innerHTML=(p.img?`<img class="foto" src="${esc(p.img)}" alt="">`:`<span class="foto">${IC_CAJA}</span>`)+
+    `<div class="fi"><b>${esc(p.descripcion)}</b><span><span class="code">${esc(p.codigo)}</span>${p.ean?` · ▮▯▮ ${esc(p.ean)}`:""}</span></div>`+
+    (tot?`<span class="ya">${tot} ya contados</span>`:"");
+  f.hidden=false;
+  // la animación solo cuando cambia el producto (o se vuelve a escanear)
+  if(f.dataset.cod!==p.codigo || renderFicha.otra){ f.style.animation="none"; void f.offsetWidth; f.style.animation=""; }
+  f.dataset.cod=p.codigo; renderFicha.otra=false;
 }
 // ---------- código de barras ----------
 const normEan = s => String(s||"").replace(/\D/g,"").replace(/^0+/,"");   // UPC de 12 dígitos = EAN-13 con un 0 adelante
@@ -646,7 +680,7 @@ function abrirSugg(){
   const txt=pick?"":pq.value;
   const usados=usadosRecientes();
   sugg=buscarProd(txt).slice(0,8); suggIdx=0;
-  let html=sugg.map((p,i)=>`<div class="sg${i===suggIdx?" on":""}" role="option" data-i="${i}">
+  let html=sugg.map((p,i)=>`<div class="sg${i===suggIdx?" on":""}" role="option" data-i="${i}">${foto(p.codigo,"s")}
       <span class="code">${esc(p.codigo)}</span><span class="dsc">${marcar(p.descripcion,txt)}</span>${usados.includes(p.codigo)?`<span class="tag">${unidadesDe(p.codigo)} YA CONTADOS</span>`:''}</div>`).join("");
   if(!sugg.length){
     html=pareceEan(txt)
@@ -665,7 +699,7 @@ function moverSugg(d){
 }
 function elegir(p, escaneado){
   pick=p.codigo; pq.value=p.codigo+"  ·  "+p.descripcion; pq.classList.add("chosen");
-  cerrarSugg(); qn.value=1; qn.focus(); qn.select();
+  cerrarSugg(); qn.value=1; qn.focus(); qn.select(); renderFicha.otra=true; renderFicha();
   if(escaneado){
     beep(true);
     const tot=unidadesDe(p.codigo);
@@ -680,16 +714,16 @@ function escaneoEnBuscador(code){
   abrirSugg();
   if(m.length>1){
     sugg=m; suggIdx=0;
-    suggEl.innerHTML=m.map((p,i)=>`<div class="sg${i===0?" on":""}" role="option" data-i="${i}"><span class="code">${esc(p.codigo)}</span><span class="dsc">${esc(p.descripcion)}</span></div>`).join("");
+    suggEl.innerHTML=m.map((p,i)=>`<div class="sg${i===0?" on":""}" role="option" data-i="${i}">${foto(p.codigo,"s")}<span class="code">${esc(p.codigo)}</span><span class="dsc">${esc(p.descripcion)}</span></div>`).join("");
     eleccionEan=normEan(code);
     setStatus("warn","🔀","Ese código de barras es de "+m.length+" productos. Elegí cuál es (flechas y Enter, o clic).");
   } else setStatus("warn","❓","Ningún producto tiene el código de barras "+code+". Podés agregarlo al catálogo desde la lista.");
   beep(false); pq.focus();
 }
-function limpiarPick(){ pick=null; pq.value=""; pq.classList.remove("chosen"); }
+function limpiarPick(){ pick=null; pq.value=""; pq.classList.remove("chosen"); renderFicha(); }
 
 let tCerrar=null;
-pq.addEventListener("input",()=>{ clearTimeout(tCerrar); eleccionEan=null; pick=null; pq.classList.remove("chosen"); abrirSugg(); });
+pq.addEventListener("input",()=>{ clearTimeout(tCerrar); eleccionEan=null; if(pick){ pick=null; renderFicha(); } pq.classList.remove("chosen"); abrirSugg(); });
 pq.addEventListener("mousedown",()=>{ if(!pick) setTimeout(abrirSugg,0); });
 pq.addEventListener("focus",()=>{ clearTimeout(tCerrar); if(pick) setTimeout(()=>pq.select(),0); });
 // en celular, al tocar el buscador se sube para que la lista de productos se vea sobre el teclado
@@ -699,7 +733,7 @@ let pqTecla=0;
 pq.addEventListener("keydown",e=>{
   if(/^\d$/.test(e.key)){   // empieza un escaneo: si había un producto elegido o un código anterior, se reemplaza
     const t=Date.now();
-    if(t-pqTecla>150 && (pick || pareceEan(pq.value))){ pick=null; pq.classList.remove("chosen"); pq.value=""; }
+    if(t-pqTecla>150 && (pick || pareceEan(pq.value))){ pick=null; pq.classList.remove("chosen"); pq.value=""; renderFicha(); }
     pqTecla=t;
   }
   if(e.key==="ArrowDown"){ e.preventDefault(); moverSugg(1); }
@@ -878,6 +912,7 @@ const IC_EDIT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 const IC_DEL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>';
 
 function renderAll(){
+  renderFicha();
   const reg=cajasConProductos(), uds=unidadesTotal(), prods=porProducto(), tot=recep.totalCajas;
 
   // KPIs
@@ -909,7 +944,7 @@ function renderAll(){
   const uc=unidadesCaja(caja);
   $("boxNow").innerHTML=`<div class="bn-h"><b>Contenido de la caja ${i+1}</b><span>${caja.items.length?plural(uc,"unidad","unidades"):""}</span></div>`+
     (caja.items.length
-      ? `<div class="lns">${caja.items.map((it,j)=>`<div class="ln">
+      ? `<div class="lns">${caja.items.map((it,j)=>`<div class="ln">${foto(it.codigo)}
           <span class="code">${esc(it.codigo)}</span><span class="dsc">${esc(descDe(it))}</span>
           <div class="stepper sm"><button type="button" onclick="cambiarCant(${j},-1)" title="Una menos">−</button><input type="number" min="1" step="1" value="${it.cant}" aria-label="Unidades" onchange="fijarCant(${j},this.value)" onkeydown="if(event.key==='Enter')this.blur()"><button type="button" onclick="cambiarCant(${j},1)" title="Una más">+</button></div>
           <button class="x" onclick="quitarLinea(${j})" title="Quitar de la caja">✕</button></div>`).join("")}</div>`
@@ -933,11 +968,11 @@ function renderAll(){
           <span class="qty">${unidadesCaja(c)}</span>
           ${on?"":`<button class="ib" onclick="abrirCaja(${k})" title="Abrir para corregir">${IC_EDIT}</button>`}
           <button class="ib del" onclick="eliminarCaja(${k})" title="Eliminar caja">${IC_DEL}</button></div>
-        <div class="blines">${c.items.map(it=>`<div class="bl"><span class="code">${esc(it.codigo)}</span><span class="dsc">${esc(descDe(it))}</span><b>${it.cant}</b></div>`).join("")}</div>
+        <div class="blines">${c.items.map(it=>`<div class="bl">${foto(it.codigo,"xs")}<span class="code">${esc(it.codigo)}</span><span class="dsc">${esc(descDe(it))}</span><b>${it.cant}</b></div>`).join("")}</div>
       </div>`;
     }).join("");
   } else {
-    list.innerHTML=prods.map(a=>`<div class="prow">
+    list.innerHTML=prods.map(a=>`<div class="prow">${foto(a.codigo,"l")}
       <span class="code">${esc(a.codigo)}</span>
       <span class="info"><span class="dsc">${esc(a.descripcion)}</span><span class="cj">${a.cajas.length===1?"Caja":"Cajas"} ${a.cajas.map(x=>x.n+(a.cajas.length>1?" ("+x.cant+")":"")).join(" · ")}</span></span>
       <span class="qty">${a.total}</span></div>`).join("");
@@ -993,7 +1028,7 @@ function renderCatalog(){
     let del="";
     if(p.base){ if(catDelta.overrides[p.origCodigo]) del=`<button class="btn ghost sm" onclick="deleteProductCatalog(${jsq(p.codigo)})">Restablecer</button>`; }
     else del=`<button class="btn danger sm" onclick="deleteProductCatalog(${jsq(p.codigo)})">Eliminar</button>`;
-    return `<div class="crow">
+    return `<div class="crow">${foto(p.codigo)}
       <span class="ccode">${esc(p.codigo)}</span>
       <span class="cinfo"><span class="cdesc">${esc(p.descripcion)}</span>
         <span class="cmeta">${p.ean?`<span class="ean">▮▯▮ ${esc(p.ean)}</span> · `:'<span>sin código de barras</span> · '}${uds?`<b>${uds}</b> en esta recepción · `:''}${tag}</span></span>
