@@ -230,6 +230,10 @@
   .modal-add-row{display:flex;gap:9px;flex-wrap:wrap}
   .modal-add-row .c{width:160px;font-family:"Consolas",monospace;font-weight:700;text-transform:uppercase}
   .modal-add-row .d{flex:1;min-width:200px}
+  .modal-add-row .e{width:200px;font-family:"Consolas",monospace;font-weight:600}
+  .cean-in{width:170px;font-family:"Consolas",monospace;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:14px;outline:none}
+  .cean-in:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12);background:#fff}
+  .cmeta .ean{font-family:"Consolas",monospace}
   .modal-add-row input{border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:14px;outline:none}
   .modal-add-row input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
   .modal-hint{font-size:12px;color:var(--muted);margin-top:9px}
@@ -359,7 +363,7 @@
           <div class="f-prod">
             <label for="pq">Producto</label>
             <div class="combo">
-              <input id="pq" placeholder="Buscá el producto…   ej: mobile 7 · rs 4 mini · D00017" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="sugg" aria-autocomplete="list">
+              <input id="pq" placeholder="Buscá o escaneá el producto…   ej: mobile 7 · D00017" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="sugg" aria-autocomplete="list">
               <div class="sugg" id="sugg" role="listbox"></div>
             </div>
           </div>
@@ -421,13 +425,14 @@
       <div class="modal-add-row">
         <input id="npCode" class="c" placeholder="Código (ej. D00099)" maxlength="14" spellcheck="false">
         <input id="npDesc" class="d" placeholder="Nombre del producto" spellcheck="false">
+        <input id="npEan" class="e" placeholder="Código de barras (opcional)" inputmode="numeric" maxlength="14" spellcheck="false">
         <button class="btn primary" onclick="onAddProduct()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Agregar
         </button>
       </div>
       <div class="modal-hint">El producto nuevo aparece de inmediato en el buscador para contarlo.</div>
     </div>
-    <div class="modal-search"><input id="catSearch" placeholder="Buscar por código o nombre…" oninput="renderCatalog()" spellcheck="false"></div>
+    <div class="modal-search"><input id="catSearch" placeholder="Buscar por código, nombre o código de barras…" oninput="renderCatalog()" spellcheck="false"></div>
     <div class="modal-body" id="catList"></div>
     <div class="modal-foot"><button class="btn dark" onclick="closeCatalog()">Cerrar</button></div>
   </div>
@@ -510,13 +515,23 @@ function loadCatalog(){
   PRODUCTS=[];
   (window.CATALOGO_BASE||[]).forEach(b=>{
     const ov=catDelta.overrides[b.codigo];
-    PRODUCTS.push({origCodigo:b.codigo,base:true,codigo:ov?ov.codigo:b.codigo,descripcion:ov?ov.descripcion:b.descripcion});
+    PRODUCTS.push({origCodigo:b.codigo,base:true,codigo:ov?ov.codigo:b.codigo,descripcion:ov?ov.descripcion:b.descripcion,ean:ov&&ov.ean!==undefined?ov.ean:(b.ean||"")});
   });
   catDelta.added.forEach(a=>{
-    if(!PRODUCTS.some(p=>p.codigo===a.codigo)) PRODUCTS.push({origCodigo:null,base:false,codigo:a.codigo,descripcion:a.descripcion});
+    if(!PRODUCTS.some(p=>p.codigo===a.codigo)) PRODUCTS.push({origCodigo:null,base:false,codigo:a.codigo,descripcion:a.descripcion,ean:a.ean||""});
   });
   byCode={};
-  PRODUCTS.forEach(p=>{ byCode[p.codigo]=p; p.k=fold(p.codigo+" "+p.descripcion).split(" "); });
+  PRODUCTS.forEach(p=>{ byCode[p.codigo]=p; p.k=fold(p.codigo+" "+p.descripcion).split(" "); p.ean=String(p.ean||"").replace(/\D/g,""); });
+}
+// ---------- código de barras ----------
+const normEan = s => String(s||"").replace(/\D/g,"").replace(/^0+/,"");   // UPC de 12 dígitos = EAN-13 con un 0 adelante
+const pareceEan = s => /^\d{6,14}$/.test(String(s||"").trim());
+function porEan(code){ const n=normEan(code); return n.length<6 ? [] : PRODUCTS.filter(p=>p.ean && normEan(p.ean)===n); }
+function eanValido(e){ return e==="" || /^\d{8,14}$/.test(e); }
+function avisarEanRepetido(e, excepto){
+  if(!e) return true;
+  const otros=porEan(e).filter(p=>p.codigo!==excepto);
+  return !otros.length || confirm("Ese código de barras ya lo tiene "+otros.map(p=>p.codigo+" · "+p.descripcion).join(", ")+".\n\n¿Guardarlo igual? (al escanearlo se va a preguntar cuál es)");
 }
 
 // cambia código/nombre de un producto en todas las cajas de la recepción actual
@@ -529,23 +544,27 @@ function renombrarEnRecepcion(cur,nc,nd){
   if(pick===cur) pick=nc;
 }
 
-function addProductCatalog(codigo,desc){
-  codigo=norm(codigo); desc=(desc||"").trim();
+function addProductCatalog(codigo,desc,ean){
+  codigo=norm(codigo); desc=(desc||"").trim(); ean=String(ean||"").replace(/\D/g,"");
   if(!codigo){ alert("Escribí un código para el producto."); return false; }
   if(!desc){ alert("Escribí el nombre del producto."); return false; }
   if(byCode[codigo]){ alert("Ya existe un producto con el código "+codigo+"."); return false; }
-  catDelta.added.push({codigo,descripcion:desc});
+  if(!eanValido(ean)){ alert("El código de barras debe tener entre 8 y 14 números."); return false; }
+  if(!avisarEanRepetido(ean)) return false;
+  catDelta.added.push({codigo,descripcion:desc,ean});
   saveCatalogDelta(); loadCatalog(); renderAll();
   return codigo;
 }
-function editProductCatalog(cur,nc,nd){
-  nc=norm(nc); nd=(nd||"").trim();
+function editProductCatalog(cur,nc,nd,ne){
+  nc=norm(nc); nd=(nd||"").trim(); ne=String(ne||"").replace(/\D/g,"");
   if(!nc){ alert("El código no puede quedar vacío."); return false; }
   if(!nd){ alert("El nombre no puede quedar vacío."); return false; }
   if(nc!==cur && byCode[nc]){ alert("Ya existe otro producto con el código "+nc+"."); return false; }
+  if(!eanValido(ne)){ alert("El código de barras debe tener entre 8 y 14 números."); return false; }
   const p=byCode[cur]; if(!p) return false;
-  if(p.base){ catDelta.overrides[p.origCodigo]={codigo:nc,descripcion:nd}; }
-  else { const a=catDelta.added.find(x=>x.codigo===cur); if(a){ a.codigo=nc; a.descripcion=nd; } }
+  if(ne!==p.ean && !avisarEanRepetido(ne,cur)) return false;
+  if(p.base){ catDelta.overrides[p.origCodigo]={codigo:nc,descripcion:nd,ean:ne}; }
+  else { const a=catDelta.added.find(x=>x.codigo===cur); if(a){ a.codigo=nc; a.descripcion=nd; a.ean=ne; } }
   if(nc!==cur && catDelta.learned[cur]){ catDelta.learned[nc]=(catDelta.learned[nc]||[]).concat(catDelta.learned[cur]); delete catDelta.learned[cur]; }
   renombrarEnRecepcion(cur,nc,nd);
   saveCatalogDelta(); save(); loadCatalog(); renderAll();
@@ -602,8 +621,9 @@ function podar(){
 //  BUSCADOR DE PRODUCTOS
 // ============================================================
 const SINON = {movil:["mobile","movil"], moviles:["mobile","movil"], mobil:["mobile","movil"], dron:["drone"], drones:["drone"], ronin:["rs"], microfono:["microfono","mic"], microfonos:["microfono","mic"], gimbal:["estabilizador"]};
-function tokOk(q,ks){
-  const alts=SINON[q]||[q];
+function tokOk(q,p){
+  const ks=p.k, alts=SINON[q]||[q];
+  if(/^\d{5,}$/.test(q) && p.ean && p.ean.includes(q)) return true;   // parte del código de barras
   return alts.some(a=> /^\d+$/.test(a) ? ks.some(k=>/^\d+$/.test(k) && Number(k)===Number(a)) : ks.some(k=>k.startsWith(a)));
 }
 function usadosRecientes(){ // códigos ya contados en esta recepción, el más reciente primero
@@ -615,7 +635,7 @@ function buscarProd(txt){
   const usados=usadosRecientes();
   const rank=c=>{ const i=usados.indexOf(c); return i<0?1e9:i; };
   const exactas=p=>qs.filter(q=>(SINON[q]||[q]).some(a=>p.k.includes(a))).length;
-  return PRODUCTS.filter(p=>qs.every(q=>tokOk(q,p.k)))
+  return PRODUCTS.filter(p=>qs.every(q=>tokOk(q,p)))
     .sort((a,b)=> exactas(b)-exactas(a) || rank(a.codigo)-rank(b.codigo) || a.codigo.localeCompare(b.codigo));
 }
 function marcar(desc,txt){
@@ -627,9 +647,11 @@ function abrirSugg(){
   const usados=usadosRecientes();
   sugg=buscarProd(txt).slice(0,8); suggIdx=0;
   let html=sugg.map((p,i)=>`<div class="sg${i===suggIdx?" on":""}" role="option" data-i="${i}">
-      <span class="code">${esc(p.codigo)}</span><span class="dsc">${marcar(p.descripcion,txt)}</span>${usados.includes(p.codigo)?'<span class="tag">YA CONTADO</span>':''}</div>`).join("");
+      <span class="code">${esc(p.codigo)}</span><span class="dsc">${marcar(p.descripcion,txt)}</span>${usados.includes(p.codigo)?`<span class="tag">${unidadesDe(p.codigo)} YA CONTADOS</span>`:''}</div>`).join("");
   if(!sugg.length){
-    html=`<div class="sg none">No encontré “${esc(txt)}” en el catálogo.</div><div class="sg add" data-add="1">➕ Agregar producto nuevo al catálogo…</div>`;
+    html=pareceEan(txt)
+      ? `<div class="sg none">Ningún producto del catálogo tiene el código de barras “${esc(txt)}”.</div><div class="sg add" data-add="1">➕ Agregar producto nuevo con este código de barras…</div>`
+      : `<div class="sg none">No encontré “${esc(txt)}” en el catálogo.</div><div class="sg add" data-add="1">➕ Agregar producto nuevo al catálogo…</div>`;
   }
   suggEl.innerHTML=html; suggEl.classList.add("show"); pq.setAttribute("aria-expanded","true");
 }
@@ -641,38 +663,100 @@ function moverSugg(d){
   suggEl.querySelectorAll(".sg[data-i]").forEach(e=>e.classList.toggle("on",Number(e.dataset.i)===suggIdx));
   const on=suggEl.querySelector(".sg.on"); if(on) on.scrollIntoView({block:"nearest"});
 }
-function elegir(p){
+function elegir(p, escaneado){
   pick=p.codigo; pq.value=p.codigo+"  ·  "+p.descripcion; pq.classList.add("chosen");
-  cerrarSugg(); qn.focus(); qn.select();
+  cerrarSugg(); qn.value=1; qn.focus(); qn.select();
+  if(escaneado){
+    beep(true);
+    const tot=unidadesDe(p.codigo);
+    setStatus("info","📷",`${p.descripcion}. Poné cuántas unidades vienen y tocá Agregar (o seguí escaneando: cada escaneo suma 1).`+(tot?` Ya van ${tot} contados.`:""));
+  }
+}
+// se escaneó un código de barras en el buscador
+let eleccionEan=null;
+function escaneoEnBuscador(code){
+  const m=porEan(code); eleccionEan=null;
+  if(m.length===1){ elegir(m[0], true); return; }
+  abrirSugg();
+  if(m.length>1){
+    sugg=m; suggIdx=0;
+    suggEl.innerHTML=m.map((p,i)=>`<div class="sg${i===0?" on":""}" role="option" data-i="${i}"><span class="code">${esc(p.codigo)}</span><span class="dsc">${esc(p.descripcion)}</span></div>`).join("");
+    eleccionEan=normEan(code);
+    setStatus("warn","🔀","Ese código de barras es de "+m.length+" productos. Elegí cuál es (flechas y Enter, o clic).");
+  } else setStatus("warn","❓","Ningún producto tiene el código de barras "+code+". Podés agregarlo al catálogo desde la lista.");
+  beep(false); pq.focus();
 }
 function limpiarPick(){ pick=null; pq.value=""; pq.classList.remove("chosen"); }
 
 let tCerrar=null;
-pq.addEventListener("input",()=>{ clearTimeout(tCerrar); pick=null; pq.classList.remove("chosen"); abrirSugg(); });
+pq.addEventListener("input",()=>{ clearTimeout(tCerrar); eleccionEan=null; pick=null; pq.classList.remove("chosen"); abrirSugg(); });
 pq.addEventListener("mousedown",()=>{ if(!pick) setTimeout(abrirSugg,0); });
 pq.addEventListener("focus",()=>{ clearTimeout(tCerrar); if(pick) setTimeout(()=>pq.select(),0); });
 // en celular, al tocar el buscador se sube para que la lista de productos se vea sobre el teclado
 pq.addEventListener("pointerdown",()=>{ if(matchMedia("(max-width:720px)").matches) setTimeout(()=>pq.scrollIntoView({block:"start",behavior:"smooth"}),250); });
 pq.addEventListener("blur",()=>{ clearTimeout(tCerrar); tCerrar=setTimeout(cerrarSugg,150); });
+let pqTecla=0;
 pq.addEventListener("keydown",e=>{
+  if(/^\d$/.test(e.key)){   // empieza un escaneo: si había un producto elegido o un código anterior, se reemplaza
+    const t=Date.now();
+    if(t-pqTecla>150 && (pick || pareceEan(pq.value))){ pick=null; pq.classList.remove("chosen"); pq.value=""; }
+    pqTecla=t;
+  }
   if(e.key==="ArrowDown"){ e.preventDefault(); moverSugg(1); }
   else if(e.key==="ArrowUp"){ e.preventDefault(); moverSugg(-1); }
   else if(e.key==="Escape"){ cerrarSugg(); }
   else if(e.key==="Enter"){
     e.preventDefault();
     if(pick){ qn.focus(); qn.select(); return; }
-    if(!pq.value.trim()) return;
+    const v=pq.value.trim();
+    if(!v) return;
+    if(pareceEan(v)){
+      // ya se mostró la lista de productos que comparten ese código: Enter elige el marcado
+      if(eleccionEan===normEan(v) && suggEl.classList.contains("show") && sugg.length){ elegir(sugg[suggIdx], true); return; }
+      escaneoEnBuscador(v); return;
+    }
     if(!suggEl.classList.contains("show")) abrirSugg();
-    if(sugg.length) elegir(sugg[suggIdx]);
+    if(sugg.length) elegir(sugg[suggIdx], pareceEan(v));
   }
 });
 suggEl.addEventListener("mousedown",e=>{
   e.preventDefault();
   const it=e.target.closest(".sg"); if(!it) return;
-  if(it.dataset.add){ cerrarSugg(); openCatalog(pq.value.trim()); return; }
+  if(it.dataset.add){ cerrarSugg(); const v=pq.value.trim(); if(pareceEan(v)) openCatalog("", v); else openCatalog(v); return; }
   if(it.dataset.i!==undefined) elegir(sugg[Number(it.dataset.i)]);
 });
-qn.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); agregar(); } });
+// la pistola escribe el código "de golpe" y da Enter: se guarda lo que había antes de que empezara
+let qnAntes="1", qnTecla=0;
+qn.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){ e.preventDefault(); enterCantidad(); return; }
+  if(/^\d$/.test(e.key)){ const t=Date.now(); if(t-qnTecla>150) qnAntes=qn.value; qnTecla=t; }
+});
+function enterCantidad(){
+  const v=qn.value.trim();
+  if(!/^\d{6,}$/.test(v)){ agregar(); return; }   // nadie cuenta 100,000 unidades: un número así es un escaneo
+  // se escaneó un código de barras estando en "Unidades"
+  const base=/^\d{1,5}$/.test(qnAntes)?parseInt(qnAntes,10):0;
+  let code=v; if(qnAntes && v.startsWith(qnAntes) && !porEan(v).length) code=v.slice(qnAntes.length);
+  const m=porEan(code);
+  if(pick && m.some(p=>p.codigo===pick)){            // mismo producto: +1
+    const n=base+1; qn.value=n; qnAntes=String(n); qn.select(); beep(true);
+    setStatus("info","📷",`${byCode[pick].descripcion}: ${plural(n,"unidad","unidades")} escaneadas. Seguí escaneando o tocá Agregar.`);
+    return;
+  }
+  if(!m.length){                                     // código desconocido: no se toca lo que venías contando
+    qn.value=base||1; qnAntes=String(base||1); qn.select(); beep(false);
+    setStatus("warn","❓",`Ningún producto tiene el código de barras ${code}. Seguís con ${pick?byCode[pick].descripcion:"el producto elegido"}.`);
+    return;
+  }
+  const habiaPick=!!pick;
+  if(pick && base>0){ qn.value=base; agregar(); }   // otro producto: primero se guarda el que venías contando
+  if(m.length===1){
+    elegir(m[0], true);
+    if(!habiaPick && base>1){ qn.value=base; qnAntes=String(base); qn.select(); }   // escribió la cantidad antes de escanear
+    return;
+  }
+  limpiarPick(); pq.value=code; pq.focus(); escaneoEnBuscador(code);
+}
 $("qMinus").addEventListener("click",()=>{ qn.value=Math.max(1,(parseInt(qn.value,10)||1)-1); });
 $("qPlus").addEventListener("click",()=>{ qn.value=(parseInt(qn.value,10)||0)+1; });
 
@@ -689,13 +773,22 @@ function agregar(){
     setStatus("warn","🔢","Escribí cuántas unidades trae (1 o más).");
     beep(false); qn.focus(); qn.select(); return;
   }
+  if(n>5000){
+    setStatus("warn","⚠️",`¿${n} unidades? Parece un código escaneado en "Unidades". Revisá la cantidad.`);
+    beep(false); qn.value=1; qn.focus(); qn.select(); return;
+  }
   const caja=recep.cajas[recep.actual], p=byCode[pick], num=recep.actual+1;
   if(caja.orden==null) caja.orden=sigOrden();
   const ex=caja.items.find(x=>x.codigo===pick);
-  if(ex){ ex.cant+=n; setStatus("ok","➕",`Caja ${num}: se ${n===1?"sumó":"sumaron"} ${n} a ${p.descripcion}. Ahora son ${ex.cant}.`); }
-  else { caja.items.push({codigo:p.codigo,descripcion:p.descripcion,cant:n}); setStatus("ok","✔",`Caja ${num}: ${p.descripcion} — ${plural(n,"unidad","unidades")}.`); }
+  let msg;
+  if(ex){ ex.cant+=n; msg=`Caja ${num}: se ${n===1?"sumó":"sumaron"} ${n} a ${p.descripcion}. Ahora son ${ex.cant}.`; }
+  else { caja.items.push({codigo:p.codigo,descripcion:p.descripcion,cant:n}); msg=`Caja ${num}: ${p.descripcion} — ${plural(n,"unidad","unidades")}.`; }
+  // total de ese producto sumando todas las cajas
+  const en=[]; recep.cajas.forEach((c,i)=>{ if(c.items.some(x=>x.codigo===p.codigo)) en.push(i+1); });
+  if(en.length>1) msg+=` Total en la recepción: ${unidadesDe(p.codigo)} (cajas ${en.join(", ")}).`;
+  setStatus("ok", ex?"➕":"✔", msg);
   beep(true);
-  limpiarPick(); qn.value=1;
+  limpiarPick(); qn.value=1; qnAntes="1";
   save(); renderAll(); pq.focus();
 }
 function siguienteCaja(){
@@ -739,7 +832,8 @@ function cambiarCant(i,d){
 function fijarCant(i,val){
   const it=lineaActual(i); if(!it) return;
   const n=parseInt(val,10);
-  if(n>0){ it.cant=n; save(); }
+  if(n>0 && n<=5000){ it.cant=n; save(); }
+  else if(n>5000) setStatus("warn","⚠️",`¿${n} unidades? Revisá la cantidad.`);
   renderAll();
 }
 function quitarLinea(i){
@@ -858,30 +952,30 @@ function setStatus(type,ic,msg){ const s=$("status"); s.className="status show "
 // ============================================================
 //  GESTOR DE CATÁLOGO (agregar / editar / eliminar productos)
 // ============================================================
-function openCatalog(prefill){
+function openCatalog(prefill, ean){
   catEditing=null; catDesdeBuscador=typeof prefill==="string";
   const s=$("catSearch"); if(s) s.value="";
   $("catModal").classList.add("show"); renderCatalog();
-  if(catDesdeBuscador){ $("npDesc").value=prefill; $("npCode").focus(); }
+  if(catDesdeBuscador){ $("npDesc").value=prefill; $("npEan").value=ean||""; $("npCode").focus(); }
 }
 function closeCatalog(){ $("catModal").classList.remove("show"); catEditing=null; catDesdeBuscador=false; pq.focus(); }
 function onAddProduct(){
-  const c=$("npCode").value, d=$("npDesc").value;
-  const nuevo=addProductCatalog(c,d);
+  const c=$("npCode").value, d=$("npDesc").value, e=$("npEan").value;
+  const nuevo=addProductCatalog(c,d,e);
   if(!nuevo) return;
-  $("npCode").value=""; $("npDesc").value="";
+  $("npCode").value=""; $("npDesc").value=""; $("npEan").value="";
   if(catDesdeBuscador){ closeCatalog(); elegir(byCode[nuevo]); setStatus("ok","✔","Producto agregado al catálogo. Ahora poné cuántas unidades trae."); return; }
   renderCatalog(); $("npCode").focus();
 }
 function startEdit(c){ catEditing=c; renderCatalog(); const i=$("edDesc"); if(i) i.focus(); }
 function saveEdit(cur){
-  const nc=$("edCode").value, nd=$("edDesc").value;
-  if(editProductCatalog(cur,nc,nd)){ catEditing=null; renderCatalog(); }
+  const nc=$("edCode").value, nd=$("edDesc").value, ne=$("edEan").value;
+  if(editProductCatalog(cur,nc,nd,ne)){ catEditing=null; renderCatalog(); }
 }
 function renderCatalog(){
   const q=norm(($("catSearch")||{}).value||"");
   const list=PRODUCTS.slice().sort((a,b)=>a.codigo.localeCompare(b.codigo))
-    .filter(p=> !q || p.codigo.includes(q) || p.descripcion.toUpperCase().replace(/\s/g,"").includes(q));
+    .filter(p=> !q || p.codigo.includes(q) || p.descripcion.toUpperCase().replace(/\s/g,"").includes(q) || (p.ean && /^\d+$/.test(q) && p.ean.includes(q)));
   const rows=list.map(p=>{
     const uds=unidadesDe(p.codigo);
     const tag = p.base ? (catDelta.overrides[p.origCodigo]?'<span class="ctag edit">editado</span>':'<span class="ctag base">base</span>')
@@ -890,6 +984,7 @@ function renderCatalog(){
       return `<div class="crow editing">
         <input class="ccode-in" id="edCode" value="${esc(p.codigo)}" maxlength="14" spellcheck="false">
         <input class="cdesc-in" id="edDesc" value="${esc(p.descripcion)}" spellcheck="false">
+        <input class="cean-in" id="edEan" value="${esc(p.ean)}" placeholder="Código de barras" inputmode="numeric" maxlength="14" spellcheck="false">
         <div class="cacts">
           <button class="btn primary sm" onclick="saveEdit(${jsq(p.codigo)})">Guardar</button>
           <button class="btn ghost sm" onclick="catEditing=null;renderCatalog()">Cancelar</button>
@@ -901,7 +996,7 @@ function renderCatalog(){
     return `<div class="crow">
       <span class="ccode">${esc(p.codigo)}</span>
       <span class="cinfo"><span class="cdesc">${esc(p.descripcion)}</span>
-        <span class="cmeta">${uds?`<b>${uds}</b> en esta recepción · `:''}${tag}</span></span>
+        <span class="cmeta">${p.ean?`<span class="ean">▮▯▮ ${esc(p.ean)}</span> · `:'<span>sin código de barras</span> · '}${uds?`<b>${uds}</b> en esta recepción · `:''}${tag}</span></span>
       <span class="cacts"><button class="btn ghost sm" onclick="startEdit(${jsq(p.codigo)})">Editar</button>${del}</span>
     </div>`;
   }).join("");
@@ -1149,6 +1244,7 @@ $("btnCat").addEventListener("click",()=>openCatalog());
 $("catModal").addEventListener("click",e=>{ if(e.target.id==="catModal") closeCatalog(); });
 $("npDesc").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); onAddProduct(); } });
 $("npCode").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); $("npDesc").focus(); } });
+$("npEan").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); onAddProduct(); } });
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape" && $("catModal").classList.contains("show")) closeCatalog();
 });

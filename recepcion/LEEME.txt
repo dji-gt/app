@@ -21,6 +21,14 @@ CÓMO SE USA
      "Agregar" (o Enter).
    - Si la caja trae VARIOS productos, agregalos uno por uno:
      todos quedan en la misma caja.
+   - CON LA PISTOLA: escaneá el código de barras del producto y se
+     elige solo. Después:
+       · escribí cuántas unidades vienen y Enter, o
+       · seguí escaneando: cada escaneo del mismo producto suma 1.
+     Si escaneás OTRO producto, el que venías contando se guarda solo
+     y se elige el nuevo.
+   - Si un mismo producto viene en varias cajas, se va sumando: la app
+     te muestra el total que llevás de ese producto en la recepción.
 3. Tocá "Siguiente caja" y seguí con la caja 2, 3, …
 4. ¿Te equivocaste? En "Contenido de la caja" podés cambiar la
    cantidad (− / +) o quitar el producto (✕). Para corregir una
@@ -32,10 +40,14 @@ A la derecha podés ver lo contado "Por caja" o "Por producto".
 
 CATÁLOGO DE PRODUCTOS (botón "Catálogo" arriba a la derecha)
 ------------------------------------------------------------
-- AGREGAR producto nuevo: escribí su Código y Nombre y tocá "Agregar".
-  También podés agregarlo directo desde el buscador si no aparece.
-- EDITAR: tocá "Editar" en cualquier producto (incluidos los 17 base)
-  para corregir el código o el nombre. Lo que ya contaste de ese
+- El catálogo trae los productos de "BBDD Productos" con su código de
+  barras (EAN). Si escaneás un código que no está, la app te deja
+  agregar el producto con ese código.
+- AGREGAR producto nuevo: escribí su Código, Nombre y (si tiene) el
+  código de barras, y tocá "Agregar". También podés agregarlo directo
+  desde el buscador si no aparece.
+- EDITAR: tocá "Editar" en cualquier producto (también los del catálogo base)
+  para corregir el código, el nombre o el código de barras. Lo que ya contaste de ese
   producto se corrige también automáticamente.
 - ELIMINAR: los productos que vos agregaste se pueden borrar.
 - RESTABLECER: si editaste un producto base y te arrepentiste, el botón
@@ -62,7 +74,7 @@ Mirá "EJEMPLO exportacion.xlsx" para ver cómo queda.
 ARCHIVOS (no borrar)
 --------------------
   index.html   -> la aplicación (esto es lo que abrís)
-  catalog.js   -> catálogo con los 17 productos base (y el logo para el Excel)
+  catalog.js   -> catálogo base con códigos de barras (y el logo para el Excel)
   logo.png     -> logo DJI
   lib/exceljs.min.js -> motor para crear el Excel
 Mantené los 4 juntos en la misma carpeta.
