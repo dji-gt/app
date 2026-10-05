@@ -1,0 +1,82 @@
+========================================================
+  PEDIDOS ONLINE DJI  —  Órdenes, facturas y guías
+========================================================
+
+CÓMO ABRIRLO
+------------
+En línea: https://dji-gt.github.io/app/#online
+(Necesita internet: lee los PDF y los sube a Google Drive.)
+
+CARGAR UN PEDIDO
+----------------
+1. Descargá del correo el PDF de la orden ("Factura - Orden #111931").
+2. Arrastralo a "Cargar pedido" (o tocá el cuadro y elegilo). Podés
+   soltar varios a la vez.
+3. La app lee sola (sin IA, leyendo el texto del PDF):
+   número de orden, fecha, cliente, teléfono, correo, NIT y DPI,
+   a nombre de quién va la factura, los productos (1, 2, 3 o más) con
+   su SKU, cantidad y precio, el total, la forma de pago, si es
+   ENVÍO por Forza (con la dirección) o PICK UP (retiro en tienda) y
+   la persona que recibe.
+   Si algo no cuadra (ej. la suma de productos no da el subtotal), te
+   abre la orden para que la revisés.
+4. Si cargás la misma orden otra vez, pregunta antes de actualizarla
+   (no se pierde el paso en que va, la factura ni la guía).
+
+FACTURA Y GUÍA
+--------------
+- En cada orden tocá "🧾 Subir factura" o "🏷️ Subir guía" (o soltá el
+  archivo encima de ese botón). Sirve PDF o foto.
+- También podés soltar la factura o la guía en "Cargar pedido": la app
+  busca de qué orden es (por número de orden, teléfono, NIT, DPI,
+  correo o nombre) y te la propone; vos confirmás.
+- Si el PDF trae el número de factura o de guía, se anota solo.
+- Al subir la factura la orden pasa a "Facturada"; al subir la guía,
+  a "Guía lista".
+
+PASOS DE CADA ORDEN (se tocan en la tarjeta)
+--------------------------------------------
+  Envío Forza:  Recibida → Facturada → Guía lista → Enviado → Entregado
+  Pick Up:      Recibida → Facturada → Para recoger → Entregado
+El botón de WhatsApp abre el chat del cliente con un mensaje listo
+según el paso (pedido recibido, enviado con su número de guía, listo
+para recoger en la tienda, gracias por su compra).
+"🚫 Anular" (dentro de la orden) la deja guardada pero fuera de pendientes.
+
+GOOGLE DRIVE (se configura UNA sola vez)
+----------------------------------------
+Botón "Drive" arriba a la derecha → seguí los 5 pasos:
+  1. Abrí script.new con la cuenta de Google donde querés guardar todo.
+  2. Pegá el código que te da la app (ya trae la clave de la tienda).
+  3. Implementar → Nueva implementación → Aplicación web.
+     Ejecutar como: Yo · Quién tiene acceso: Cualquier usuario.
+  4. Autorizá (Configuración avanzada → Ir a … → Permitir).
+  5. Pegá la URL que termina en /exec y tocá "Conectar".
+Listo: todas las computadoras conectadas a la nube de la tienda suben
+a ese mismo Drive, sin iniciar sesión. Queda así:
+
+  DJI Online / 2026-10 Octubre / 111931 - Astrid Orantes /
+      111931 - Orden - Astrid Orantes.pdf
+      111931 - Factura - Astrid Orantes.pdf
+      111931 - Guía - Astrid Orantes.pdf
+
+Cada archivo lleva en su descripción el teléfono, correo, NIT, DPI y
+productos, así que en el buscador de Drive lo encontrás por cualquiera
+de esos datos.
+Si Drive no está conectado o no hay internet, los archivos se quedan
+guardados en esa computadora y se suben solos después.
+
+OTROS
+-----
+- Buscar: por orden, cliente, teléfono, NIT, DPI, producto, guía…
+- Filtros: pendientes, por facturar, por enviar, para recoger, en
+  camino, entregados, anuladas; envío o Pick Up; y por mes.
+- "⬇️ Excel": la lista (con el filtro actual) con el diseño DJI.
+- Todo se guarda en la nube de la tienda (lo ven todas las computadoras).
+
+ARCHIVOS (no borrar)
+--------------------
+  index.html              -> la sección
+  lector.js               -> lee los PDF de las órdenes
+  apps-script-drive.txt   -> el código que se pega en Google Apps Script
+  lib/pdf.min.mjs, lib/pdf.worker.min.mjs -> pdf.js (Mozilla, licencia Apache 2.0)

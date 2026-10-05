@@ -1,0 +1,92 @@
+/* ============================================================
+   DJI Store Guatemala · Pedidos Online -> Google Drive
+   Guarda las órdenes, facturas y guías en la carpeta
+   "DJI Online" de ESTE Google Drive:
+     DJI Online / 2026-10 Octubre / 111931 - Nombre del cliente /
+   No compartas este código: la clave de abajo es la llave.
+   ============================================================ */
+const CLAVE = "__CLAVE__";
+const CARPETA = "DJI Online";
+
+function doPost(e) {
+  let p = {};
+  try { p = JSON.parse(e.postData.contents); } catch (err) {}
+  return responder(e, atender(p, false));
+}
+
+function doGet(e) {
+  return responder(e, atender((e && e.parameter) || {}, true));
+}
+
+function atender(p, porGet) {
+  try {
+    if (!p || p.clave !== CLAVE) return { ok: false, error: "clave" };
+    const raiz = hija(DriveApp.getRootFolder(), CARPETA);
+    if (p.accion === "probar") {
+      return { ok: true, cuenta: Session.getEffectiveUser().getEmail(), carpeta: raiz.getUrl() };
+    }
+    if (p.accion === "subir" && !porGet) {
+      const lock = LockService.getScriptLock();
+      lock.waitLock(30000);
+      try {
+        const dest = carpetaOrden(raiz, p);
+        const nombre = limpiar(p.nombre) || "archivo.pdf";
+        const viejos = dest.getFilesByName(nombre);
+        while (viejos.hasNext()) { const v = viejos.next(); if (!v.isTrashed()) v.setTrashed(true); }
+        const blob = Utilities.newBlob(Utilities.base64Decode(String(p.datos || "")), String(p.tipo || "application/pdf"), nombre);
+        const f = dest.createFile(blob);
+        if (p.descripcion) f.setDescription(String(p.descripcion).slice(0, 2000));
+        return { ok: true, id: f.getId(), url: f.getUrl(), carpetaId: dest.getId(), carpetaUrl: dest.getUrl() };
+      } finally {
+        lock.releaseLock();
+      }
+    }
+    if (p.accion === "ver") {
+      const dest = carpetaOrden(raiz, p);
+      const it = dest.getFilesByName(limpiar(p.nombre));
+      while (it.hasNext()) {
+        const f = it.next();
+        if (!f.isTrashed()) return { ok: true, id: f.getId(), url: f.getUrl(), carpetaId: dest.getId(), carpetaUrl: dest.getUrl() };
+      }
+      return { ok: false, error: "no-esta" };
+    }
+    return { ok: false, error: "accion" };
+  } catch (err) {
+    return { ok: false, error: String((err && err.message) || err) };
+  }
+}
+
+// Carpeta de la orden: DJI Online / 2026-10 Octubre / 111931 - Nombre del cliente
+function carpetaOrden(raiz, p) {
+  if (p.carpetaId) {
+    try { const c = DriveApp.getFolderById(String(p.carpetaId)); if (!c.isTrashed()) return c; } catch (err) {}
+  }
+  const mes = hija(raiz, limpiar(p.mes) || "Sin fecha");
+  const orden = limpiar(p.orden);
+  const it = mes.getFolders();
+  while (it.hasNext()) {
+    const c = it.next();
+    const n = c.getName();
+    if (!c.isTrashed() && orden && (n === orden || n.indexOf(orden + " ") === 0)) return c;
+  }
+  return mes.createFolder(limpiar(p.carpeta) || orden || "Sin orden");
+}
+
+function hija(padre, nombre) {
+  const it = padre.getFoldersByName(nombre);
+  while (it.hasNext()) { const c = it.next(); if (!c.isTrashed()) return c; }
+  return padre.createFolder(nombre);
+}
+
+function limpiar(t) {
+  return String(t || "").replace(/[\\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 180);
+}
+
+function responder(e, obj) {
+  const cb = e && e.parameter && e.parameter.callback;
+  const txt = JSON.stringify(obj);
+  if (cb && /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(cb)) {
+    return ContentService.createTextOutput(cb + "(" + txt + ");").setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+  return ContentService.createTextOutput(txt).setMimeType(ContentService.MimeType.JSON);
+}

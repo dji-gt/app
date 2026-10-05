@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pedidos Online · DJI</title>
+<style>
+  :root{
+    --bg:#f3f4f7; --card:#ffffff; --ink:#14171c; --ink-2:#3b424d; --muted:#8b93a1;
+    --line:#e9ebef; --line-2:#f1f3f6;
+    --black:#111318; --black-2:#1b1e26;
+    --accent:#2563eb; --accent-d:#1d4ed8; --accent-bg:#eef3fe;
+    --ok:#0e9f6e; --ok-bg:#e7f7f0; --ok-br:#bfe9d7;
+    --warn:#b7791f; --warn-bg:#fdf6e6; --warn-br:#f0e0b8;
+    --teal:#0e7490; --teal-bg:#e6f6f9; --teal-br:#b6e3ec;
+    --violet:#6d28d9; --violet-bg:#f3edfe; --violet-br:#ddd0fb;
+    --err:#e02424; --err-bg:#fdecec; --err-br:#f6c9c9;
+    --shadow-sm:0 1px 2px rgba(16,24,40,.06);
+    --shadow:0 1px 3px rgba(16,24,40,.06),0 10px 26px rgba(16,24,40,.05);
+    --shadow-lg:0 18px 44px rgba(16,24,40,.13);
+    --r:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  [hidden]{display:none!important}
+  input,select,textarea,button{font-family:inherit}
+  a{color:var(--accent)}
+
+  /* ===== Top bar ===== */
+  .appbar{background:var(--black);color:#fff;padding:0 22px;display:flex;align-items:center;gap:14px;height:66px;position:sticky;top:0;z-index:50;box-shadow:0 1px 0 rgba(255,255,255,.04),0 6px 20px rgba(0,0,0,.16)}
+  .appbar b{font-size:17px;font-weight:750;letter-spacing:.1px}
+  .ab-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .ab-btn{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 13px;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+  .ab-btn:hover{background:rgba(255,255,255,.18)}
+  .ab-btn svg{width:17px;height:17px}
+  .ab-btn .pt{width:8px;height:8px;border-radius:50%;background:#f3cf8e}
+  .ab-btn .pt.ok{background:#7be0b8}
+  .appbar .logo{height:26px;opacity:.95;margin-left:6px}
+
+  .wrap{max-width:1240px;margin:0 auto;padding:22px 20px 40px}
+
+  /* ===== KPIs ===== */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+  .kpi{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);overflow:hidden;cursor:pointer;text-align:left;font:inherit;color:inherit}
+  .kpi:hover{border-color:#d7dce4}
+  .kpi-n{font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1}
+  .kpi-l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:8px;font-weight:600}
+  .kpi .bar{position:absolute;left:0;top:0;bottom:0;width:4px}
+  .kpi.k-fact .bar{background:var(--warn)}
+  .kpi.k-env .bar{background:var(--accent)}
+  .kpi.k-rec .bar{background:var(--teal)}
+  .kpi.k-cam .bar{background:var(--violet)}
+
+  /* ===== Layout ===== */
+  .layout{display:grid;grid-template-columns:1fr;gap:16px}
+  .colA,.colB{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+  .pad{padding:18px}
+  .c-h b{display:block;font-size:18px;font-weight:800;letter-spacing:-.2px}
+  .c-h span{font-size:13px;color:var(--muted)}
+
+  /* ===== zona para soltar PDFs ===== */
+  .drop{margin-top:14px;border:2px dashed #c9d0db;border-radius:14px;background:#fafbfc;padding:26px 16px;text-align:center;cursor:pointer;transition:.15s;display:block}
+  .drop:hover,.drop.sobre{border-color:var(--accent);background:var(--accent-bg)}
+  .drop .ic{font-size:34px;line-height:1}
+  .drop b{display:block;font-size:16px;margin-top:8px}
+  .drop span{display:block;font-size:13px;color:var(--muted);margin-top:3px}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.4}
+  .res{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+  .res div{border-radius:10px;padding:9px 12px;font-size:13.5px;font-weight:600;display:flex;gap:8px;align-items:flex-start}
+  .res .ok{background:var(--ok-bg);color:#0b7a53;border:1px solid var(--ok-br)}
+  .res .warn{background:var(--warn-bg);color:#8a5b12;border:1px solid var(--warn-br)}
+  .res .err{background:var(--err-bg);color:#b71c1c;border:1px solid var(--err-br)}
+  .res .info{background:var(--line-2);color:var(--ink-2)}
+  .res a{font-weight:800;cursor:pointer;text-decoration:underline}
+
+  .dcard{padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+  .dcard .dl{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700}
+  .dcard .dl .gi{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--line-2);flex:none}
+  .dcard .dl small{display:block;font-weight:600;color:var(--muted);font-size:12.5px}
+  .dcard.ok .gi{background:var(--ok-bg)}
+  .dcard.no .gi{background:var(--warn-bg)}
+  .dcard .mrow{margin-top:2px}
+
+  /* ===== Buttons ===== */
+  .btn{border:none;border-radius:10px;padding:12px 17px;font-size:14.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;text-decoration:none}
+  .btn svg{width:16px;height:16px}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--accent);color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.28)}.btn.primary:hover{background:var(--accent-d)}
+  .btn.dark{background:var(--black);color:#fff}.btn.dark:hover{background:var(--black-2)}
+  .btn.ghost{background:var(--line-2);color:var(--ink-2)}.btn.ghost:hover{background:#e7eaef}
+  .btn.danger{background:var(--err-bg);color:#b71c1c}.btn.danger:hover{background:var(--err);color:#fff}
+  .btn.sm{padding:8px 12px;font-size:13px;border-radius:9px}
+  .btn[disabled]{opacity:.55;cursor:default}
+
+  /* ===== filtros ===== */
+  .tools{display:flex;gap:10px;flex-wrap:wrap}
+  .sbox{flex:1;min-width:220px;position:relative}
+  .sbox svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted)}
+  .sbox input{width:100%;padding:11px 12px 11px 40px;border:1px solid var(--line);border-radius:11px;font-size:14.5px;outline:none;background:#fff}
+  .sbox input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .tools select{border:1px solid var(--line);border-radius:11px;padding:0 12px;font-size:14px;font-weight:600;background:#fff;color:var(--ink-2);min-height:44px}
+  .chips{display:flex;gap:7px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 12px;font-size:13px;font-weight:700;color:var(--ink-2);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .chip:hover{border-color:#cdd3dd}
+  .chip .n{background:var(--line-2);border-radius:20px;padding:0 7px;font-size:12px;color:var(--ink-2)}
+  .chip[aria-pressed="true"]{background:var(--black);border-color:var(--black);color:#fff}
+  .chip[aria-pressed="true"] .n{background:rgba(255,255,255,.18);color:#fff}
+  .chip.t[aria-pressed="true"]{background:var(--accent);border-color:var(--accent)}
+
+  /* ===== tarjetas de órdenes ===== */
+  .sec-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 2px 0}
+  .sec-h h2{font-size:13px;margin:0;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:700}
+  .sec-h span{font-size:13px;color:var(--muted);font-weight:600}
+  .list{display:flex;flex-direction:column;gap:10px}
+  .oc{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:14px;box-shadow:var(--shadow-sm);padding:13px 14px 12px 15px}
+  .oc.e-nuevo{border-left-color:var(--warn)}
+  .oc.e-facturado{border-left-color:var(--accent)}
+  .oc.e-guia{border-left-color:var(--accent)}
+  .oc.e-listo{border-left-color:var(--teal)}
+  .oc.e-enviado{border-left-color:var(--violet)}
+  .oc.e-entregado{border-left-color:#c3c9d3;opacity:.86}
+  .oc.anulada{border-left-color:var(--err);opacity:.6}
+  .oc.resalta{animation:resalta 1.6s ease}
+  @keyframes resalta{0%,40%{box-shadow:0 0 0 4px rgba(37,99,235,.35)}100%{box-shadow:var(--shadow-sm)}}
+  .oc-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .modo{font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:20px;letter-spacing:.3px;white-space:nowrap}
+  .modo.forza,.modo.envio{background:var(--accent-bg);color:#1e40af}
+  .modo.pickup{background:var(--teal-bg);color:#0e5c70}
+  .num{font-family:"Consolas","SF Mono",monospace;font-weight:800;font-size:13px;color:var(--ink-2)}
+  .fch{font-size:12.5px;color:var(--muted);font-weight:600}
+  .tag{font-size:11px;font-weight:800;padding:2px 8px;border-radius:20px;background:var(--err-bg);color:#b71c1c}
+  .gc-acts{margin-left:auto;display:flex;gap:6px}
+  .ib{width:32px;height:32px;border-radius:9px;border:none;background:var(--line-2);color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .ib svg{width:15px;height:15px}
+  .ib:hover{background:#e3e7ee}
+  .ib.del:hover{background:var(--err);color:#fff}
+  .oc-who{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:7px;font-size:15px}
+  .oc-who b{font-weight:800;cursor:pointer}
+  .oc-who b:hover{text-decoration:underline}
+  .oc-who a.tel{color:var(--ink-2);font-weight:600;text-decoration:none;font-family:"Consolas","SF Mono",monospace;font-size:14px}
+  .wa{display:inline-flex;align-items:center;gap:5px;background:#e8f8ee;color:#128c4a;border:1px solid #bfe8cf;border-radius:20px;padding:3px 10px;font-size:12.5px;font-weight:800;text-decoration:none}
+  .wa:hover{background:#d5f2e0}
+  .wa svg{width:13px;height:13px}
+  .prods{display:flex;flex-direction:column;gap:5px;margin-top:9px}
+  .pr{display:flex;align-items:center;gap:9px;font-size:14px}
+  .pr .ph{width:34px;height:34px;border-radius:8px;background:var(--line-2);flex:none;object-fit:contain;display:flex;align-items:center;justify-content:center;font-size:15px;border:1px solid var(--line)}
+  .pr .pn{font-weight:700;line-height:1.25}
+  .pr .pn small{font-family:"Consolas","SF Mono",monospace;font-weight:600;font-size:12px;color:var(--muted);margin-left:5px}
+  .pr .pc{margin-left:auto;font-weight:800;font-size:13px;background:var(--line-2);border-radius:8px;padding:2px 8px;white-space:nowrap}
+  .oc-info{margin-top:8px;font-size:13.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:3px}
+  .oc-info b{font-weight:800;color:var(--ink)}
+  .docs{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .doc{border:1.5px dashed #c9d0db;background:#fff;border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;color:var(--ink-2);cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+  .doc:hover{border-color:var(--accent);color:var(--accent)}
+  .doc.ok{border-style:solid;border-color:var(--ok-br);background:var(--ok-bg);color:#0b7a53}
+  .doc.pend{border-style:solid;border-color:var(--warn-br);background:var(--warn-bg);color:#8a5b12}
+  .doc.sobre{border-color:var(--accent);background:var(--accent-bg);color:var(--accent);border-style:solid}
+  .doc small{font-weight:600;opacity:.8}
+
+  /* pasos del proceso */
+  .pasos{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:12px}
+  .pasos.p4{grid-template-columns:repeat(4,1fr)}
+  .paso{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:7px 4px 6px;font-size:11.5px;font-weight:700;color:var(--muted);cursor:pointer;text-align:center;line-height:1.2;display:flex;flex-direction:column;align-items:center;gap:3px}
+  .paso:hover{border-color:#cdd3dd;color:var(--ink-2)}
+  .paso i{font-style:normal;font-size:14px;line-height:1}
+  .paso small{font-weight:600;font-size:10.5px;color:var(--muted)}
+  .paso.hecho{background:var(--line-2);color:var(--ink-2);border-color:var(--line-2)}
+  .paso.actual{color:#fff}
+  .paso.actual small{color:rgba(255,255,255,.85)}
+  .paso.actual.p-nuevo{background:var(--warn);border-color:var(--warn)}
+  .paso.actual.p-facturado,.paso.actual.p-guia{background:var(--accent);border-color:var(--accent)}
+  .paso.actual.p-listo{background:var(--teal);border-color:var(--teal)}
+  .paso.actual.p-enviado{background:var(--violet);border-color:var(--violet)}
+  .paso.actual.p-entregado{background:var(--ok);border-color:var(--ok)}
+  .empty{background:var(--card);border:1.5px dashed var(--line);border-radius:var(--r);padding:44px 22px;text-align:center;color:var(--muted)}
+  .empty b{color:var(--ink);display:block;font-size:16px;margin-bottom:5px}
+
+  /* ===== modal ===== */
+  @keyframes pop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .modal-ov{position:fixed;inset:0;background:rgba(17,19,24,.55);backdrop-filter:blur(3px);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:4vh 16px;overflow:auto}
+  .modal-ov.show{display:flex}
+  .modal{background:var(--card);border-radius:18px;box-shadow:var(--shadow-lg);width:100%;max-width:600px;display:flex;flex-direction:column;overflow:hidden;animation:pop .18s ease}
+  .modal.ancho{max-width:820px}
+  .modal-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line)}
+  .modal-h b{font-size:18px}
+  .modal-h .sub{font-size:13px;color:var(--muted);font-weight:600}
+  .modal-x{border:none;background:var(--line-2);width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:14px;color:var(--ink-2);font-weight:700;flex:none}
+  .modal-x:hover{background:var(--err);color:#fff}
+  .msec{padding:16px 20px;border-bottom:1px solid var(--line)}
+  .msec:last-child{border-bottom:none}
+  .msec h3{margin:0 0 4px;font-size:15px}
+  .msec p{margin:0 0 12px;font-size:13px;color:var(--muted)}
+  .mrow{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .mfoot{display:flex;gap:9px;flex-wrap:wrap;padding:14px 20px;border-top:1px solid var(--line);background:#fafbfc;position:sticky;bottom:0}
+  .mfoot .sp{flex:1}
+  .avisos{background:var(--warn-bg);border:1px solid var(--warn-br);color:#8a5b12;border-radius:11px;padding:10px 13px;font-size:13.5px;font-weight:600;margin:14px 20px 0}
+  .avisos ul{margin:4px 0 0;padding-left:18px}
+
+  .fl{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin:10px 0 5px 2px}
+  .in{width:100%;font-size:14.5px;font-weight:600;padding:10px 12px;border:2px solid var(--line);border-radius:11px;outline:none;background:#fafbfc;color:var(--ink)}
+  .in:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.13)}
+  textarea.in{resize:vertical;min-height:46px;font-weight:500}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+  .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 12px}
+  .seg{display:flex;flex-wrap:wrap;gap:8px}
+  .seg button{border:2px solid var(--line);background:#fafbfc;border-radius:11px;padding:9px 13px;font-size:14px;font-weight:700;color:var(--ink-2);cursor:pointer}
+  .seg button:hover{border-color:#cdd3dd}
+  .seg button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:#fff}
+  .ro{font-size:14px;color:var(--ink-2);display:flex;flex-direction:column;gap:3px}
+  .ro b{color:var(--ink)}
+
+  table.tp{width:100%;border-collapse:collapse;font-size:14px}
+  table.tp th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;text-align:left;padding:0 6px 6px}
+  table.tp td{padding:3px}
+  table.tp .in{padding:8px 9px;font-size:14px}
+  table.tp td.n{width:72px}
+  table.tp td.q{width:110px}
+  table.tp td.s{width:110px}
+  table.tp td.x{width:38px}
+  .tots{display:flex;justify-content:flex-end;gap:18px;flex-wrap:wrap;margin-top:10px;font-size:14px;color:var(--ink-2)}
+  .tots b{color:var(--ink)}
+  .tots .big{font-size:17px}
+
+  .drow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-2);flex-wrap:wrap}
+  .drow:last-child{border-bottom:none}
+  .drow .di{font-size:20px;width:30px;text-align:center}
+  .drow .dt{flex:1;min-width:150px}
+  .drow .dt b{display:block;font-size:14.5px}
+  .drow .dt span{font-size:12.5px;color:var(--muted);font-weight:600;word-break:break-word}
+  .drow .dt span.ok{color:#0b7a53}
+  .drow .dt span.pend{color:#8a5b12}
+
+  .cands{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow:auto;margin-top:10px}
+  .cand{display:flex;align-items:center;gap:10px;border:2px solid var(--line);border-radius:11px;padding:9px 12px;cursor:pointer;font-size:14px}
+  .cand:hover{border-color:#cdd3dd}
+  .cand.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .cand .num{min-width:62px}
+  .cand .cm{font-size:12px;color:var(--ok);font-weight:800;margin-left:auto;white-space:nowrap}
+
+  .pasos-gs{margin:0;padding-left:20px;font-size:14px;color:var(--ink-2)}
+  .pasos-gs li{margin:0 0 10px}
+  .pasos-gs b{color:var(--ink)}
+  .codigo{width:100%;height:150px;font:12px/1.4 "Consolas","SF Mono",monospace;border:1px solid var(--line);border-radius:10px;padding:10px;background:#0f1115;color:#d6deeb;resize:vertical}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--black);color:#fff;padding:11px 16px;border-radius:11px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:200;box-shadow:var(--shadow-lg);max-width:calc(100% - 32px)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .velo{position:fixed;inset:0;z-index:90;background:rgba(37,99,235,.12);border:4px dashed var(--accent);display:none;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:var(--accent-d);pointer-events:none}
+  .velo.on{display:flex}
+
+  /* ===== responsive ===== */
+  @media(min-width:960px){
+    .layout{grid-template-columns:.8fr 1.2fr;align-items:start}
+    .colA{position:sticky;top:88px}
+  }
+  @media(max-width:720px){
+    .kpis{grid-template-columns:repeat(2,1fr);gap:11px}
+    .kpi{padding:13px}
+    .kpi-n{font-size:26px}
+    .wrap{padding:16px 14px 40px}
+    .appbar{padding:0 14px;height:60px}
+    .appbar b{font-size:15px}
+    .ab-btn span{display:none}
+    .ab-btn{padding:9px}
+    .g2,.g3{grid-template-columns:1fr}
+    .paso{font-size:10.5px;padding:6px 2px}
+    .paso small{display:none}
+    .modal-ov{padding:0}
+    .modal,.modal.ancho{max-width:100%;min-height:100vh;border-radius:0}
+    table.tp td.s{width:84px}
+    table.tp td.q{width:90px}
+    table.tp td.n{width:56px}
+  }
+</style>
+</head>
+<body>
+<div class="appbar">
+  <b>Pedidos Online</b>
+  <div class="ab-right">
+    <span id="nubeEstado"></span>
+    <button class="ab-btn" id="btnExport" title="Exportar a Excel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg><span>Excel</span></button>
+    <button class="ab-btn" id="btnDrive" title="Google Drive"><i class="pt" id="drivePt"></i><span>Drive</span></button>
+    <img src="../recepcion/logo.png" class="logo" alt="DJI">
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="kpis">
+    <button class="kpi k-fact" data-f="porFacturar"><i class="bar"></i><div class="kpi-n" id="k-porFacturar">0</div><div class="kpi-l">Por facturar</div></button>
+    <button class="kpi k-env" data-f="porEnviar"><i class="bar"></i><div class="kpi-n" id="k-porEnviar">0</div><div class="kpi-l">Por enviar (Forza)</div></button>
+    <button class="kpi k-rec" data-f="paraRecoger"><i class="bar"></i><div class="kpi-n" id="k-paraRecoger">0</div><div class="kpi-l">Para recoger (Pick Up)</div></button>
+    <button class="kpi k-cam" data-f="enCamino"><i class="bar"></i><div class="kpi-n" id="k-enCamino">0</div><div class="kpi-l">En camino</div></button>
+  </div>
+
+  <div class="layout">
+    <div class="colA">
+      <div class="card pad">
+        <div class="c-h"><b>Cargar pedido</b><span>Soltá el PDF de la orden que llega al correo: la app saca sola los datos del cliente, los productos, el monto y si es envío o Pick Up.</span></div>
+        <label class="drop" id="drop" for="archivoPdf">
+          <div class="ic">📄</div>
+          <b>Arrastrá aquí el PDF de la orden</b>
+          <span>o tocá para elegirlo · podés soltar varios a la vez</span>
+        </label>
+        <input type="file" id="archivoPdf" accept="application/pdf,.pdf,image/*" multiple hidden>
+        <div class="hint">También podés soltar aquí la <b>factura</b> o la <b>guía</b>: la app busca de qué orden es. O usá los botones 🧾 / 🏷️ de cada orden.</div>
+        <div class="res" id="res"></div>
+      </div>
+      <div class="card dcard" id="driveCard"></div>
+    </div>
+
+    <div class="colB">
+      <div class="tools">
+        <div class="sbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="Buscar orden, cliente, teléfono, NIT, producto, guía…" autocomplete="off" spellcheck="false"></div>
+        <select id="mes" title="Mes"></select>
+      </div>
+      <div class="chips" id="chipsEstado"></div>
+      <div class="chips" id="chipsModo"></div>
+      <div class="sec-h"><h2 id="listTitle">Pedidos</h2><span id="listCount"></span></div>
+      <div class="list" id="list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal: detalle de la orden ===== -->
+<div class="modal-ov" id="detModal"><div class="modal ancho" id="det"></div></div>
+
+<!-- ===== Modal: ¿de qué orden es este archivo? ===== -->
+<div class="modal-ov" id="asModal">
+  <div class="modal">
+    <div class="modal-h"><div><b>¿De qué orden es este archivo?</b><div class="sub" id="asArchivo"></div></div><button class="modal-x" id="asCerrar" title="Cerrar">✕</button></div>
+    <div class="msec">
+      <span class="fl">Es la…</span>
+      <div class="seg" id="asTipo"><button type="button" data-v="factura">🧾 Factura</button><button type="button" data-v="guia">🏷️ Guía</button></div>
+      <div id="asNumBox"><label class="fl" for="asNum" id="asNumL">N.º</label><input class="in" id="asNum" autocomplete="off" placeholder="(opcional)"></div>
+    </div>
+    <div class="msec">
+      <span class="fl">Orden</span>
+      <div class="sbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="asQ" type="search" placeholder="Buscar orden o cliente…" autocomplete="off"></div>
+      <div class="cands" id="asCands"></div>
+    </div>
+    <div class="mfoot"><button class="btn ghost" id="asSaltar">Saltar este archivo</button><span class="sp"></span><button class="btn primary" id="asOk">Guardar en la orden</button></div>
+  </div>
+</div>
+
+<!-- ===== Modal: Google Drive ===== -->
+<div class="modal-ov" id="drModal">
+  <div class="modal">
+    <div class="modal-h"><b>Google Drive</b><button class="modal-x" onclick="cerrarDrive()" title="Cerrar">✕</button></div>
+    <div id="drCuerpo"></div>
+  </div>
+</div>
+
+<input type="file" id="archivoDoc" accept="application/pdf,.pdf,image/*" hidden>
+<div class="velo" id="velo">Soltá el archivo aquí</div>
+<div class="toast" id="toast"></div>
+
+<script src="../nube.js?v=20261005b"></script>
+<script src="../recepcion/lib/exceljs.min.js"></script>
+<script src="../recepcion/catalog.js?v=20261005b"></script>
+<script src="lector.js?v=20261005b"></script>
+<script>
+/* ============================================================
+   Pedidos Online — las órdenes que llegan por correo (PDF):
+   se leen solas, se sigue cada paso (factura, guía, envío o
+   Pick Up) y los PDF se guardan en Google Drive con el número
+   de orden.
+   ============================================================ */
+"use strict";
+
+const VER = new URLSearchParams(location.search).get("v") || "";
+const LS_DATOS = "online_dji_v1";            // {v, ordenes:[...]}
+const LS_AJ    = "online_dji_ajustes_v1";    // {drive:{url,clave,cuenta,carpeta,ok}, tienda}
+const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+const MODOS = {
+  forza:  {l:"Envío Forza", ic:"🚚"},
+  envio:  {l:"Envío",       ic:"📦"},
+  pickup: {l:"Pick Up",     ic:"🏬"}
+};
+const P = {
+  nuevo:     {l:"Orden recibida",       c:"Recibida",     ic:"📥"},
+  facturado: {l:"Facturada",            c:"Facturada",    ic:"🧾"},
+  guia:      {l:"Guía lista",           c:"Guía lista",   ic:"🏷️"},
+  enviado:   {l:"Enviado por Forza",    c:"Enviado",      ic:"🚚"},
+  listo:     {l:"Listo para recoger",   c:"Para recoger", ic:"🏬"},
+  entregado: {l:"Entregado al cliente", c:"Entregado",    ic:"✅"}
+};
+const pasosDe = m => m==="pickup" ? ["nuevo","facturado","listo","entregado"] : ["nuevo","facturado","guia","enviado","entregado"];
+const DOCS = {
+  orden:   {l:"Orden",   ic:"📄"},
+  factura: {l:"Factura", ic:"🧾"},
+  guia:    {l:"Guía",    ic:"🏷️"}
+};
+const FILTROS = {
+  activos:     {l:"Pendientes",   f:o=>!o.anulada && o.estado!=="entregado"},
+  porFacturar: {l:"Por facturar", f:o=>!o.anulada && o.estado==="nuevo"},
+  porEnviar:   {l:"Por enviar",   f:o=>!o.anulada && o.modo!=="pickup" && (o.estado==="facturado"||o.estado==="guia")},
+  paraRecoger: {l:"Para recoger", f:o=>!o.anulada && o.modo==="pickup" && (o.estado==="facturado"||o.estado==="listo")},
+  enCamino:    {l:"En camino",    f:o=>!o.anulada && o.estado==="enviado"},
+  entregado:   {l:"Entregados",   f:o=>!o.anulada && o.estado==="entregado"},
+  anuladas:    {l:"Anuladas",     f:o=>o.anulada},
+  todos:       {l:"Todos",        f:()=>true}
+};
+
+let datos = {v:1, ordenes:[]};
+let aj = {drive:{url:"",clave:"",cuenta:"",carpeta:"",ok:false}, tienda:"Oakland Mall"};
+let filtro = "activos", filtroModo = "", filtroMes = "", query = "";
+
+const $ = id => document.getElementById(id);
+
+// ---------- utilidades ----------
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function jsq(s){return esc(JSON.stringify(String(s)));}
+function fold(s){return (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/([a-z])(\d)/g,"$1 $2").replace(/(\d)([a-z])/g,"$1 $2").replace(/[^a-z0-9@.]+/g," ").trim();}
+function plural(n,uno,varios){return n+" "+(n===1?uno:varios);}
+const soloDigitos = t => String(t||"").replace(/\D/g,"");
+function telBonito(t){ const d=soloDigitos(t); return d.length===8 ? d.slice(0,4)+"-"+d.slice(4) : (t||"").trim(); }
+function telWa(t){ const d=soloDigitos(t); return d.length===8 ? "502"+d : d; }
+const q = n => n==null||n==="" ? "—" : (Number(n)<0?"-":"")+"Q"+Math.abs(Number(n)).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const r2 = n => Math.round(n*100)/100;
+function ymdCorto(ymd){ if(!ymd) return ""; const [y,m,d]=ymd.split("-"); return d+"/"+m+"/"+y; }
+function diaBonito(ymd){ if(!ymd) return ""; const [y,m,d]=ymd.split("-").map(Number); return new Date(y,m-1,d).toLocaleDateString("es-GT",{day:"numeric",month:"short",year:"numeric"}); }
+function hoyISO(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function fechaCorta(iso){ const d=new Date(iso); return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0"); }
+const primerNombre = n => (String(n||"").trim().split(/\s+/)[0]||"");
+const ordenDe = id => datos.ordenes.find(o=>o.id===id);
+let tToast;
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tToast); tToast=setTimeout(()=>t.classList.remove("show"),2800); }
+
+// fotos del catálogo de Recepción (por el código / SKU)
+const CAT = {}; (window.CATALOGO_BASE||[]).forEach(p=>{ CAT[String(p.codigo).toUpperCase()]=p; });
+function fotoProd(sku){
+  const p=CAT[String(sku||"").toUpperCase()];
+  if(p && p.img) return `<img class="ph" src="../recepcion/${esc(p.img)}${VER?"?v="+esc(VER):""}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ph',textContent:'📦'}))">`;
+  return `<span class="ph">📦</span>`;
+}
+
+// ============================================================
+//  GUARDADO
+// ============================================================
+const S = v => String(v??"").trim();
+const N = v => (v===null || v===undefined || v==="" || !isFinite(+v)) ? null : r2(+v);
+function limpiarProd(a){
+  return Array.isArray(a) ? a.filter(p=>p && typeof p==="object").map(p=>({
+    nombre:S(p.nombre), sku:S(p.sku).toUpperCase(), cant:Math.max(1,Math.round(+p.cant||1)), precio:N(p.precio), total:N(p.total)
+  })).filter(p=>p.nombre||p.sku) : [];
+}
+function limpiarPago(x){
+  if(!x || typeof x!=="object") return null;
+  const p={metodo:S(x.metodo),financiamiento:S(x.financiamiento),autorizacion:S(x.autorizacion),tarjeta:S(x.tarjeta),monto:N(x.monto),otros:S(x.otros)};
+  return (p.metodo||p.financiamiento||p.autorizacion||p.tarjeta||p.otros||p.monto!=null) ? p : null;
+}
+function limpiarArchivos(a){
+  const o={};
+  if(a && typeof a==="object") for(const k of Object.keys(DOCS)){
+    const f=a[k];
+    if(f && typeof f==="object" && S(f.nombre)) o[k]={nombre:S(f.nombre), url:S(f.url), id:S(f.id), fecha:S(f.fecha), pendiente:!S(f.url) && !!f.pendiente};
+  }
+  return o;
+}
+const idOrden = t => S(t).replace(/[^\w-]/g,"").slice(0,40);
+function limpiarOrden(r){
+  if(!r || typeof r!=="object") return null;
+  const id=idOrden(r.id||r.orden); if(!id) return null;
+  const modo=MODOS[r.modo] ? r.modo : "forza";
+  const lista=pasosDe(modo);
+  let estado=S(r.estado);
+  if(!lista.includes(estado)) estado = (estado==="guia"||estado==="enviado") ? "listo" : (estado==="listo" ? "guia" : "nuevo");
+  if(!lista.includes(estado)) estado="nuevo";
+  const o={
+    id, orden:id, fecha:/^\d{4}-\d{2}-\d{2}$/.test(S(r.fecha))?S(r.fecha):"", plataforma:S(r.plataforma),
+    creado:S(r.creado)||new Date().toISOString(),
+    nombre:S(r.nombre), telefono:soloDigitos(r.telefono).slice(0,15), correo:S(r.correo), nit:S(r.nit).toUpperCase(), dpi:soloDigitos(r.dpi),
+    facNombre:S(r.facNombre), facTipo:S(r.facTipo), facId:S(r.facId), facCorreo:S(r.facCorreo),
+    direccion:S(r.direccion),
+    productos:limpiarProd(r.productos), cargos:limpiarProd(r.cargos),
+    subtotal:N(r.subtotal), costoEnvio:N(r.costoEnvio), impuestos:N(r.impuestos), descuento:N(r.descuento), total:N(r.total),
+    pago1:limpiarPago(r.pago1), pago2:limpiarPago(r.pago2),
+    modo, transportista:S(r.transportista), tipoEnvio:S(r.tipoEnvio),
+    recibeNombre:S(r.recibeNombre), recibeDpi:S(r.recibeDpi),
+    estado, pasos:(r.pasos && typeof r.pasos==="object") ? Object.fromEntries(Object.entries(r.pasos).filter(([k,v])=>P[k] && typeof v==="string")) : {},
+    anulada:!!r.anulada,
+    facturaNum:S(r.facturaNum), guiaNum:S(r.guiaNum), nota:S(r.nota),
+    archivos:limpiarArchivos(r.archivos),
+    carpeta:(r.carpeta && typeof r.carpeta==="object" && S(r.carpeta.id)) ? {id:S(r.carpeta.id), url:S(r.carpeta.url)} : null
+  };
+  if(r.actualizado) o.actualizado=S(r.actualizado);
+  return o;
+}
+function limpiarAj(a){
+  const d=(a && a.drive && typeof a.drive==="object") ? a.drive : {};
+  return {
+    drive:{url:S(d.url), clave:S(d.clave), cuenta:S(d.cuenta), carpeta:S(d.carpeta), ok:!!d.ok && !!S(d.url) && !!S(d.clave)},
+    tienda:S(a && a.tienda) || "Oakland Mall"
+  };
+}
+function cargar(){
+  try{
+    const d=JSON.parse(localStorage.getItem(LS_DATOS)||"null");
+    if(d && Array.isArray(d.ordenes)) datos.ordenes=d.ordenes.map(limpiarOrden).filter(Boolean);
+  }catch(e){}
+  try{ const a=JSON.parse(localStorage.getItem(LS_AJ)||"null"); if(a) aj=limpiarAj(a); }catch(e){}
+}
+function guardarLocal(){ try{ localStorage.setItem(LS_DATOS,JSON.stringify(datos)); }catch(e){ toast("⚠️ No se pudo guardar en este navegador"); } }
+function guardar(){ guardarLocal(); subirNube(); }
+function guardarAj(){ try{ localStorage.setItem(LS_AJ,JSON.stringify(aj)); }catch(e){} subirAj(); }
+
+// ---------- nube (todas las computadoras conectadas ven lo mismo) ----------
+let nubeReg=null, nubeAj=null, cambiosSinSubir=false, ajSinSubir=false;
+const mapaOrdenes = lista => { const m={}; lista.forEach(o=>{ m[o.id]=o; }); return m; };
+const masNuevo = (a,b) => (a.actualizado||a.creado) > (b.actualizado||b.creado);
+function unirOrdenes(nube, locales){
+  const out={};
+  for(const id in nube){ const o=limpiarOrden(Object.assign({id},nube[id])); if(o) out[o.id]=o; }
+  locales.forEach(o=>{ const c=out[o.id]; if(!c || masNuevo(o,c)) out[o.id]=o; });
+  return Object.values(out);
+}
+function subirNube(){
+  if(!window.Nube || !Nube.conectado()) return;
+  if(nubeReg===null){ cambiosSinSubir=true; return; }
+  Nube.guardarColeccion("online", mapaOrdenes(datos.ordenes), nubeReg);
+}
+const ajNube = () => ({drive:aj.drive, tienda:aj.tienda});
+function subirAj(){
+  if(!window.Nube || !Nube.conectado()) return;
+  if(nubeAj===null){ ajSinSubir=true; return; }
+  Nube.guardarMapa("ajustes","online", ajNube(), nubeAj);
+}
+async function conectarNube(){
+  if(!window.Nube) return;
+  if(!conectarNube.pintado){ Nube.pintar($("nubeEstado")); conectarNube.pintado=true; }
+  if(!Nube.conectado()) return;
+  if(!await Nube.iniciar()) return;
+  const unido=await Nube.unirUnaVez("online", async ()=>{
+    const nube=await Nube.leerColeccion("online"), a=await Nube.leerMapa("ajustes","online");
+    await Nube.guardarColeccion("online", mapaOrdenes(unirOrdenes(nube, datos.ordenes)), nube);
+    if((!a.existe || !a.mapa.drive || !a.mapa.drive.url) && aj.drive.url) await Nube.guardarMapa("ajustes","online", ajNube(), a.mapa);
+  });
+  if(!unido && localStorage.getItem("dji_nube_unido_online")!==Nube.clave()){
+    addEventListener("online", ()=>conectarNube(), {once:true});
+    return;
+  }
+  Nube.escucharColeccion("online",(mapa)=>{
+    let lista=Object.keys(mapa).map(id=>limpiarOrden(Object.assign({id},mapa[id]))).filter(Boolean);
+    nubeReg=mapa;
+    if(cambiosSinSubir){ cambiosSinSubir=false; lista=unirOrdenes(mapa, datos.ordenes); Nube.guardarColeccion("online", mapaOrdenes(lista), mapa); }
+    const ord=l=>l.slice().sort((a,b)=>a.id.localeCompare(b.id));
+    if(Nube.estable(ord(lista))===Nube.estable(ord(datos.ordenes))) return;
+    datos.ordenes=lista; guardarLocal(); render();
+    if(detId && $("detModal").classList.contains("show") && !detSucio){ const o=ordenDe(detId); if(o){ detProd=o.productos.map(p=>Object.assign({},p)); detModo=o.modo; pintarDetalle(); } }
+  });
+  Nube.escucharMapa("ajustes","online",(m)=>{
+    nubeAj=m;
+    if(ajSinSubir){ ajSinSubir=false; Nube.guardarMapa("ajustes","online", ajNube(), m); return; }
+    if(!m.drive && !m.tienda) return;
+    const nuevo=limpiarAj({drive:m.drive||aj.drive, tienda:m.tienda||aj.tienda});
+    if(Nube.estable(nuevo)===Nube.estable(aj)) return;
+    aj=nuevo; try{ localStorage.setItem(LS_AJ,JSON.stringify(aj)); }catch(e){}
+    renderDrive(); if($("drModal").classList.contains("show")) pintarDrive();
+    procesarCola();
+  });
+}
+
+// ============================================================
+//  LEER LOS PDF (sin IA: pdf.js + lector.js)
+// ============================================================
+let _pdfjs=null;
+async function pdfjs(){
+  if(_pdfjs) return _pdfjs;
+  const v=VER ? "?v="+encodeURIComponent(VER) : "";
+  const m=await import("./lib/pdf.min.mjs"+v);
+  m.GlobalWorkerOptions.workerSrc=new URL("./lib/pdf.worker.min.mjs"+v, location.href).href;
+  return (_pdfjs=m);
+}
+const esPdf = f => /pdf/i.test(f.type) || /\.pdf$/i.test(f.name||"");
+const esImagen = f => /^image\//i.test(f.type);
+async function leerArchivo(f){
+  if(!esPdf(f)) return {texto:"", orden:null};
+  const L=await pdfjs();
+  const r=await LectorOrden.leerPdf(new Uint8Array(await f.arrayBuffer()), L);
+  const tipo=LectorOrden.tipoDocumento(r.texto);
+  const p = tipo==="orden" ? LectorOrden.parsear(r.items, r.titulo) : null;
+  return {texto:r.texto, tipo, orden:(p && p.esOrden) ? p : null};
+}
+
+function resultado(cls, html){
+  const d=document.createElement("div"); d.className=cls; d.innerHTML=html;
+  $("res").prepend(d);
+  while($("res").children.length>8) $("res").lastChild.remove();
+  return d;
+}
+let procesando=Promise.resolve();
+function procesarArchivos(files){
+  files=[...files].filter(f=>esPdf(f)||esImagen(f));
+  if(!files.length){ toast("Solo se pueden cargar PDF o fotos"); return; }
+  procesando=procesando.then(async ()=>{
+    for(const f of files){
+      const fila=resultado("info",`⏳ Leyendo <b>${esc(f.name)}</b>…`);
+      try{
+        const r=await leerArchivo(f);
+        fila.remove();
+        if(r.orden) await agregarOrden(r.orden, f);
+        else await asignarDocumento(f, r.texto, r.tipo);
+      }catch(e){
+        console.error(e);
+        fila.className="err"; fila.innerHTML=`⚠️ No pude leer <b>${esc(f.name)}</b>. ¿Es un PDF de la tienda? (${esc(e && e.message || e)})`;
+      }
+    }
+  });
+  return procesando;
+}
+
+function ordenDesdePdf(p){
+  return {
+    orden:p.orden, fecha:p.fecha, plataforma:p.plataforma,
+    nombre:p.cliente.nombre, telefono:p.cliente.telefono, correo:p.cliente.correo, nit:p.cliente.nit, dpi:p.cliente.dpi,
+    facNombre:p.fiscal.nombre, facTipo:p.fiscal.tipoId, facId:p.fiscal.numId, facCorreo:p.fiscal.correo,
+    direccion:p.direccion, productos:p.productos, cargos:p.cargos,
+    subtotal:p.subtotal, costoEnvio:p.costoEnvio, impuestos:p.impuestos, descuento:p.descuento, total:p.total,
+    pago1:p.pago1, pago2:p.pago2,
+    modo:p.modo||"forza", transportista:p.entrega.transportista, tipoEnvio:p.entrega.tipo,
+    recibeNombre:p.recibe.nombre, recibeDpi:p.recibe.dpi||p.recibe.cedula
+  };
+}
+async function agregarOrden(p, archivo){
+  const nuevo=ordenDesdePdf(p), id=idOrden(p.orden), ahora=new Date().toISOString();
+  let o=ordenDe(id);
+  if(o){
+    if(!confirm(`La orden #${id} (${o.nombre}) ya está cargada.\n\n¿Actualizar sus datos con este PDF?\n(No se pierde el paso en que va, las notas ni la factura o la guía.)`)){
+      resultado("info",`ℹ️ La orden <a onclick="verOrden(${jsq(id)})">#${esc(id)}</a> ya estaba cargada: no se cambió.`); return;
+    }
+    const modoAntes=o.modo;
+    Object.assign(o, nuevo, {actualizado:ahora});
+    if(o.modo!==modoAntes){ const t=limpiarOrden(o); o.estado=t.estado; }
+  }else{
+    o=limpiarOrden(Object.assign({id, creado:ahora, estado:"nuevo", pasos:{nuevo:ahora}}, nuevo));
+    datos.ordenes.push(o);
+  }
+  o=Object.assign(o, limpiarOrden(o));
+  guardar();
+  await ponerArchivo(o.id, "orden", archivo);
+  filtroMes=""; render();
+  const m=MODOS[o.modo];
+  if(p.avisos.length){
+    resultado("warn",`⚠️ Orden <a onclick="verOrden(${jsq(o.id)})">#${esc(o.id)}</a> cargada, pero revisala: ${esc(p.avisos[0])}`);
+    abrirDetalle(o.id, p.avisos);
+  }else{
+    resultado("ok",`✅ <span>Orden <a onclick="verOrden(${jsq(o.id)})">#${esc(o.id)}</a> · ${esc(o.nombre)} · ${q(o.total)} · ${m.ic} ${m.l}</span>`);
+    resaltar(o.id);
+  }
+}
+
+// ============================================================
+//  ARCHIVOS: se guardan aquí y se suben a Google Drive
+// ============================================================
+// cola de subidas (en este navegador, por si no hay internet o Drive todavía no está conectado)
+const IDB = (()=>{
+  let db=null; const mem=new Map();
+  function abrir(){
+    if(db) return db;
+    db=new Promise(res=>{
+      try{
+        const r=indexedDB.open("online_dji",1);
+        r.onupgradeneeded=()=>r.result.createObjectStore("pendientes",{keyPath:"k"});
+        r.onsuccess=()=>res(r.result); r.onerror=()=>res(null);
+      }catch(e){ res(null); }
+    });
+    return db;
+  }
+  async function hacer(modo, fn){
+    const d=await abrir();
+    if(!d){ const rq=fn(null); return rq && "result" in rq ? rq.result : undefined; }
+    return new Promise((res,rej)=>{
+      const t=d.transaction("pendientes",modo), st=t.objectStore("pendientes"), rq=fn(st);
+      t.oncomplete=()=>res(rq && "result" in rq ? rq.result : undefined);
+      t.onerror=()=>rej(t.error); t.onabort=()=>rej(t.error);
+    });
+  }
+  return {
+    put:v=>hacer("readwrite",st=>st ? st.put(v) : (mem.set(v.k,v),null)),
+    get:k=>hacer("readonly",st=>st ? st.get(k) : {result:mem.get(k)}),
+    del:k=>hacer("readwrite",st=>st ? st.delete(k) : (mem.delete(k),null)),
+    todos:()=>hacer("readonly",st=>st ? st.getAll() : {result:[...mem.values()]})
+  };
+})();
+let pendLocal=new Set();
+async function refrescarPend(){ try{ pendLocal=new Set((await IDB.todos()).map(p=>p.k)); }catch(e){} }
+
+const limpiarNombre = t => String(t||"").replace(/[\\/:*?"<>|]+/g," ").replace(/\s+/g," ").trim();
+function extension(f){ const m=(f.name||"").match(/\.([a-z0-9]{2,5})$/i); if(m) return m[1].toLowerCase(); return /png/.test(f.type)?"png":(/jpe?g/.test(f.type)?"jpg":"pdf"); }
+const nombreArchivo = (o,tipo,ext) => limpiarNombre(`${o.orden} - ${DOCS[tipo].l} - ${o.nombre||"Cliente"}`).slice(0,170)+"."+ext;
+const carpetaNombre = o => limpiarNombre(`${o.orden} - ${o.nombre||"Cliente"}`).slice(0,170);
+function mesCarpeta(o){
+  const f=o.fecha || (o.creado||"").slice(0,10);
+  const [y,m]=f.split("-");
+  return y && m ? `${y}-${m} ${MESES[Number(m)-1]||""}`.trim() : "Sin fecha";
+}
+function descripcion(o){
+  return [`Orden #${o.orden}`, o.nombre, o.telefono?"Tel "+telBonito(o.telefono):"", o.correo, o.nit?"NIT "+o.nit:"", o.dpi?"DPI "+o.dpi:"",
+    o.productos.map(p=>p.nombre+(p.cant>1?" x"+p.cant:"")).join(", "), q(o.total), MODOS[o.modo].l].filter(Boolean).join(" · ");
+}
+
+async function ponerArchivo(id, tipo, f, opciones){
+  const o=ordenDe(id); if(!o || !f) return;
+  const ext=extension(f), k=id+"|"+tipo, t=Date.now();
+  await IDB.put({k, orden:id, tipo, ext, mime:f.type||(ext==="pdf"?"application/pdf":"application/octet-stream"), blob:f, original:f.name||"", t});
+  pendLocal.add(k);
+  const ahora=new Date().toISOString();
+  o.archivos=Object.assign({}, o.archivos, {[tipo]:{nombre:nombreArchivo(o,tipo,ext), url:"", id:"", fecha:ahora, pendiente:true}});
+  // el paso avanza solo
+  if(tipo==="factura" && o.estado==="nuevo") marcarPaso(o,"facturado",ahora);
+  if(tipo==="guia" && o.modo!=="pickup" && (o.estado==="nuevo"||o.estado==="facturado")) marcarPaso(o,"guia",ahora);
+  if(opciones && opciones.numero){ if(tipo==="factura") o.facturaNum=opciones.numero; if(tipo==="guia") o.guiaNum=opciones.numero; }
+  o.actualizado=ahora;
+  guardar(); render();
+  if(detId===id && $("detModal").classList.contains("show")){ pintarDocs(); $("detPasos").innerHTML=htmlPasos(o); }
+  procesarCola();
+}
+function marcarPaso(o,k,ahora){ o.estado=k; o.pasos=Object.assign({},o.pasos,{[k]:ahora}); }
+
+// ---------- Google Drive (Apps Script de la tienda) ----------
+const driveListo = () => !!(aj.drive.ok && aj.drive.url && aj.drive.clave);
+let colaCorriendo=false, errorDrive="";
+function aBase64(blob){
+  return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(",")[1]||""); r.onerror=()=>rej(r.error); r.readAsDataURL(blob); });
+}
+function jsonp(params){
+  return new Promise((res,rej)=>{
+    const cb="__djiDrive"+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+    const s=document.createElement("script"); let listo=false;
+    const fin=()=>{ listo=true; clearTimeout(tm); try{ delete window[cb]; }catch(e){ window[cb]=undefined; } s.remove(); };
+    const tm=setTimeout(()=>{ if(!listo){ fin(); rej(new Error("sin-respuesta")); } },25000);
+    window[cb]=d=>{ if(listo) return; fin(); res(d); };
+    s.onerror=()=>{ if(!listo){ fin(); rej(new Error("red")); } };
+    s.onload=()=>setTimeout(()=>{ if(!listo){ fin(); rej(new Error("sin-respuesta")); } },300);
+    s.src=aj.drive.url+(aj.drive.url.includes("?")?"&":"?")+new URLSearchParams(Object.assign({clave:aj.drive.clave, callback:cb}, params));
+    document.head.appendChild(s);
+  });
+}
+async function llamarDrive(payload, url, clave){
+  url=url||aj.drive.url; clave=clave||aj.drive.clave;
+  const body=JSON.stringify(Object.assign({clave}, payload));
+  let r;
+  try{
+    r=await fetch(url,{method:"POST", body, redirect:"follow", credentials:"omit", cache:"no-store"});
+  }catch(e){
+    if(navigator.onLine===false) throw new Error("Sin internet");
+    // el navegador no dejó leer la respuesta: se manda igual y se confirma por otro camino
+    const viejo={url:aj.drive.url, clave:aj.drive.clave};
+    aj.drive.url=url; aj.drive.clave=clave;
+    try{
+      if(payload.accion==="subir"){
+        await fetch(url,{method:"POST", body, mode:"no-cors", credentials:"omit", cache:"no-store"});
+        const {datos, tipo, descripcion, ...resto}=payload;
+        return await jsonp(Object.assign({}, resto, {accion:"ver"}));
+      }
+      return await jsonp(payload);
+    }finally{ aj.drive.url=viejo.url; aj.drive.clave=viejo.clave; }
+  }
+  const t=await r.text();
+  try{ return JSON.parse(t); }catch(e){ throw new Error(r.ok ? "La URL no responde como el Apps Script de la tienda" : "Error "+r.status); }
+}
+function mensajeError(d){
+  if(!d) return "No se pudo subir";
+  if(d.error==="clave") return "La clave no coincide: volvé a copiar el código en Apps Script (⚙️ Drive).";
+  return d.error || "No se pudo subir";
+}
+async function procesarCola(){
+  if(colaCorriendo || !driveListo()) { renderDrive(); return; }
+  colaCorriendo=true; errorDrive=""; renderDrive();
+  try{
+    let lista=(await IDB.todos()).sort((a,b)=>a.t-b.t);
+    for(const p of lista){
+      const o=ordenDe(p.orden);
+      if(!o){ await IDB.del(p.k); pendLocal.delete(p.k); continue; }
+      const nombre=nombreArchivo(o,p.tipo,p.ext);
+      const d=await llamarDrive({accion:"subir", orden:o.orden, mes:mesCarpeta(o), carpeta:carpetaNombre(o), carpetaId:(o.carpeta&&o.carpeta.id)||"", nombre, tipo:p.mime, datos:await aBase64(p.blob), descripcion:descripcion(o)});
+      if(!d || !d.ok) throw new Error(mensajeError(d));
+      const o2=ordenDe(p.orden);
+      // si mientras subía cambiaron el archivo, se queda en la cola para subir el nuevo
+      const act=await IDB.get(p.k);
+      if(act && act.t===p.t){ await IDB.del(p.k); pendLocal.delete(p.k); }
+      if(o2){
+        const ahora=new Date().toISOString();
+        if(!act || act.t===p.t) o2.archivos=Object.assign({},o2.archivos,{[p.tipo]:{nombre, url:S(d.url), id:S(d.id), fecha:ahora, pendiente:false}});
+        if(d.carpetaId) o2.carpeta={id:S(d.carpetaId), url:S(d.carpetaUrl)};
+        o2.actualizado=ahora;
+        guardar(); render();
+        if(detId===o2.id && $("detModal").classList.contains("show")) pintarDocs();
+      }
+    }
+  }catch(e){
+    console.warn("Drive:", e);
+    errorDrive=String(e && e.message || e);
+    if(errorDrive==="Failed to fetch" || errorDrive==="red" || errorDrive==="sin-respuesta") errorDrive="No se pudo conectar con Google Drive";
+    clearTimeout(procesarCola.t); if(!/clave/i.test(errorDrive)) procesarCola.t=setTimeout(procesarCola, 90000);
+  }finally{
+    colaCorriendo=false; renderDrive();
+  }
+}
+addEventListener("online", ()=>procesarCola());
+
+// ============================================================
+//  LISTADO
+// ============================================================
+function pasaFiltros(o, sinEstado){
+  if(!sinEstado && !FILTROS[filtro].f(o)) return false;
+  if(filtroModo==="pickup" && o.modo!=="pickup") return false;
+  if(filtroModo==="envio" && o.modo==="pickup") return false;
+  if(filtroMes && (o.fecha||o.creado.slice(0,10)).slice(0,7)!==filtroMes) return false;
+  const qs=fold(query).split(" ").filter(Boolean);
+  if(qs.length){
+    const k=fold([o.orden,"#"+o.orden,o.nombre,o.correo,o.nit,o.dpi,o.facNombre,o.facId,o.direccion,o.recibeNombre,o.recibeDpi,o.guiaNum,o.facturaNum,o.nota,o.transportista,
+      ...o.productos.map(p=>p.nombre+" "+p.sku), o.pago1&&o.pago1.metodo, MODOS[o.modo].l].join(" "))+" "+soloDigitos(o.telefono);
+    if(!qs.every(x=>k.includes(x))) return false;
+  }
+  return true;
+}
+const ordenar = L => L.sort((a,b)=>(b.fecha||b.creado).localeCompare(a.fecha||a.creado) || (Number(b.orden)||0)-(Number(a.orden)||0) || b.creado.localeCompare(a.creado));
+
+const IC_EDIT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>';
+const IC_DEL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>';
+const IC_WA='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15.1L2 22l5-1.3A10 10 0 1012 2zm0 18.2a8.2 8.2 0 01-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1112 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 01-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 00-.7.3 3 3 0 00-.9 2.2 5.2 5.2 0 001.1 2.7 11.8 11.8 0 004.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 001.8-1.3 2.2 2.2 0 00.1-1.3c0-.1-.2-.2-.4-.3z"/></svg>';
+
+function textoWa(o){
+  const n=primerNombre(o.nombre), num=`*#${o.orden}*`;
+  const prods=o.productos.map(p=>p.nombre+(p.cant>1?` (${p.cant})`:"")).join(", ") || "su pedido";
+  const tienda=aj.tienda ? `nuestra tienda DJI en ${aj.tienda}` : "nuestra tienda DJI";
+  const pick=o.modo==="pickup";
+  switch(o.estado){
+    case "nuevo": case "facturado":
+      return pick
+        ? `¡Hola ${n}! 👋 Le saludamos de DJI Store Guatemala. Recibimos su pedido online ${num}: ${prods}. Le avisamos en cuanto esté listo para recogerlo en ${tienda}. 😊`
+        : `¡Hola ${n}! 👋 Le saludamos de DJI Store Guatemala. Recibimos su pedido online ${num}: ${prods}. Ya lo estamos preparando y le avisamos cuando salga con Forza. 😊`;
+    case "guia":
+      return `¡Hola ${n}! 👋 Su pedido online ${num} (${prods}) ya está empacado y sale con Forza 🚚.${o.guiaNum?` Su número de guía es *${o.guiaNum}*.`:""}`;
+    case "enviado":
+      return `¡Hola ${n}! 👋 Su pedido online ${num} (${prods}) ya fue enviado por Forza 🚚.${o.guiaNum?` Su número de guía es *${o.guiaNum}*.`:""} ¡Gracias por su compra!`;
+    case "listo":
+      return `¡Hola ${n}! 👋 ¡Su pedido online ${num} (${prods}) ya está listo! 🎉 Puede pasar a recogerlo a ${tienda}.`+(o.recibeNombre?` Lo recoge *${o.recibeNombre}* presentando su DPI.`:" Por favor traiga su DPI.");
+    default:
+      return `¡Hola ${n}! 👋 Gracias por su compra en DJI Store Guatemala 🙌. Cualquier duda con ${o.productos.length>1?"sus productos":"su "+prods}, con gusto le ayudamos. 😊`;
+  }
+}
+const htmlWa = o => o.telefono ? `<a class="wa" href="https://wa.me/${esc(telWa(o.telefono))}?text=${esc(encodeURIComponent(textoWa(o)))}" target="_blank" rel="noopener" title="Abrir chat de WhatsApp con mensaje listo">${IC_WA}WhatsApp</a>` : "";
+
+function htmlDoc(o, tipo){
+  const d=DOCS[tipo], f=o.archivos[tipo];
+  const attrs=`data-doc="${tipo}" data-id="${esc(o.id)}"`;
+  if(f && f.url) return `<a class="doc ok" ${attrs} href="${esc(f.url)}" target="_blank" rel="noopener" title="Abrir en Google Drive: ${esc(f.nombre)}">${d.ic} ${d.l} ✓</a>`;
+  if(f && f.pendiente){
+    const aqui=pendLocal.has(o.id+"|"+tipo);
+    return `<button class="doc pend" ${attrs} title="${aqui?"Se sube a Drive desde esta computadora":"Se sube desde la computadora donde se cargó"}" onclick="clicDoc(event)">${d.ic} ${d.l} <small>⏳ ${aqui?(driveListo()?"subiendo":"por subir"):"en otra compu"}</small></button>`;
+  }
+  return `<button class="doc" ${attrs} title="Subir ${d.l.toLowerCase()} (o soltá el archivo aquí)" onclick="clicDoc(event)">${d.ic} Subir ${d.l.toLowerCase()}</button>`;
+}
+function htmlPasos(o){
+  const lista=pasosDe(o.modo), iAct=lista.indexOf(o.estado);
+  return `<div class="pasos ${lista.length===4?"p4":""}">${lista.map((k,i)=>`<button class="paso p-${k}${i===iAct?" actual":(i<iAct?" hecho":"")}" onclick="setPaso(${jsq(o.id)},'${k}')" title="${P[k].l}"><i>${P[k].ic}</i>${P[k].c}${o.pasos[k]?`<small>${fechaCorta(o.pasos[k])}</small>`:""}</button>`).join("")}</div>`;
+}
+function lugar(o){
+  if(o.modo==="pickup") return `🏬 Recoge en tienda${aj.tienda?" ("+esc(aj.tienda)+")":""}${o.recibeNombre && fold(o.recibeNombre)!==fold(o.nombre)?` · lo recoge <b>${esc(o.recibeNombre)}</b>`:""}`;
+  const ls=o.direccion.split("\n").map(s=>s.trim()).filter(Boolean).filter(l=>!/^guatemala$/i.test(l));
+  const lugar = ls.length ? ls[ls.length-1] : "";
+  return `📍 ${lugar ? esc(lugar) : "<i>sin dirección</i>"}${o.tipoEnvio?` · ${esc(o.transportista||"Envío")} ${esc(o.tipoEnvio)}`:""}`;
+}
+function pagoTxt(x){ return x ? [x.metodo, x.financiamiento].filter(Boolean).join(" · ") : ""; }
+
+function render(){
+  const R=datos.ordenes;
+  ["porFacturar","porEnviar","paraRecoger","enCamino"].forEach(k=>$("k-"+k).textContent=R.filter(FILTROS[k].f).length);
+
+  // meses
+  const meses=[...new Set(R.map(o=>(o.fecha||o.creado.slice(0,10)).slice(0,7)))].sort().reverse();
+  if(filtroMes && !meses.includes(filtroMes)) filtroMes="";
+  $("mes").innerHTML=`<option value="">Todos los meses</option>`+meses.map(m=>`<option value="${m}"${m===filtroMes?" selected":""}>${MESES[Number(m.slice(5))-1]} ${m.slice(0,4)}</option>`).join("");
+
+  const base=R.filter(o=>pasaFiltros(o,true));
+  $("chipsEstado").innerHTML=Object.entries(FILTROS).map(([k,f])=>`<button class="chip" aria-pressed="${filtro===k}" onclick="setFiltro('${k}')">${f.l} <span class="n">${base.filter(f.f).length}</span></button>`).join("");
+  $("chipsModo").innerHTML=[["","Todos"],["envio","🚚 Envío"],["pickup","🏬 Pick Up"]].map(([k,l])=>`<button class="chip t" aria-pressed="${filtroModo===k}" onclick="setModoF('${k}')">${l}</button>`).join("");
+
+  const L=ordenar(R.filter(o=>pasaFiltros(o)));
+  const hayFiltro=filtro!=="activos"||filtroModo||filtroMes||query;
+  $("listTitle").textContent=FILTROS[filtro].l;
+  $("listCount").textContent=hayFiltro?`${L.length} de ${R.length}`:plural(L.length,"pedido","pedidos");
+  if(!R.length){ $("list").innerHTML=`<div class="empty"><b>Todavía no hay pedidos</b>Soltá aquí el PDF de una orden online que te llegó al correo.</div>`; return; }
+  if(!L.length){ $("list").innerHTML=`<div class="empty"><b>No hay pedidos aquí</b><button class="btn ghost sm" style="margin-top:10px" onclick="quitarFiltros()">Ver todos</button></div>`; return; }
+  $("list").innerHTML=L.map(o=>{
+    const m=MODOS[o.modo];
+    const docs=["orden","factura",...(o.modo==="pickup" && !o.archivos.guia ? [] : ["guia"])];
+    return `<div class="oc e-${o.estado}${o.anulada?" anulada":""}" id="oc-${esc(o.id)}">
+      <div class="oc-top"><span class="modo ${o.modo}">${m.ic} ${m.l}</span><span class="num">#${esc(o.orden)}</span><span class="fch">${esc(diaBonito(o.fecha)||"")}</span>${o.anulada?`<span class="tag">Anulada</span>`:""}
+        <div class="gc-acts"><button class="ib" onclick="abrirDetalle(${jsq(o.id)})" title="Ver todo / editar">${IC_EDIT}</button><button class="ib del" onclick="borrarOrden(${jsq(o.id)})" title="Borrar">${IC_DEL}</button></div></div>
+      <div class="oc-who"><b onclick="abrirDetalle(${jsq(o.id)})">${esc(o.nombre||"(sin nombre)")}</b>${o.telefono?`<a class="tel" href="tel:${esc(o.telefono)}">${esc(telBonito(o.telefono))}</a>`:""}${htmlWa(o)}</div>
+      <div class="prods">${o.productos.map(p=>`<div class="pr">${fotoProd(p.sku)}<span class="pn">${esc(p.nombre)}${p.sku?`<small>${esc(p.sku)}</small>`:""}</span><span class="pc">× ${p.cant}</span></div>`).join("")}</div>
+      <div class="oc-info"><div><b>${q(o.total)}</b>${pagoTxt(o.pago1)?" · "+esc(pagoTxt(o.pago1)):""}${o.pago2?" + "+esc(pagoTxt(o.pago2)||"otro pago"):""}</div><div>${lugar(o)}</div>
+        ${o.guiaNum||o.facturaNum?`<div>${o.facturaNum?"🧾 Factura <b>"+esc(o.facturaNum)+"</b>":""}${o.facturaNum&&o.guiaNum?" · ":""}${o.guiaNum?"🏷️ Guía <b>"+esc(o.guiaNum)+"</b>":""}</div>`:""}
+        ${o.nota?`<div>📝 ${esc(o.nota)}</div>`:""}</div>
+      <div class="docs">${docs.map(t=>htmlDoc(o,t)).join("")}</div>
+      ${htmlPasos(o)}
+    </div>`;
+  }).join("");
+}
+function setFiltro(k){ filtro=k; render(); }
+function setModoF(k){ filtroModo=k; render(); }
+function quitarFiltros(){ filtro="todos"; filtroModo=""; filtroMes=""; query=""; $("q").value=""; render(); }
+function resaltar(id){
+  requestAnimationFrame(()=>{ const el=$("oc-"+id); if(!el) return; el.classList.remove("resalta"); void el.offsetWidth; el.classList.add("resalta"); el.scrollIntoView({behavior:"smooth",block:"nearest"}); });
+}
+function verOrden(id){
+  const o=ordenDe(id); if(!o) return;
+  if(!pasaFiltros(o)){ filtro="todos"; filtroModo=""; filtroMes=""; query=""; $("q").value=""; render(); }
+  resaltar(id);
+}
+function setPaso(id,k){
+  const o=ordenDe(id); if(!o || o.estado===k) return;
+  const ahora=new Date().toISOString();
+  marcarPaso(o,k,ahora); o.actualizado=ahora;
+  guardar(); render(); toast(`#${o.orden}: ${P[k].l}`);
+  if(detId===id && $("detModal").classList.contains("show")) $("detPasos").innerHTML=htmlPasos(o);
+}
+function borrarOrden(id){
+  const o=ordenDe(id); if(!o) return;
+  if(!confirm(`¿Borrar la orden #${o.orden} de ${o.nombre}?\n\nSe quita de la lista (los archivos que ya están en Google Drive NO se borran).`)) return;
+  datos.ordenes=datos.ordenes.filter(x=>x.id!==id);
+  Object.keys(DOCS).forEach(t=>{ IDB.del(id+"|"+t).catch(()=>{}); pendLocal.delete(id+"|"+t); });
+  if(detId===id) cerrarDetalle(true);
+  guardar(); render(); toast("Orden borrada");
+}
+
+// subir factura / guía desde el botón de la orden
+let docDestino=null;
+function clicDoc(ev){
+  const b=ev.currentTarget; docDestino={id:b.dataset.id, tipo:b.dataset.doc};
+  $("archivoDoc").click();
+}
+$("archivoDoc").addEventListener("change",e=>{
+  const f=e.target.files[0]; e.target.value="";
+  if(f && docDestino) subirDocA(docDestino.id, docDestino.tipo, f);
+  docDestino=null;
+});
+async function subirDocA(id, tipo, f){
+  const o=ordenDe(id); if(!o) return;
+  if(o.archivos[tipo] && (o.archivos[tipo].url || o.archivos[tipo].pendiente) && !confirm(`La orden #${o.orden} ya tiene ${tipo==="guia"?"guía":tipo}. ¿Reemplazarla por "${f.name}"?`)) return;
+  let numero="";
+  if(tipo!=="orden" && esPdf(f)){
+    try{ const r=await leerArchivo(f); numero = tipo==="guia" ? LectorOrden.numeroGuia(r.texto) : LectorOrden.numeroFactura(r.texto); }catch(e){}
+  }
+  await ponerArchivo(id, tipo, f, {numero: (tipo==="factura"&&o.facturaNum)||(tipo==="guia"&&o.guiaNum) ? "" : numero});
+  toast(`${DOCS[tipo].ic} ${DOCS[tipo].l} guardada en la orden #${o.orden}`+(driveListo()?"":" (se sube a Drive al conectarlo)"));
+}
+
+// ============================================================
+//  ¿DE QUÉ ORDEN ES ESTE ARCHIVO? (factura o guía soltada sin orden)
+// ============================================================
+let asEstado=null;
+function puntaje(o, texto){
+  const t=fold(texto), dig=soloDigitos(texto);
+  let p=0; const por=[];
+  if(o.orden && new RegExp("(^|\\D)"+o.orden+"(\\D|$)").test(texto)){ p+=100; por.push("orden"); }
+  if(o.telefono && o.telefono.length>=8 && dig.includes(o.telefono)){ p+=50; por.push("teléfono"); }
+  if(o.nit && o.nit.length>=6 && soloDigitos(o.nit).length>=6 && dig.includes(soloDigitos(o.nit))){ p+=40; por.push("NIT"); }
+  if(o.dpi && o.dpi.length>=10 && dig.includes(o.dpi)){ p+=40; por.push("DPI"); }
+  if(o.correo && t.includes(fold(o.correo))){ p+=40; por.push("correo"); }
+  const pal=fold(o.nombre).split(" ").filter(w=>w.length>=4);
+  const hits=pal.filter(w=>new RegExp("\\b"+w+"\\b").test(t)).length;
+  if(hits>=2){ p+=15*hits; por.push("nombre"); }
+  return {p, por};
+}
+function asignarDocumento(f, texto, tipo){
+  return new Promise(res=>{
+    if(!datos.ordenes.length){ resultado("warn",`⚠️ <b>${esc(f.name)}</b> no es una orden y todavía no hay pedidos cargados. Primero cargá el PDF de la orden.`); res(); return; }
+    const cands=datos.ordenes.map(o=>Object.assign({o},puntaje(o,texto||""))).sort((a,b)=>b.p-a.p || (b.o.creado).localeCompare(a.o.creado));
+    const tipoAdiv = tipo==="guia"||tipo==="factura" ? tipo : (esImagen(f) ? "guia" : "factura");
+    asEstado={f, texto, tipo:tipoAdiv, cands, sel:cands[0].p>=40 ? cands[0].o.id : null, res};
+    $("asArchivo").textContent=f.name;
+    $("asQ").value="";
+    pintarAsTipo(); pintarCands();
+    $("asModal").classList.add("show");
+  });
+}
+function pintarAsTipo(){
+  document.querySelectorAll("#asTipo button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===asEstado.tipo));
+  $("asNumL").textContent = asEstado.tipo==="guia" ? "N.º de guía (opcional)" : "N.º de factura (opcional)";
+  $("asNum").value = asEstado.tipo==="guia" ? LectorOrden.numeroGuia(asEstado.texto) : LectorOrden.numeroFactura(asEstado.texto);
+}
+function pintarCands(){
+  const qs=fold($("asQ").value).split(" ").filter(Boolean);
+  const L=asEstado.cands.filter(c=>!qs.length || qs.every(x=>(fold(c.o.orden+" "+c.o.nombre+" "+c.o.productos.map(p=>p.nombre).join(" "))+" "+c.o.telefono).includes(x))).slice(0,40);
+  $("asCands").innerHTML = L.length ? L.map(c=>`<div class="cand${c.o.id===asEstado.sel?" sel":""}" data-id="${esc(c.o.id)}"><span class="num">#${esc(c.o.orden)}</span><span><b>${esc(c.o.nombre)}</b><br><small>${esc(c.o.productos.map(p=>p.nombre).join(", "))}</small></span>${c.p>=40?`<span class="cm">✓ coincide ${esc(c.por.join(", "))}</span>`:""}</div>`).join("") : `<div class="hint">No hay órdenes con esa búsqueda.</div>`;
+  $("asOk").disabled=!asEstado.sel;
+}
+function cerrarAs(guardarlo){
+  const e=asEstado; if(!e) return;
+  $("asModal").classList.remove("show"); asEstado=null;
+  if(guardarlo && e.sel){
+    const o=ordenDe(e.sel), num=$("asNum").value.trim();
+    if(o){
+      ponerArchivo(o.id, e.tipo, e.f, {numero:num}).then(()=>{
+        resultado("ok",`✅ ${DOCS[e.tipo].ic} ${DOCS[e.tipo].l} guardada en la orden <a onclick="verOrden(${jsq(o.id)})">#${esc(o.orden)}</a> · ${esc(o.nombre)}`);
+        resaltar(o.id); e.res();
+      });
+      return;
+    }
+  }
+  resultado("info",`ℹ️ <b>${esc(e.f.name)}</b>: no se guardó.`);
+  e.res();
+}
+$("asTipo").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b||!asEstado) return; asEstado.tipo=b.dataset.v; pintarAsTipo(); });
+$("asCands").addEventListener("click",e=>{ const c=e.target.closest(".cand"); if(!c||!asEstado) return; asEstado.sel=c.dataset.id; pintarCands(); });
+$("asCands").addEventListener("dblclick",e=>{ const c=e.target.closest(".cand"); if(!c||!asEstado) return; asEstado.sel=c.dataset.id; cerrarAs(true); });
+$("asQ").addEventListener("input",()=>pintarCands());
+$("asOk").addEventListener("click",()=>cerrarAs(true));
+$("asSaltar").addEventListener("click",()=>cerrarAs(false));
+$("asCerrar").addEventListener("click",()=>cerrarAs(false));
+
+// ============================================================
+//  DETALLE DE LA ORDEN (todo editable)
+// ============================================================
+let detId=null, detSucio=false, detProd=[], detModo="forza", detAvisos=null;
+const CAMPOS=[["nombre","Nombre"],["telefono","Teléfono"],["correo","Correo"],["nit","NIT"],["dpi","DPI"],
+  ["facNombre","Facturar a nombre de"],["facId","NIT / ID para la factura"],["facCorreo","Correo para la factura"],
+  ["direccion","Dirección de envío"],["transportista","Transportista"],["tipoEnvio","Tipo de envío"],["recibeNombre","Persona que recibe"],["recibeDpi","DPI de quien recibe"],
+  ["facturaNum","N.º de factura"],["guiaNum","N.º de guía"],["nota","Notas"],["total","Total"],["costoEnvio","Costo de envío"]];
+function abrirDetalle(id, avisos){
+  const o=ordenDe(id); if(!o) return;
+  detId=id; detSucio=false; detProd=o.productos.map(p=>Object.assign({},p)); detModo=o.modo; detAvisos=avisos||null;
+  pintarDetalle();
+  $("detModal").classList.add("show"); $("detModal").scrollTop=0;
+}
+function campo(k, extra){
+  const o=ordenDe(detId), lab=(CAMPOS.find(c=>c[0]===k)||[k,k])[1], v=o[k]??"", num=k==="total"||k==="costoEnvio";
+  const area = k==="direccion"||k==="nota";
+  const tipo = k==="telefono" ? ' type="tel" inputmode="tel"' : (k==="total"||k==="costoEnvio" ? ' inputmode="decimal"' : (k==="correo"||k==="facCorreo"?' type="email"':""));
+  const val = num ? (o[k]==null?"":Number(o[k]).toFixed(2)) : (k==="telefono"?telBonito(v):v);
+  return `<div${extra?` ${extra}`:""}><label class="fl" for="d-${k}">${lab}</label>${area?`<textarea class="in" id="d-${k}" data-k="${k}" rows="${k==="direccion"?3:2}">${esc(val)}</textarea>`:`<input class="in" id="d-${k}" data-k="${k}"${tipo} value="${esc(val)}" autocomplete="off">`}</div>`;
+}
+function pintarDetalle(){
+  const o=ordenDe(detId); if(!o){ cerrarDetalle(true); return; }
+  const pago=(x,t)=>x?`<div><b>${t}:</b> ${esc([x.metodo,x.financiamiento,x.monto!=null?q(x.monto):"",x.autorizacion?"Aut. "+x.autorizacion:"",x.tarjeta,x.otros].filter(Boolean).join(" · "))}</div>`:"";
+  $("det").innerHTML=`
+    <div class="modal-h"><div><b>Orden #${esc(o.orden)}</b><div class="sub">${esc(diaBonito(o.fecha))}${o.plataforma?" · "+esc(o.plataforma):""} · cargada ${esc(new Date(o.creado).toLocaleDateString("es-GT",{day:"numeric",month:"short"}))}</div></div><button class="modal-x" onclick="cerrarDetalle()" title="Cerrar">✕</button></div>
+    ${detAvisos&&detAvisos.length?`<div class="avisos">⚠️ Revisá estos datos (el PDF venía diferente):<ul>${detAvisos.map(a=>`<li>${esc(a)}</li>`).join("")}</ul></div>`:""}
+    <div class="msec"><h3>Paso en que va</h3><div id="detPasos">${htmlPasos(o)}</div>
+      <div class="mrow" style="margin-top:12px">${htmlWa(o)}</div></div>
+    <div class="msec"><h3>Cliente</h3>
+      <div class="g2">${campo("nombre")}${campo("telefono")}</div>
+      <div class="g3">${campo("correo")}${campo("nit")}${campo("dpi")}</div>
+      <div class="g3">${campo("facNombre")}${campo("facId")}${campo("facCorreo")}</div>
+    </div>
+    <div class="msec"><h3>Productos</h3>
+      <table class="tp"><thead><tr><th>Producto</th><th>SKU</th><th>Cant.</th><th>Precio</th><th></th></tr></thead><tbody id="detProds"></tbody></table>
+      <div class="mrow" style="margin-top:8px"><button class="btn ghost sm" onclick="agregarProd()">+ Agregar producto</button></div>
+      <div class="g3" style="margin-top:4px">${campo("costoEnvio")}${campo("total")}<div><span class="fl">Del PDF</span><div class="ro" style="padding-top:6px"><div>Subtotal <b>${q(o.subtotal)}</b>${o.impuestos?` · Impuestos ${q(o.impuestos)}`:""}${o.descuento?` · Descuento ${q(o.descuento)}`:""}</div></div></div></div>
+      <div class="ro" style="margin-top:10px">${pago(o.pago1,"Pago")}${pago(o.pago2,"Pago 2")}</div>
+    </div>
+    <div class="msec"><h3>Entrega</h3>
+      <div class="seg" id="detModo">${Object.entries(MODOS).map(([k,m])=>`<button type="button" data-v="${k}" aria-pressed="${k===detModo}">${m.ic} ${m.l}</button>`).join("")}</div>
+      <div id="detEnvio">${campo("direccion")}<div class="g2">${campo("transportista")}${campo("tipoEnvio")}</div></div>
+      <div class="g2">${campo("recibeNombre")}${campo("recibeDpi")}</div>
+    </div>
+    <div class="msec"><h3>Documentos</h3><p>Se guardan en Google Drive con el número de orden${o.carpeta&&o.carpeta.url?` · <a href="${esc(o.carpeta.url)}" target="_blank" rel="noopener">abrir la carpeta de esta orden</a>`:""}.</p>
+      <div id="detDocs"></div>
+      <div class="g2">${campo("facturaNum")}${campo("guiaNum")}</div>
+      ${campo("nota")}
+    </div>
+    <div class="mfoot">
+      <button class="btn danger sm" onclick="borrarOrden(${jsq(o.id)})">🗑️ Borrar</button>
+      <button class="btn ghost sm" onclick="anular(${jsq(o.id)})">${o.anulada?"↩️ Quitar anulada":"🚫 Anular"}</button>
+      <span class="sp"></span>
+      <button class="btn ghost" onclick="cerrarDetalle()">Cerrar</button>
+      <button class="btn primary" id="detGuardar" onclick="guardarDetalle()">Guardar cambios</button>
+    </div>`;
+  pintarProds(); pintarDocs(); pintarModo();
+}
+function pintarModo(){
+  document.querySelectorAll("#detModo button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===detModo));
+  $("detEnvio").hidden = detModo==="pickup";
+}
+function pintarProds(){
+  $("detProds").innerHTML=detProd.map((p,i)=>`<tr data-i="${i}">
+    <td><input class="in" data-p="nombre" value="${esc(p.nombre)}" placeholder="Producto"></td>
+    <td class="s"><input class="in" data-p="sku" value="${esc(p.sku)}" placeholder="SKU"></td>
+    <td class="n"><input class="in" data-p="cant" inputmode="numeric" value="${p.cant}"></td>
+    <td class="q"><input class="in" data-p="precio" inputmode="decimal" value="${p.precio==null?"":Number(p.precio).toFixed(2)}"></td>
+    <td class="x"><button class="ib del" onclick="quitarProd(${i})" title="Quitar">${IC_DEL}</button></td></tr>`).join("");
+}
+function pintarDocs(){
+  const o=ordenDe(detId); if(!o || !$("detDocs")) return;
+  $("detDocs").innerHTML=Object.keys(DOCS).map(t=>{
+    const d=DOCS[t], f=o.archivos[t];
+    let est=`<span>Todavía no se ha subido</span>`;
+    if(f && f.url) est=`<span class="ok">✓ En Google Drive · ${esc(f.nombre)}</span>`;
+    else if(f && f.pendiente) est=`<span class="pend">⏳ ${pendLocal.has(o.id+"|"+t)?(driveListo()?"Subiendo a Drive…":"Guardado en esta computadora: se sube al conectar Drive"):"Se sube desde la computadora donde se cargó"} · ${esc(f.nombre)}</span>`;
+    return `<div class="drow"><span class="di">${d.ic}</span><div class="dt"><b>${d.l}${t==="guia"&&o.modo==="pickup"?" <small style=\"color:var(--muted);font-weight:600\">(no hace falta en Pick Up)</small>":""}</b>${est}</div>
+      ${f&&f.url?`<a class="btn ghost sm" href="${esc(f.url)}" target="_blank" rel="noopener">Abrir</a>`:""}
+      <button class="btn ${f?"ghost":"dark"} sm" data-doc="${t}" data-id="${esc(o.id)}" onclick="clicDoc(event)">${f?"Reemplazar":"Subir"}</button></div>`;
+  }).join("");
+}
+function leerProdsDetalle(){
+  document.querySelectorAll("#detProds tr").forEach(tr=>{
+    const p=detProd[+tr.dataset.i]; if(!p) return;
+    tr.querySelectorAll("[data-p]").forEach(inp=>{
+      const k=inp.dataset.p, v=inp.value.trim();
+      if(k==="cant") p.cant=Math.max(1,parseInt(v,10)||1);
+      else if(k==="precio") p.precio=v===""?null:N(v.replace(/[Q,\s]/gi,""));
+      else p[k]= k==="sku" ? v.toUpperCase() : v;
+    });
+    p.total = p.precio==null ? null : r2(p.precio*p.cant);
+  });
+}
+function agregarProd(){ leerProdsDetalle(); detProd.push({nombre:"",sku:"",cant:1,precio:null,total:null}); detSucio=true; pintarProds(); const ins=$("detProds").querySelectorAll('[data-p="nombre"]'); ins[ins.length-1].focus(); }
+function quitarProd(i){ leerProdsDetalle(); detProd.splice(i,1); detSucio=true; pintarProds(); }
+function guardarDetalle(){
+  const o=ordenDe(detId); if(!o) return;
+  leerProdsDetalle();
+  document.querySelectorAll("#det [data-k]").forEach(inp=>{
+    const k=inp.dataset.k, v=inp.value.trim();
+    if(k==="total"||k==="costoEnvio") o[k]=v===""?null:N(v.replace(/[Q,\s]/gi,""));
+    else if(k==="telefono") o[k]=soloDigitos(v);
+    else o[k]=v;
+  });
+  o.productos=limpiarProd(detProd);
+  if(o.modo!==detModo){ o.modo=detModo; const t=limpiarOrden(o); o.estado=t.estado; }
+  o.actualizado=new Date().toISOString();
+  Object.assign(o, limpiarOrden(o));
+  guardar(); render(); detSucio=false; detAvisos=null;
+  toast(`Orden #${o.orden} guardada`);
+  cerrarDetalle(true);
+}
+function cerrarDetalle(sinPreguntar){
+  if(!sinPreguntar && detSucio && !confirm("Hiciste cambios que no se han guardado. ¿Cerrar sin guardar?")) return;
+  $("detModal").classList.remove("show"); detId=null; detSucio=false;
+}
+function anular(id){
+  const o=ordenDe(id); if(!o) return;
+  if(!o.anulada && !confirm(`¿Marcar la orden #${o.orden} como ANULADA? (Se queda guardada, pero ya no aparece en pendientes.)`)) return;
+  o.anulada=!o.anulada; o.actualizado=new Date().toISOString();
+  guardar(); render(); toast(o.anulada?`Orden #${o.orden} anulada`:`Orden #${o.orden} activa otra vez`);
+  if(!detSucio) pintarDetalle(); else cerrarDetalle(true);
+}
+$("detModal").addEventListener("input",e=>{ if(e.target.matches(".in")) detSucio=true; });
+$("detModal").addEventListener("click",e=>{
+  if(e.target.id==="detModal"){ cerrarDetalle(); return; }
+  const b=e.target.closest("#detModo button"); if(b){ detModo=b.dataset.v; detSucio=true; pintarModo(); }
+});
+
+// ============================================================
+//  GOOGLE DRIVE: conexión (una sola vez)
+// ============================================================
+function renderDrive(){
+  $("drivePt").className="pt"+(driveListo()?" ok":"");
+  const c=$("driveCard"); const pend=pendLocal.size;
+  if(!driveListo()){
+    c.className="card dcard no";
+    c.innerHTML=`<div class="dl"><span class="gi">⚠️</span><div>Google Drive no está conectado<small>Los PDF quedan guardados en esta computadora${pend?` (${plural(pend,"archivo","archivos")})`:""} y se suben solos al conectarlo.</small></div></div>
+      <div class="mrow"><button class="btn dark sm" onclick="abrirDrive()">Conectar Google Drive</button></div>`;
+    return;
+  }
+  c.className="card dcard ok";
+  c.innerHTML=`<div class="dl"><span class="gi">✅</span><div>Google Drive conectado<small>${esc(aj.drive.cuenta||"")}${aj.drive.cuenta?" · ":""}carpeta “DJI Online”</small></div></div>
+    ${pend?`<div class="dl"><span class="gi">${colaCorriendo?"⏳":"📤"}</span><div>${colaCorriendo?"Subiendo":"Por subir"}: ${plural(pend,"archivo","archivos")}<small>${errorDrive?"⚠️ "+esc(errorDrive):"Desde esta computadora"}</small></div></div>`:""}
+    <div class="mrow">${aj.drive.carpeta?`<a class="btn ghost sm" href="${esc(aj.drive.carpeta)}" target="_blank" rel="noopener">📁 Abrir carpeta</a>`:""}${pend&&!colaCorriendo?`<button class="btn dark sm" onclick="procesarCola()">Reintentar subida</button>`:""}<button class="btn ghost sm" onclick="abrirDrive()">⚙️ Ajustes</button></div>`;
+}
+function nuevaClave(){ const b=new Uint8Array(24); crypto.getRandomValues(b); return btoa(String.fromCharCode(...b)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); }
+let codigoBase=null;
+async function codigoGs(){
+  if(codigoBase===null){
+    try{ const r=await fetch("apps-script-drive.txt"+(VER?"?v="+encodeURIComponent(VER):""),{cache:"no-cache"}); codigoBase=r.ok ? await r.text() : ""; }catch(e){ codigoBase=""; }
+  }
+  return codigoBase ? codigoBase.replace("__CLAVE__", aj.drive.clave) : "";
+}
+function abrirDrive(){
+  if(!aj.drive.clave){ aj.drive.clave=nuevaClave(); guardarAj(); }
+  pintarDrive(); $("drModal").classList.add("show");
+}
+function cerrarDrive(){ $("drModal").classList.remove("show"); }
+async function pintarDrive(){
+  const ok=driveListo();
+  $("drCuerpo").innerHTML=`
+    ${ok?`<div class="msec"><h3>✅ Conectado</h3><p>Cuenta: <b>${esc(aj.drive.cuenta||"—")}</b>. Las órdenes, facturas y guías se guardan en la carpeta <b>DJI Online</b> de ese Drive, una carpeta por mes y otra por orden (ej. <i>DJI Online / 2026-10 Octubre / 111931 - Astrid Orantes</i>).</p>
+      <div class="mrow">${aj.drive.carpeta?`<a class="btn dark sm" href="${esc(aj.drive.carpeta)}" target="_blank" rel="noopener">📁 Abrir carpeta</a>`:""}<button class="btn ghost sm" onclick="probarDrive(true)">Probar otra vez</button><button class="btn ghost sm" onclick="desconectarDrive()">Desconectar</button></div></div>`:""}
+    <div class="msec"><h3>${ok?"Volver a configurar":"Conectar Google Drive (una sola vez)"}</h3>
+      <p>Se hace una sola vez desde cualquier computadora: después todas las computadoras conectadas a la nube de la tienda suben a ese mismo Drive, sin iniciar sesión.</p>
+      <ol class="pasos-gs">
+        <li>Abrí <a href="https://script.new" target="_blank" rel="noopener"><b>script.new</b></a> con la cuenta de Google donde querés guardar todo (ej. la cuenta de la tienda).</li>
+        <li>Borrá lo que trae y pegá este código <button class="btn dark sm" id="drCopiar" style="margin-left:6px">📋 Copiar código</button>
+          <textarea class="codigo" id="drCodigo" readonly spellcheck="false">Cargando…</textarea></li>
+        <li>Tocá <b>💾 Guardar</b>. Después, arriba a la derecha: <b>Implementar → Nueva implementación</b>. En el engranaje ⚙️ elegí <b>Aplicación web</b>.<br>
+          · <b>Ejecutar como:</b> Yo (tu correo)<br>· <b>Quién tiene acceso:</b> <b>Cualquier usuario</b> (en inglés “Anyone”)<br>Tocá <b>Implementar</b>.</li>
+        <li>Google pide permiso: <b>Autorizar acceso</b> → elegí tu cuenta → si sale “Google no verificó esta app”, tocá <b>Configuración avanzada</b> → <b>Ir a … (no seguro)</b> → <b>Permitir</b>. (Es tu propio código: solo guarda en tu Drive.)</li>
+        <li>Copiá la <b>URL de la aplicación web</b> (termina en <b>/exec</b>) y pegala aquí:
+          <div class="mrow" style="margin-top:8px"><input class="in" id="drUrl" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(aj.drive.url)}" autocomplete="off" spellcheck="false" style="flex:1;min-width:220px"><button class="btn primary sm" id="drConectar">Conectar</button></div>
+          <div class="hint" id="drMsg"></div></li>
+      </ol>
+    </div>
+    <div class="msec"><h3>Tienda para Pick Up</h3><p>Se usa en el mensaje de WhatsApp cuando el pedido está listo para recoger.</p>
+      <div class="mrow"><input class="in" id="drTienda" value="${esc(aj.tienda)}" style="flex:1;min-width:200px"><button class="btn ghost sm" id="drTiendaOk">Guardar</button></div></div>`;
+  $("drCodigo").value=await codigoGs() || "No se pudo cargar el código. Revisá el internet y volvé a abrir esta ventana.";
+  $("drCopiar").onclick=async()=>{ const t=$("drCodigo"); t.select(); try{ await navigator.clipboard.writeText(t.value); }catch(e){ document.execCommand("copy"); } toast("📋 Código copiado"); };
+  $("drConectar").onclick=()=>probarDrive(false);
+  $("drTiendaOk").onclick=()=>{ aj.tienda=$("drTienda").value.trim(); guardarAj(); render(); toast("Guardado"); };
+}
+const RX_URL_GS=/^https:\/\/script\.google\.com\/(a\/macros\/[^/]+|macros)\/s\/[\w-]+\/exec\/?$/;
+async function probarDrive(misma){
+  const url = misma ? aj.drive.url : ($("drUrl").value||"").trim();
+  const msg=$("drMsg");
+  if(!url){ if(msg) msg.textContent="Pegá la URL de la aplicación web."; return; }
+  if(!RX_URL_GS.test(url) && !confirm("Esa URL no parece la de una aplicación web de Apps Script (debería empezar con https://script.google.com/macros/s/ y terminar en /exec).\n\n¿Probarla igual?")) return;
+  if(msg){ msg.textContent="⏳ Probando la conexión…"; msg.style.color=""; }
+  try{
+    const d=await llamarDrive({accion:"probar"}, url, aj.drive.clave);
+    if(!d || !d.ok) throw new Error(d && d.error==="clave" ? "La clave no coincide: copiá otra vez el código de arriba, pegalo en Apps Script y hacé una implementación nueva." : (d && d.error) || "Respuesta rara");
+    aj.drive=Object.assign({}, aj.drive, {url, ok:true, cuenta:S(d.cuenta), carpeta:S(d.carpeta)});
+    guardarAj(); renderDrive(); pintarDrive();
+    toast("✅ Google Drive conectado");
+    procesarCola();
+  }catch(e){
+    const t=String(e && e.message || e);
+    const m = /sin-respuesta|red|Failed to fetch|NetworkError|Load failed/i.test(t) ? "No respondió. Revisá que en “Quién tiene acceso” esté “Cualquier usuario” y que la URL termine en /exec." : t;
+    if(msg){ msg.textContent="⚠️ "+m; msg.style.color="#b71c1c"; } else toast("⚠️ "+m);
+  }
+}
+function desconectarDrive(){
+  if(!confirm("¿Desconectar Google Drive? Lo que ya está en Drive no se borra; los archivos nuevos se quedan guardados en la computadora hasta volver a conectarlo.")) return;
+  aj.drive=Object.assign({}, aj.drive, {ok:false}); guardarAj(); renderDrive(); pintarDrive();
+}
+
+// ============================================================
+//  EXPORTAR A EXCEL (diseño DJI)
+// ============================================================
+async function exportExcel(){
+  const L=ordenar(datos.ordenes.filter(o=>pasaFiltros(o))).reverse();
+  if(!L.length){ alert(datos.ordenes.length?"No hay pedidos con el filtro actual.":"Todavía no hay pedidos."); return; }
+  const DARK="FF44546A", WHITE="FFFFFFFF", INK="FF4A4F59", GRIDBG="FFF7F8FA";
+  const wb=new ExcelJS.Workbook();
+  const ws=wb.addWorksheet("Pedidos online",{views:[{showGridLines:false,state:"frozen",ySplit:5}]});
+  const heads=["Orden","Fecha","Cliente","Teléfono","Correo","NIT","Productos","Total (Q)","Pago","Entrega","Dirección","Recibe","Paso","N.º factura","N.º guía","Drive"];
+  const widths=[10,11,26,12,26,12,40,12,30,14,34,22,18,14,16,12];
+  ws.columns=[{width:3},...widths.map(w=>({width:w})),{width:3}];
+  const B=2, K=B+heads.length-1;
+  const thin={style:"thin",color:{argb:"FFB9C0CC"}}, border={top:thin,left:thin,bottom:thin,right:thin};
+  const band=c=>{ c.fill={type:"pattern",pattern:"solid",fgColor:{argb:DARK}}; c.font={name:"Calibri",size:12,bold:true,color:{argb:WHITE}}; };
+  ws.mergeCells(1,B,3,K);
+  for(let r=1;r<=3;r++) for(let c=B;c<=K;c++) band(ws.getCell(r,c));
+  try{ const img=wb.addImage({base64:window.DJI_LOGO_B64,extension:"png"}); ws.addImage(img,{tl:{col:K-1.2,row:0.25},ext:{width:95,height:52},editAs:"oneCell"}); }catch(e){}
+  const hoy=ymdCorto(hoyISO());
+  ws.mergeCells(4,B,4,B+6); const t=ws.getCell(4,B); t.value="Pedidos online   ·   Exportado: "+hoy+(filtroMes?"   ·   "+MESES[Number(filtroMes.slice(5))-1]+" "+filtroMes.slice(0,4):""); band(t); t.alignment={vertical:"middle",indent:1};
+  ws.mergeCells(4,B+7,4,K); const tr=ws.getCell(4,B+7); tr.value=plural(L.length,"pedido","pedidos"); band(tr); tr.alignment={vertical:"middle",horizontal:"right",indent:1};
+  ws.getRow(4).height=20;
+  heads.forEach((h,i)=>{ const c=ws.getCell(5,B+i); c.value=h; band(c); c.border=border; c.alignment={vertical:"middle",horizontal:"center",wrapText:true}; });
+  ws.getRow(5).height=30;
+  const font={name:"Calibri",size:11,color:{argb:INK}};
+  let r=6, suma=0;
+  L.forEach(o=>{
+    const prods=o.productos.map(p=>`${p.cant} × ${p.nombre}${p.sku?" ("+p.sku+")":""}`).join("\n");
+    const ent=MODOS[o.modo].l+(o.tipoEnvio&&o.modo!=="pickup"?" "+o.tipoEnvio:"");
+    const vals=["#"+o.orden, ymdCorto(o.fecha), o.nombre, telBonito(o.telefono), o.correo, o.nit, prods, o.total, [pagoTxt(o.pago1),o.pago2?pagoTxt(o.pago2):""].filter(Boolean).join(" + "),
+      ent, o.modo==="pickup"?"":o.direccion.replace(/\n+/g,", "), o.recibeNombre, (o.anulada?"ANULADA · ":"")+P[o.estado].l, o.facturaNum, o.guiaNum, o.carpeta&&o.carpeta.url?"Abrir carpeta":""];
+    vals.forEach((v,i)=>{
+      const c=ws.getCell(r,B+i);
+      if(i===15 && v){ c.value={text:v, hyperlink:o.carpeta.url}; c.font=Object.assign({},font,{color:{argb:"FF2563EB"},underline:true}); }
+      else { c.value=v; c.font=font; }
+      if(i===7){ c.numFmt='"Q"#,##0.00'; }
+      c.border=border; c.fill={type:"pattern",pattern:"solid",fgColor:{argb:GRIDBG}};
+      c.alignment={vertical:"top",wrapText:[6,8,10].includes(i),horizontal:[0,1,3,7,13,14,15].includes(i)?(i===7?"right":"center"):"left",indent:[0,1,3,7,13,14,15].includes(i)?0:1};
+    });
+    if(!o.anulada) suma+=o.total||0;
+    r++;
+  });
+  ws.mergeCells(r,B,r,B+5); const g1=ws.getCell(r,B); g1.value="TOTAL"+(L.some(o=>o.anulada)?" (sin anuladas)":"");
+  const g2=ws.getCell(r,B+6); const g3=ws.getCell(r,B+7); g3.value=r2(suma); g3.numFmt='"Q"#,##0.00';
+  ws.mergeCells(r,B+8,r,K); const g4=ws.getCell(r,B+8);
+  g4.value=Object.entries(MODOS).map(([k,m])=>[m.l,L.filter(o=>o.modo===k&&!o.anulada).length]).filter(([,n])=>n).map(([l,n])=>`${l}: ${n}`).join("  ·  ");
+  for(let c=B;c<=K;c++){ const cell=ws.getCell(r,c); band(cell); cell.border=border; }
+  g1.alignment={horizontal:"left",indent:1}; g3.alignment={horizontal:"right"}; g4.alignment={horizontal:"right",indent:1};
+  g2.value="";
+  ws.getRow(r).height=22;
+  const buf=await wb.xlsx.writeBuffer();
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
+  a.download="Pedidos online DJI "+hoy.replace(/\//g,"-")+".xlsx";
+  document.body.appendChild(a); a.click(); a.remove();
+  toast("Excel exportado");
+}
+
+// ============================================================
+//  EVENTOS
+// ============================================================
+$("archivoPdf").addEventListener("change",e=>{ const fs=[...e.target.files]; e.target.value=""; if(fs.length) procesarArchivos(fs); });
+$("q").addEventListener("input",e=>{ query=e.target.value; render(); });
+$("mes").addEventListener("change",e=>{ filtroMes=e.target.value; render(); });
+$("btnExport").addEventListener("click",exportExcel);
+$("btnDrive").addEventListener("click",abrirDrive);
+$("drModal").addEventListener("click",e=>{ if(e.target.id==="drModal") cerrarDrive(); });
+document.querySelectorAll(".kpi").forEach(k=>k.addEventListener("click",()=>{ filtro=k.dataset.f; render(); }));
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Escape") return;
+  if($("asModal").classList.contains("show")) cerrarAs(false);
+  else if($("detModal").classList.contains("show")) cerrarDetalle();
+  else if($("drModal").classList.contains("show")) cerrarDrive();
+});
+
+// arrastrar y soltar: en la zona (o en cualquier parte) = orden o documento; sobre 🧾/🏷️ de una orden = ese documento
+let arrastres=0;
+const hayArchivos = e => e.dataTransfer && [...(e.dataTransfer.types||[])].includes("Files");
+addEventListener("dragenter",e=>{ if(!hayArchivos(e)) return; arrastres++; $("velo").classList.add("on"); });
+addEventListener("dragleave",e=>{ if(!hayArchivos(e)) return; arrastres=Math.max(0,arrastres-1); if(!arrastres) $("velo").classList.remove("on"); });
+addEventListener("dragover",e=>{
+  if(!hayArchivos(e)) return; e.preventDefault();
+  document.querySelectorAll(".doc.sobre,.drop.sobre").forEach(x=>x.classList.remove("sobre"));
+  const d=e.target.closest && (e.target.closest("[data-doc]") || e.target.closest(".drop")); if(d) d.classList.add("sobre");
+});
+addEventListener("drop",e=>{
+  if(!hayArchivos(e)) return; e.preventDefault();
+  arrastres=0; $("velo").classList.remove("on");
+  document.querySelectorAll(".sobre").forEach(x=>x.classList.remove("sobre"));
+  const fs=[...e.dataTransfer.files]; if(!fs.length) return;
+  const d=e.target.closest && e.target.closest("[data-doc]");
+  if(d && d.dataset.id){ subirDocA(d.dataset.id, d.dataset.doc, fs[0]); return; }
+  if($("asModal").classList.contains("show") || $("detModal").classList.contains("show")){ toast("Cerrá la ventana abierta y soltá el archivo otra vez"); return; }
+  procesarArchivos(fs);
+});
+
+// ---------- inicio ----------
+cargar();
+render();
+refrescarPend().then(()=>{ render(); renderDrive(); procesarCola(); });
+renderDrive();
+conectarNube();
+</script>
+</body>
+</html>
