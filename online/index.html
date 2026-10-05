@@ -154,6 +154,31 @@
   .oc-info{margin-top:8px;font-size:13.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:3px}
   .oc-info b{font-weight:800;color:var(--ink)}
   .docs{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+
+  /* datos para facturar (cada dato se copia con un clic) */
+  .fac-tog{margin-top:10px;width:100%;display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fafbfc;border-radius:10px;padding:9px 12px;font-size:13.5px;font-weight:800;color:var(--ink-2);cursor:pointer;text-align:left}
+  .fac-tog:hover{border-color:#cdd3dd}
+  .fac-tog small{font-weight:600;color:var(--muted)}
+  .fac-tog .fle{margin-left:auto;transition:transform .15s;font-size:12px}
+  .fac-tog[aria-expanded="true"]{background:var(--accent-bg);border-color:#cfdcfb;color:#1e40af;border-radius:10px 10px 0 0}
+  .fac-tog[aria-expanded="true"] .fle{transform:rotate(180deg)}
+  .fac{border:1px solid #cfdcfb;border-top:none;border-radius:0 0 10px 10px;padding:4px 12px 12px;background:#fff}
+  .fac.suelto{border-top:1px solid #cfdcfb;border-radius:12px;padding-top:6px}
+  .fac-r{display:grid;grid-template-columns:104px 1fr;gap:8px;align-items:start;padding:6px 0;border-bottom:1px solid var(--line-2)}
+  .fac-r .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700;padding-top:7px}
+  .fac-r .v{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0}
+  .fac-r .v .x{font-size:13px;font-weight:800;color:var(--muted)}
+  .fac-r .v .nd{font-size:13.5px;color:var(--muted);padding-top:5px}
+  .cp{border:1px solid var(--line);background:var(--line-2);border-radius:8px;padding:5px 10px;font-size:14.5px;font-weight:700;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px;text-align:left;max-width:100%;word-break:break-word;font-family:inherit;line-height:1.3}
+  .cp i{font-style:normal;font-size:11.5px;font-weight:700;color:var(--muted);white-space:nowrap;font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;letter-spacing:0}
+  .cp:hover{border-color:var(--accent);background:var(--accent-bg)}
+  .cp:hover i{color:var(--accent)}
+  .cp.mono{font-family:"Consolas","SF Mono",monospace;letter-spacing:.2px}
+  .cp.ok{border-color:var(--ok-br);background:var(--ok-bg);color:#0b7a53}
+  .cp.ok i{color:#0b7a53}
+  .fac-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+  .fac-acts .hint{margin:0}
+  @media(max-width:720px){ .fac-r{grid-template-columns:1fr;gap:3px} .fac-r .k{padding-top:0} .fac-tog small{display:none} }
   .doc{border:1.5px dashed #c9d0db;background:#fff;border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;color:var(--ink-2);cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
   .doc:hover{border-color:var(--accent);color:var(--accent)}
   .doc.ok{border-style:solid;border-color:var(--ok-br);background:var(--ok-bg);color:#0b7a53}
@@ -357,10 +382,10 @@
 <div class="velo" id="velo">Soltá el archivo aquí</div>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261005c"></script>
+<script src="../nube.js?v=20261005d"></script>
 <script src="../recepcion/lib/exceljs.min.js"></script>
-<script src="../recepcion/catalog.js?v=20261005c"></script>
-<script src="lector.js?v=20261005c"></script>
+<script src="../recepcion/catalog.js?v=20261005d"></script>
+<script src="lector.js?v=20261005d"></script>
 <script>
 /* ============================================================
    Pedidos Online — las órdenes que llegan por correo (PDF):
@@ -869,6 +894,88 @@ function lugar(o){
 }
 function pagoTxt(x){ return x ? [x.metodo, x.financiamiento].filter(Boolean).join(" · ") : ""; }
 
+// ---------- datos para facturar: cada dato se copia con un clic ----------
+function datosFactura(o){
+  const id=o.facId||"";
+  let nit=(id.match(/NIT\s*:?\s*(C\s*\.?\s*\/?\s*F\.?|\d[\d-]*[0-9Kk]?)/i)||[])[1]||"";
+  let dpi=(id.match(/DPI\s*:?\s*(\d[\d\s]{5,}\d)/i)||[])[1]||"";
+  if(!nit && !dpi && /^\s*(\d[\d-]*[0-9Kk]?|C\.?\/?F\.?)\s*$/i.test(id)) nit=id.trim();   // "Núm. ID" sin etiqueta
+  nit=(nit||o.nit||"").replace(/\s+/g,"").toUpperCase(); if(/^C\.?\/?F\.?$/.test(nit)) nit="CF";
+  const mismaPersona = !o.facNombre || fold(o.facNombre)===fold(o.nombre);
+  dpi=(dpi||(mismaPersona?o.dpi:"")||"").replace(/\s+/g,"");
+  const dir=o.modo==="pickup" ? "" : o.direccion.split("\n").map(l=>l.trim()).filter(Boolean).join(", ");
+  return {nombre:o.facNombre||o.nombre, cliente:o.nombre, nit, dpi, telefono:o.telefono, correo:o.facCorreo||o.correo, direccion:dir};
+}
+const dinTxt = n => n==null ? "" : Number(n).toFixed(2);
+function cpBtn(valor, etiqueta, txt, mono){
+  if(valor==null || valor==="") return `<span class="nd">—</span>`;
+  return `<button type="button" class="cp${mono?" mono":""}" data-cp="${esc(valor)}" data-lab="${esc(etiqueta)}" title="Copiar ${esc(etiqueta)}">${esc(txt??valor)}<i>📋 copiar</i></button>`;
+}
+function textoFactura(o){
+  const d=datosFactura(o), L=[];
+  L.push("Nombre: "+d.nombre);
+  if(d.cliente && fold(d.cliente)!==fold(d.nombre)) L.push("Cliente: "+d.cliente);
+  L.push("NIT: "+(d.nit||"CF"));
+  if(d.dpi) L.push("DPI: "+d.dpi);
+  if(d.telefono) L.push("Teléfono: "+d.telefono);
+  if(d.correo) L.push("Correo: "+d.correo);
+  if(d.direccion) L.push("Dirección: "+d.direccion);
+  L.push("Productos:");
+  o.productos.forEach(p=>L.push(`  ${p.cant} x ${p.nombre}${p.sku?" ("+p.sku+")":""}${p.precio!=null?" - Q"+dinTxt(p.precio):""}`));
+  if(o.costoEnvio) L.push("Envío: Q"+dinTxt(o.costoEnvio));
+  L.push("Total: Q"+dinTxt(o.total));
+  L.push("Orden #"+o.orden);
+  return L.join("\n");
+}
+function htmlFactura(o){
+  const d=datosFactura(o);
+  const fila=(k,v)=>`<div class="fac-r"><span class="k">${k}</span><div class="v">${v}</div></div>`;
+  return `${fila(fold(d.cliente)!==fold(d.nombre)?"Facturar a":"Nombre", cpBtn(d.nombre,"nombre"))}
+    ${fold(d.cliente)!==fold(d.nombre)?fila("Cliente", cpBtn(d.cliente,"nombre del cliente")):""}
+    ${fila("NIT", cpBtn(d.nit||"CF","NIT",null,true))}
+    ${d.dpi?fila("DPI", cpBtn(d.dpi,"DPI",null,true)):""}
+    ${fila("Teléfono", cpBtn(d.telefono,"teléfono",telBonito(d.telefono),true))}
+    ${fila("Correo", cpBtn(d.correo,"correo"))}
+    ${d.direccion?fila("Dirección", cpBtn(d.direccion,"dirección")):""}
+    ${fila("Productos", o.productos.length ? o.productos.map(p=>`<div class="v" style="width:100%"><span class="x">${p.cant} ×</span>${cpBtn(p.nombre,"producto")}${p.sku?cpBtn(p.sku,"SKU",null,true):""}${p.precio!=null?cpBtn(dinTxt(p.precio),"precio",q(p.precio)):""}</div>`).join("") : `<span class="nd">—</span>`)}
+    ${o.costoEnvio?fila("Envío", cpBtn(dinTxt(o.costoEnvio),"envío",q(o.costoEnvio))):""}
+    ${fila("Total", cpBtn(dinTxt(o.total),"total",q(o.total)))}
+    <div class="fac-acts"><button type="button" class="btn dark sm cp-todo" data-id="${esc(o.id)}">📋 Copiar todo</button><span class="hint">Tocá cualquier dato para copiarlo.</span></div>`;
+}
+// abierto o cerrado: las que faltan de facturar se ven abiertas
+const LS_ABIERTAS="online_dji_abiertas";
+let abiertas={}; try{ abiertas=JSON.parse(localStorage.getItem(LS_ABIERTAS)||"{}")||{}; }catch(e){ abiertas={}; }
+const facAbierta = o => (o.id in abiertas) ? !!abiertas[o.id] : (o.estado==="nuevo" && !o.anulada);
+function toggleFac(id){
+  const o=ordenDe(id); if(!o) return;
+  abiertas[id]=!facAbierta(o);
+  try{ localStorage.setItem(LS_ABIERTAS, JSON.stringify(abiertas)); }catch(e){}
+  const c=$("oc-"+id); if(!c){ render(); return; }
+  const t=c.querySelector(".fac-tog"), f=c.querySelector(".fac");
+  t.setAttribute("aria-expanded", String(abiertas[id])); f.hidden=!abiertas[id];
+}
+async function copiarTexto(t){
+  try{ if(navigator.clipboard && window.isSecureContext!==false){ await navigator.clipboard.writeText(t); return true; } }catch(e){}
+  try{
+    const ta=document.createElement("textarea"); ta.value=t; ta.setAttribute("readonly",""); ta.style.cssText="position:fixed;left:-9999px;top:0;opacity:0";
+    document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, t.length);
+    const ok=document.execCommand("copy"); ta.remove(); return ok;
+  }catch(e){ return false; }
+}
+document.addEventListener("click", async e=>{
+  const b=e.target.closest(".cp, .cp-todo"); if(!b) return;
+  e.preventDefault();
+  const todo=b.classList.contains("cp-todo"), o=todo ? ordenDe(b.dataset.id) : null;
+  const t=todo ? (o ? textoFactura(o) : "") : b.dataset.cp;
+  if(!t) return;
+  if(await copiarTexto(t)){
+    toast(todo ? "📋 Copiados todos los datos de la orden #"+o.orden : `📋 Copiado ${b.dataset.lab}: ${t.length>40?t.slice(0,40)+"…":t}`);
+    b.classList.add("ok"); const i=b.querySelector("i"), antes=i?i.textContent:"";
+    if(i) i.textContent="✓ copiado";
+    clearTimeout(b._t); b._t=setTimeout(()=>{ b.classList.remove("ok"); if(i) i.textContent=antes; },1600);
+  }else toast("⚠️ No se pudo copiar: seleccioná el dato y usá Cmd/Ctrl + C");
+});
+
 function render(){
   const R=datos.ordenes;
   ["porFacturar","porEnviar","paraRecoger","enCamino"].forEach(k=>$("k-"+k).textContent=R.filter(FILTROS[k].f).length);
@@ -899,6 +1006,8 @@ function render(){
       <div class="oc-info"><div><b>${q(o.total)}</b>${pagoTxt(o.pago1)?" · "+esc(pagoTxt(o.pago1)):""}${o.pago2?" + "+esc(pagoTxt(o.pago2)||"otro pago"):""}</div><div>${lugar(o)}</div>
         ${o.guiaNum||o.facturaNum?`<div>${o.facturaNum?"🧾 Factura <b>"+esc(o.facturaNum)+"</b>":""}${o.facturaNum&&o.guiaNum?" · ":""}${o.guiaNum?"🏷️ Guía <b>"+esc(o.guiaNum)+"</b>":""}</div>`:""}
         ${o.nota?`<div>📝 ${esc(o.nota)}</div>`:""}</div>
+      <button type="button" class="fac-tog" aria-expanded="${facAbierta(o)}" onclick="toggleFac(${jsq(o.id)})">🧾 Datos para facturar <small>· nombre, NIT, teléfono, correo</small><span class="fle">▾</span></button>
+      <div class="fac"${facAbierta(o)?"":" hidden"}>${htmlFactura(o)}</div>
       <div class="docs">${docs.map(t=>htmlDoc(o,t)).join("")}</div>
       ${htmlPasos(o)}
     </div>`;
@@ -1044,6 +1153,7 @@ function pintarDetalle(){
   $("det").innerHTML=`
     <div class="modal-h"><div><b>Orden #${esc(o.orden)}</b><div class="sub">${esc(diaBonito(o.fecha))}${o.plataforma?" · "+esc(o.plataforma):""} · cargada ${esc(new Date(o.creado).toLocaleDateString("es-GT",{day:"numeric",month:"short"}))}</div></div><button class="modal-x" onclick="cerrarDetalle()" title="Cerrar">✕</button></div>
     ${detAvisos&&detAvisos.length?`<div class="avisos">⚠️ Revisá estos datos (el PDF venía diferente):<ul>${detAvisos.map(a=>`<li>${esc(a)}</li>`).join("")}</ul></div>`:""}
+    <div class="msec"><h3>🧾 Datos para facturar</h3><div class="fac suelto" id="detFac">${htmlFactura(o)}</div></div>
     <div class="msec"><h3>Paso en que va</h3><div id="detPasos">${htmlPasos(o)}</div>
       <div class="mrow" style="margin-top:12px">${htmlWa(o)}</div></div>
     <div class="msec"><h3>Cliente</h3>
