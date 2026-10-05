@@ -297,13 +297,34 @@
   }
 
   // ---------- 5) leer un PDF con pdf.js ----------
+  // Safari no sabe recorrer un ReadableStream con "for await" (pdf.js lo usa en getTextContent):
+  // se lo enseñamos, y además leemos el texto con getReader(), que funciona en todos los navegadores.
+  if(typeof ReadableStream!=="undefined" && typeof Symbol!=="undefined" && Symbol.asyncIterator && !ReadableStream.prototype[Symbol.asyncIterator]){
+    try{
+      Object.defineProperty(ReadableStream.prototype, Symbol.asyncIterator, {configurable:true, writable:true, value:async function*(){
+        const r=this.getReader();
+        try{ for(;;){ const {done,value}=await r.read(); if(done) return; yield value; } }
+        finally{ try{ r.releaseLock(); }catch(e){} }
+      }});
+    }catch(e){}
+  }
+  async function textoDePagina(pg){
+    if(typeof pg.streamTextContent!=="function") return pg.getTextContent();
+    const rd=pg.streamTextContent().getReader(), items=[];
+    for(;;){
+      const {done,value}=await rd.read();
+      if(done) break;
+      if(value && value.items) for(const it of value.items) items.push(it);
+    }
+    return {items};
+  }
   async function leerPdf(datos, pdfjs){
     const doc=await pdfjs.getDocument({data:datos, isEvalSupported:false, disableFontFace:true, useSystemFonts:false}).promise;
     let titulo="";
     try{ const m=await doc.getMetadata(); titulo=(m && m.info && m.info.Title) || ""; }catch(e){}
     const items=[]; let base=0;
     for(let p=1;p<=Math.min(doc.numPages,6);p++){
-      const pg=await doc.getPage(p), vp=pg.getViewport({scale:1}), tc=await pg.getTextContent();
+      const pg=await doc.getPage(p), vp=pg.getViewport({scale:1}), tc=await textoDePagina(pg);
       for(const it of tc.items){
         if(!it.str || !it.str.trim()) continue;
         items.push({s:it.str, x:it.transform[4], y:base+vp.height-it.transform[5], w:it.width, h:Math.abs(it.height||it.transform[3]||7)});

@@ -69,7 +69,8 @@
   .drop span{display:block;font-size:13px;color:var(--muted);margin-top:3px}
   .hint{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.4}
   .res{display:flex;flex-direction:column;gap:6px;margin-top:12px}
-  .res div{border-radius:10px;padding:9px 12px;font-size:13.5px;font-weight:600;display:flex;gap:8px;align-items:flex-start}
+  .res div{border-radius:10px;padding:9px 12px;font-size:13.5px;font-weight:600;line-height:1.4;word-break:break-word}
+  .res small{display:block;font-weight:500;opacity:.75;margin-top:2px}
   .res .ok{background:var(--ok-bg);color:#0b7a53;border:1px solid var(--ok-br)}
   .res .warn{background:var(--warn-bg);color:#8a5b12;border:1px solid var(--warn-br)}
   .res .err{background:var(--err-bg);color:#b71c1c;border:1px solid var(--err-br)}
@@ -356,10 +357,10 @@
 <div class="velo" id="velo">Soltá el archivo aquí</div>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261005b"></script>
+<script src="../nube.js?v=20261005c"></script>
 <script src="../recepcion/lib/exceljs.min.js"></script>
-<script src="../recepcion/catalog.js?v=20261005b"></script>
-<script src="lector.js?v=20261005b"></script>
+<script src="../recepcion/catalog.js?v=20261005c"></script>
+<script src="lector.js?v=20261005c"></script>
 <script>
 /* ============================================================
    Pedidos Online — las órdenes que llegan por correo (PDF):
@@ -605,7 +606,7 @@ function procesarArchivos(files){
         else await asignarDocumento(f, r.texto, r.tipo);
       }catch(e){
         console.error(e);
-        fila.className="err"; fila.innerHTML=`⚠️ No pude leer <b>${esc(f.name)}</b>. ¿Es un PDF de la tienda? (${esc(e && e.message || e)})`;
+        fila.className="err"; fila.innerHTML=`⚠️ No pude leer <b>${esc(f.name)}</b>. Probá otra vez; si sigue, mandame el PDF.<small>Detalle: ${esc(e && e.message || e)}</small>`;
       }
     }
   });
