@@ -47,11 +47,15 @@ GOOGLE DRIVE (se configura UNA sola vez)
 ----------------------------------------
 Botón "Drive" arriba a la derecha → seguí los 5 pasos:
   1. Abrí script.new con la cuenta de Google donde querés guardar todo.
-  2. Pegá el código que te da la app (ya trae la clave de la tienda).
-  3. Implementar → Nueva implementación → Aplicación web.
-     Ejecutar como: Yo · Quién tiene acceso: Cualquier usuario.
-  4. Autorizá (Configuración avanzada → Ir a … → Permitir).
+  2. Pegá el código que te da la app (ya trae la clave de la tienda) y guardá.
+  3. Permiso: arriba, al lado de "Debug", elegí "autorizar" → ▶ Run →
+     Review permissions → tu cuenta → Advanced → Go to … (unsafe) →
+     marcá TODAS las casillas (Select all) → Continue.
+     Abajo debe decir "Listo: Google Drive tiene permiso".
+  4. Deploy → New deployment → Web app.
+     Execute as: Me · Who has access: Anyone (Cualquier usuario).
   5. Pegá la URL que termina en /exec y tocá "Conectar".
+Si la app dice "Falta darle permiso de Google Drive", repetí el paso 3.
 Listo: todas las computadoras conectadas a la nube de la tienda suben
 a ese mismo Drive, sin iniciar sesión. Queda así:
 

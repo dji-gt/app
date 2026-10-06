@@ -8,6 +8,16 @@
 const CLAVE = "__CLAVE__";
 const CARPETA = "DJI Online";
 
+/* PERMISO DE GOOGLE DRIVE (una sola vez):
+   arriba, al lado de "Debug", tiene que decir "autorizar" -> tocá ▶ Run.
+   En la ventana de Google marcá TODAS las casillas ("Select all") -> Continue.
+   Abajo, en el registro, debe decir "Listo: Google Drive tiene permiso". */
+function autorizar() {
+  if (typeof ScriptApp.requireAllScopes === "function") ScriptApp.requireAllScopes(ScriptApp.AuthMode.FULL);
+  const raiz = hija(DriveApp.getRootFolder(), CARPETA);
+  Logger.log("Listo: Google Drive tiene permiso. Carpeta: " + raiz.getUrl() + " · Cuenta: " + Session.getEffectiveUser().getEmail());
+}
+
 function doPost(e) {
   let p = {};
   try { p = JSON.parse(e.postData.contents); } catch (err) {}

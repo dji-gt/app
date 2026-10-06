@@ -382,10 +382,10 @@
 <div class="velo" id="velo">Soltá el archivo aquí</div>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261005d"></script>
+<script src="../nube.js?v=20261006a"></script>
 <script src="../recepcion/lib/exceljs.min.js"></script>
-<script src="../recepcion/catalog.js?v=20261005d"></script>
-<script src="lector.js?v=20261005d"></script>
+<script src="../recepcion/catalog.js?v=20261006a"></script>
+<script src="lector.js?v=20261006a"></script>
 <script>
 /* ============================================================
    Pedidos Online — las órdenes que llegan por correo (PDF):
@@ -788,10 +788,16 @@ async function llamarDrive(payload, url, clave){
   const t=await r.text();
   try{ return JSON.parse(t); }catch(e){ throw new Error(r.ok ? "La URL no responde como el Apps Script de la tienda" : "Error "+r.status); }
 }
+const FALTA_PERMISO = "Falta darle permiso de Google Drive al código. En Apps Script copiá otra vez el código de la app (⚙️ Drive → 📋 Copiar código), pegalo y guardá; arriba, al lado de “Debug”, elegí “autorizar” y tocá ▶ Run; en la ventana de Google marcá todas las casillas (Select all) → Continue. Después tocá Conectar otra vez.";
+function textoErrorDrive(t){
+  t=String(t||"");
+  if(/permiso|permission|DriveApp|autoriz|authoriz|scope/i.test(t)) return FALTA_PERMISO;
+  return t;
+}
 function mensajeError(d){
   if(!d) return "No se pudo subir";
   if(d.error==="clave") return "La clave no coincide: volvé a copiar el código en Apps Script (⚙️ Drive).";
-  return d.error || "No se pudo subir";
+  return textoErrorDrive(d.error) || "No se pudo subir";
 }
 async function procesarCola(){
   if(colaCorriendo || !driveListo()) { renderDrive(); return; }
@@ -1299,9 +1305,10 @@ async function pintarDrive(){
         <li>Abrí <a href="https://script.new" target="_blank" rel="noopener"><b>script.new</b></a> con la cuenta de Google donde querés guardar todo (ej. la cuenta de la tienda).</li>
         <li>Borrá lo que trae y pegá este código <button class="btn dark sm" id="drCopiar" style="margin-left:6px">📋 Copiar código</button>
           <textarea class="codigo" id="drCodigo" readonly spellcheck="false">Cargando…</textarea></li>
-        <li>Tocá <b>💾 Guardar</b>. Después, arriba a la derecha: <b>Implementar → Nueva implementación</b>. En el engranaje ⚙️ elegí <b>Aplicación web</b>.<br>
-          · <b>Ejecutar como:</b> Yo (tu correo)<br>· <b>Quién tiene acceso:</b> <b>Cualquier usuario</b> (en inglés “Anyone”)<br>Tocá <b>Implementar</b>.</li>
-        <li>Google pide permiso: <b>Autorizar acceso</b> → elegí tu cuenta → si sale “Google no verificó esta app”, tocá <b>Configuración avanzada</b> → <b>Ir a … (no seguro)</b> → <b>Permitir</b>. (Es tu propio código: solo guarda en tu Drive.)</li>
+        <li>Tocá <b>💾 Guardar</b>. Después dale <b>permiso a Google Drive</b>: arriba, al lado de “Debug”, tiene que decir <b>autorizar</b> → tocá <b>▶ Run</b> (Ejecutar) → <b>Review permissions</b> → elegí tu cuenta → si sale “Google hasn't verified this app”, tocá <b>Advanced</b> → <b>Go to … (unsafe)</b> → marcá <b>todas las casillas</b> (“Select all”, sobre todo la de Google Drive) → <b>Continue</b>.<br>
+          Abajo, en el registro, debe decir <b>“Listo: Google Drive tiene permiso”</b>. (Es tu propio código: solo guarda en tu Drive.)</li>
+        <li>Arriba a la derecha: <b>Deploy (Implementar) → New deployment (Nueva implementación)</b>. En el engranaje ⚙️ elegí <b>Web app (Aplicación web)</b>.<br>
+          · <b>Execute as (Ejecutar como):</b> Me / Yo (tu correo)<br>· <b>Who has access (Quién tiene acceso):</b> <b>Anyone</b> / Cualquier usuario<br>Tocá <b>Deploy</b>.</li>
         <li>Copiá la <b>URL de la aplicación web</b> (termina en <b>/exec</b>) y pegala aquí:
           <div class="mrow" style="margin-top:8px"><input class="in" id="drUrl" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(aj.drive.url)}" autocomplete="off" spellcheck="false" style="flex:1;min-width:220px"><button class="btn primary sm" id="drConectar">Conectar</button></div>
           <div class="hint" id="drMsg"></div></li>
@@ -1323,7 +1330,7 @@ async function probarDrive(misma){
   if(msg){ msg.textContent="⏳ Probando la conexión…"; msg.style.color=""; }
   try{
     const d=await llamarDrive({accion:"probar"}, url, aj.drive.clave);
-    if(!d || !d.ok) throw new Error(d && d.error==="clave" ? "La clave no coincide: copiá otra vez el código de arriba, pegalo en Apps Script y hacé una implementación nueva." : (d && d.error) || "Respuesta rara");
+    if(!d || !d.ok) throw new Error(d && d.error==="clave" ? "La clave no coincide: copiá otra vez el código de arriba, pegalo en Apps Script y hacé una implementación nueva." : textoErrorDrive(d && d.error) || "Respuesta rara");
     aj.drive=Object.assign({}, aj.drive, {url, ok:true, cuenta:S(d.cuenta), carpeta:S(d.carpeta)});
     guardarAj(); renderDrive(); pintarDrive();
     toast("✅ Google Drive conectado");
