@@ -47,10 +47,13 @@ del formulario "DJI E-Commerce Envío" y la guía en medio.
 
 PASOS DE CADA ORDEN (se tocan en la tarjeta)
 --------------------------------------------
-  Envío Forza:  Recibida → Facturada → Guía lista → Empacado
+  Envío Forza:  Recibida → Facturada → Guía lista → Empacado   + ✉️ Correo enviado
   Pick Up:      Recibida → Facturada → Para recoger → Entregado
-"Empacado" (o "Entregado" en Pick Up) es el final: la orden pasa a
-"Terminados" y sale de pendientes.
+"✉️ Correo enviado" se marca cuando ya se contestó el correo del pedido
+(en cualquier momento; se quita tocándolo otra vez). El filtro
+"✉️ Falta correo" muestra los envíos que todavía no tienen respuesta.
+Un envío queda "Terminado" (sale de pendientes) cuando está Empacado Y
+con el correo enviado. En Pick Up, al marcar "Entregado".
 El botón de WhatsApp abre el chat del cliente con un mensaje listo
 según el paso (pedido recibido, empacado con su número de guía, listo
 para recoger en la tienda, gracias por su compra).
@@ -83,11 +86,19 @@ de esos datos.
 Si Drive no está conectado o no hay internet, los archivos se quedan
 guardados en esa computadora y se suben solos después.
 
+TENER LOS ARCHIVOS TAMBIÉN EN UNA CARPETA DE LA COMPUTADORA
+Instalá "Google Drive para computadoras" (google.com/drive/download) con
+la misma cuenta. En Finder aparece Google Drive → Mi unidad → DJI Online
+con todo lo de todas las computadoras, siempre al día. Clic derecho en
+"DJI Online" → "Disponible sin conexión" para que los archivos queden en
+la Mac, y arrastrala con Cmd + Opción a Documentos para tener un acceso
+directo ahí.
+
 OTROS
 -----
 - Buscar: por orden, cliente, teléfono, NIT, DPI, producto, guía…
 - Filtros: pendientes, por facturar, por empacar, para recoger,
-  terminados, anuladas; envío o Pick Up; y por mes.
+  falta correo, terminados, anuladas; envío o Pick Up; y por mes.
 - "⬇️ Excel": la lista (con el filtro actual) con el diseño DJI.
 - Todo se guarda en la nube de la tienda (lo ven todas las computadoras).
 

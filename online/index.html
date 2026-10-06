@@ -122,7 +122,8 @@
   .oc.e-guia{border-left-color:var(--accent)}
   .oc.e-listo{border-left-color:var(--teal)}
   .oc.e-enviado{border-left-color:var(--violet)}
-  .oc.e-entregado,.oc.e-empacado{border-left-color:#c3c9d3;opacity:.86}
+  .oc.e-entregado,.oc.e-empacado{border-left-color:var(--ok)}
+  .oc.fin{border-left-color:#c3c9d3;opacity:.86}
   .oc.anulada{border-left-color:var(--err);opacity:.6}
   .oc.resalta{animation:resalta 1.6s ease}
   @keyframes resalta{0%,40%{box-shadow:0 0 0 4px rgba(37,99,235,.35)}100%{box-shadow:var(--shadow-sm)}}
@@ -203,6 +204,10 @@
   .paso.actual.p-listo{background:var(--teal);border-color:var(--teal)}
   .paso.actual.p-enviado{background:var(--violet);border-color:var(--violet)}
   .paso.actual.p-entregado,.paso.actual.p-empacado{background:var(--ok);border-color:var(--ok)}
+  .paso.correo{border-style:dashed;margin-left:4px}
+  .paso.correo small{color:var(--warn);font-weight:700}
+  .paso.correo.si{background:var(--ok-bg);border:1.5px solid var(--ok-br);color:#0b7a53}
+  .paso.correo.si small{color:#0b7a53}
   .empty{background:var(--card);border:1.5px dashed var(--line);border-radius:var(--r);padding:44px 22px;text-align:center;color:var(--muted)}
   .empty b{color:var(--ink);display:block;font-size:16px;margin-bottom:5px}
 
@@ -393,10 +398,10 @@
 <div class="velo" id="velo">Soltá el archivo aquí</div>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261006b"></script>
+<script src="../nube.js?v=20261006c"></script>
 <script src="../recepcion/lib/exceljs.min.js"></script>
-<script src="../recepcion/catalog.js?v=20261006b"></script>
-<script src="lector.js?v=20261006b"></script>
+<script src="../recepcion/catalog.js?v=20261006c"></script>
+<script src="lector.js?v=20261006c"></script>
 <script>
 /* ============================================================
    Pedidos Online — las órdenes que llegan por correo (PDF):
@@ -427,17 +432,22 @@ const P = {
 };
 const pasosDe = m => m==="pickup" ? ["nuevo","facturado","listo","entregado"] : ["nuevo","facturado","guia","empacado"];
 const terminado = o => o.estado==="empacado" || o.estado==="entregado";
+const llevaCorreo = o => o.modo!=="pickup";                         // a los envíos se les contesta el correo
+const faltaCorreo = o => llevaCorreo(o) && !o.correoEnviado;
+const completo = o => terminado(o) && !faltaCorreo(o);
+function fechaFin(o){ const f=[o.pasos[o.estado]||""]; if(llevaCorreo(o)) f.push(o.correoEnviado||""); return f.sort().pop(); }
 const DOCS = {
   orden:   {l:"Orden",   ic:"📄"},
   factura: {l:"Factura", ic:"🧾"},
   guia:    {l:"Guía",    ic:"🏷️"}
 };
 const FILTROS = {
-  activos:     {l:"Pendientes",   f:o=>!o.anulada && !terminado(o)},
+  activos:     {l:"Pendientes",   f:o=>!o.anulada && !completo(o)},
   porFacturar: {l:"Por facturar", f:o=>!o.anulada && o.estado==="nuevo"},
   porEmpacar:  {l:"Por empacar",  f:o=>!o.anulada && o.modo!=="pickup" && (o.estado==="facturado"||o.estado==="guia")},
   paraRecoger: {l:"Para recoger", f:o=>!o.anulada && o.modo==="pickup" && (o.estado==="facturado"||o.estado==="listo")},
-  terminados:  {l:"Terminados",   f:o=>!o.anulada && terminado(o)},
+  sinCorreo:   {l:"✉️ Falta correo", f:o=>!o.anulada && faltaCorreo(o)},
+  terminados:  {l:"Terminados",   f:o=>!o.anulada && completo(o)},
   anuladas:    {l:"Anuladas",     f:o=>o.anulada},
   todos:       {l:"Todos",        f:()=>true}
 };
@@ -524,6 +534,7 @@ function limpiarOrden(r){
     estado, pasos:(r.pasos && typeof r.pasos==="object") ? Object.fromEntries(Object.entries(r.pasos).filter(([k,v])=>P[k] && typeof v==="string")) : {},
     anulada:!!r.anulada,
     facturaNum:S(r.facturaNum), guiaNum:S(r.guiaNum), nota:S(r.nota),
+    correoEnviado:S(r.correoEnviado),
     archivos:limpiarArchivos(r.archivos),
     carpeta:(r.carpeta && typeof r.carpeta==="object" && S(r.carpeta.id)) ? {id:S(r.carpeta.id), url:S(r.carpeta.url)} : null
   };
@@ -1118,7 +1129,8 @@ function htmlDoc(o, tipo){
 }
 function htmlPasos(o){
   const lista=pasosDe(o.modo), iAct=lista.indexOf(o.estado);
-  return `<div class="pasos ${lista.length===4?"p4":""}">${lista.map((k,i)=>`<button class="paso p-${k}${i===iAct?" actual":(i<iAct?" hecho":"")}" onclick="setPaso(${jsq(o.id)},'${k}')" title="${P[k].l}"><i>${P[k].ic}</i>${P[k].c}${o.pasos[k]?`<small>${fechaCorta(o.pasos[k])}</small>`:""}</button>`).join("")}</div>`;
+  const correo = llevaCorreo(o) ? `<button class="paso correo${o.correoEnviado?" si":""}" onclick="setCorreo(${jsq(o.id)})" title="${o.correoEnviado?"Ya se contestó el correo (tocá para quitar)":"Marcar que ya se contestó el correo"}"><i>${o.correoEnviado?"✅":"✉️"}</i>Correo enviado${o.correoEnviado?`<small>${fechaCorta(o.correoEnviado)}</small>`:`<small>pendiente</small>`}</button>` : "";
+  return `<div class="pasos ${lista.length+(correo?1:0)===4?"p4":""}">${lista.map((k,i)=>`<button class="paso p-${k}${i===iAct?" actual":(i<iAct?" hecho":"")}" onclick="setPaso(${jsq(o.id)},'${k}')" title="${P[k].l}"><i>${P[k].ic}</i>${P[k].c}${o.pasos[k]?`<small>${fechaCorta(o.pasos[k])}</small>`:""}</button>`).join("")}${correo}</div>`;
 }
 function lugar(o){
   if(o.modo==="pickup") return `🏬 Recoge en tienda${aj.tienda?" ("+esc(aj.tienda)+")":""}${o.recibeNombre && fold(o.recibeNombre)!==fold(o.nombre)?` · lo recoge <b>${esc(o.recibeNombre)}</b>`:""}`;
@@ -1214,7 +1226,7 @@ function render(){
   const R=datos.ordenes;
   ["porFacturar","porEmpacar","paraRecoger"].forEach(k=>$("k-"+k).textContent=R.filter(FILTROS[k].f).length);
   const hoy=hoyISO(), diaLocal=ts=>{ const d=new Date(ts); return isNaN(d) ? "" : d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
-  $("k-terminados").textContent=R.filter(o=>FILTROS.terminados.f(o) && diaLocal(o.pasos[o.estado])===hoy).length;
+  $("k-terminados").textContent=R.filter(o=>FILTROS.terminados.f(o) && diaLocal(fechaFin(o))===hoy).length;
 
   // meses
   const meses=[...new Set(R.map(o=>(o.fecha||o.creado.slice(0,10)).slice(0,7)))].sort().reverse();
@@ -1234,7 +1246,7 @@ function render(){
   $("list").innerHTML=L.map(o=>{
     const m=MODOS[o.modo];
     const docs=["orden","factura",...(o.modo==="pickup" && !o.archivos.guia ? [] : ["guia"])];
-    return `<div class="oc e-${o.estado}${o.anulada?" anulada":""}" id="oc-${esc(o.id)}">
+    return `<div class="oc e-${o.estado}${completo(o)?" fin":""}${o.anulada?" anulada":""}" id="oc-${esc(o.id)}">
       <div class="oc-top"><span class="modo ${o.modo}">${m.ic} ${m.l}</span><span class="num">#${esc(o.orden)}</span><span class="fch">${esc(diaBonito(o.fecha)||"")}</span>${o.anulada?`<span class="tag">Anulada</span>`:""}
         <div class="gc-acts"><button class="ib" onclick="abrirDetalle(${jsq(o.id)})" title="Ver todo / editar">${IC_EDIT}</button><button class="ib del" onclick="borrarOrden(${jsq(o.id)})" title="Borrar">${IC_DEL}</button></div></div>
       <div class="oc-who"><b onclick="abrirDetalle(${jsq(o.id)})">${esc(o.nombre||"(sin nombre)")}</b>${o.telefono?`<a class="tel" href="tel:${esc(o.telefono)}">${esc(telBonito(o.telefono))}</a>`:""}${htmlWa(o)}</div>
@@ -1265,6 +1277,14 @@ function setPaso(id,k){
   const ahora=new Date().toISOString();
   marcarPaso(o,k,ahora); o.actualizado=ahora;
   guardar(); render(); toast(`#${o.orden}: ${P[k].l}`);
+  if(detId===id && $("detModal").classList.contains("show")) $("detPasos").innerHTML=htmlPasos(o);
+}
+function setCorreo(id){
+  const o=ordenDe(id); if(!o) return;
+  const ahora=new Date().toISOString();
+  o.correoEnviado = o.correoEnviado ? "" : ahora; o.actualizado=ahora;
+  guardar(); render();
+  toast(o.correoEnviado ? `✉️ #${o.orden}: correo enviado` : `#${o.orden}: correo pendiente otra vez`);
   if(detId===id && $("detModal").classList.contains("show")) $("detPasos").innerHTML=htmlPasos(o);
 }
 function borrarOrden(id){
@@ -1588,8 +1608,8 @@ async function exportExcel(){
   const DARK="FF44546A", WHITE="FFFFFFFF", INK="FF4A4F59", GRIDBG="FFF7F8FA";
   const wb=new ExcelJS.Workbook();
   const ws=wb.addWorksheet("Pedidos online",{views:[{showGridLines:false,state:"frozen",ySplit:5}]});
-  const heads=["Orden","Fecha","Cliente","Teléfono","Correo","NIT","Productos","Total (Q)","Pago","Entrega","Dirección","Recibe","Paso","N.º factura","N.º guía","Drive"];
-  const widths=[10,11,26,12,26,12,40,12,30,14,34,22,18,14,16,12];
+  const heads=["Orden","Fecha","Cliente","Teléfono","Correo","NIT","Productos","Total (Q)","Pago","Entrega","Dirección","Recibe","Paso","N.º factura","N.º guía","Drive","Correo enviado"];
+  const widths=[10,11,26,12,26,12,40,12,30,14,34,22,18,14,16,12,14];
   ws.columns=[{width:3},...widths.map(w=>({width:w})),{width:3}];
   const B=2, K=B+heads.length-1;
   const thin={style:"thin",color:{argb:"FFB9C0CC"}}, border={top:thin,left:thin,bottom:thin,right:thin};
@@ -1609,14 +1629,14 @@ async function exportExcel(){
     const prods=o.productos.map(p=>`${p.cant} × ${p.nombre}${p.sku?" ("+p.sku+")":""}`).join("\n");
     const ent=MODOS[o.modo].l+(o.tipoEnvio&&o.modo!=="pickup"?" "+o.tipoEnvio:"");
     const vals=["#"+o.orden, ymdCorto(o.fecha), o.nombre, telBonito(o.telefono), o.correo, o.nit, prods, o.total, [pagoTxt(o.pago1),o.pago2?pagoTxt(o.pago2):""].filter(Boolean).join(" + "),
-      ent, o.modo==="pickup"?"":o.direccion.replace(/\n+/g,", "), o.recibeNombre, (o.anulada?"ANULADA · ":"")+P[o.estado].l, o.facturaNum, o.guiaNum, o.carpeta&&o.carpeta.url?"Abrir carpeta":""];
+      ent, o.modo==="pickup"?"":o.direccion.replace(/\n+/g,", "), o.recibeNombre, (o.anulada?"ANULADA · ":"")+P[o.estado].l, o.facturaNum, o.guiaNum, o.carpeta&&o.carpeta.url?"Abrir carpeta":"", llevaCorreo(o) ? (o.correoEnviado?"Sí · "+fechaCorta(o.correoEnviado):"No") : ""];
     vals.forEach((v,i)=>{
       const c=ws.getCell(r,B+i);
       if(i===15 && v){ c.value={text:v, hyperlink:o.carpeta.url}; c.font=Object.assign({},font,{color:{argb:"FF2563EB"},underline:true}); }
       else { c.value=v; c.font=font; }
       if(i===7){ c.numFmt='"Q"#,##0.00'; }
       c.border=border; c.fill={type:"pattern",pattern:"solid",fgColor:{argb:GRIDBG}};
-      c.alignment={vertical:"top",wrapText:[6,8,10].includes(i),horizontal:[0,1,3,7,13,14,15].includes(i)?(i===7?"right":"center"):"left",indent:[0,1,3,7,13,14,15].includes(i)?0:1};
+      c.alignment={vertical:"top",wrapText:[6,8,10].includes(i),horizontal:[0,1,3,7,13,14,15,16].includes(i)?(i===7?"right":"center"):"left",indent:[0,1,3,7,13,14,15,16].includes(i)?0:1};
     });
     if(!o.anulada) suma+=o.total||0;
     r++;
