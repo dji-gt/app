@@ -34,12 +34,25 @@ FACTURA Y GUÍA
 - Al subir la factura la orden pasa a "Facturada"; al subir la guía,
   a "Guía lista".
 
+IMPRIMIR LA GUÍA CON LA PLANTILLA DJI
+------------------------------------
+Al subir la guía de Forza (PDF o foto), la app pregunta si querés
+imprimirla. También está el botón "🖨️ Imprimir guía" en cada orden.
+Sale la misma plantilla de siempre: hoja carta horizontal con 2 copias
+del formulario "DJI E-Commerce Envío" y la guía en medio.
+- Marca sola STANDARD o NEXT DAY según la guía (se puede cambiar arriba).
+- Arriba también se elige 2 copias o 1, y si lleva el número de pedido.
+- En la ventana de imprimir: tamaño Carta, horizontal, escala 100 %.
+- Se puede volver a imprimir cuando quieras, desde cualquier computadora.
+
 PASOS DE CADA ORDEN (se tocan en la tarjeta)
 --------------------------------------------
-  Envío Forza:  Recibida → Facturada → Guía lista → Enviado → Entregado
+  Envío Forza:  Recibida → Facturada → Guía lista → Empacado
   Pick Up:      Recibida → Facturada → Para recoger → Entregado
+"Empacado" (o "Entregado" en Pick Up) es el final: la orden pasa a
+"Terminados" y sale de pendientes.
 El botón de WhatsApp abre el chat del cliente con un mensaje listo
-según el paso (pedido recibido, enviado con su número de guía, listo
+según el paso (pedido recibido, empacado con su número de guía, listo
 para recoger en la tienda, gracias por su compra).
 "🚫 Anular" (dentro de la orden) la deja guardada pero fuera de pendientes.
 
@@ -73,8 +86,8 @@ guardados en esa computadora y se suben solos después.
 OTROS
 -----
 - Buscar: por orden, cliente, teléfono, NIT, DPI, producto, guía…
-- Filtros: pendientes, por facturar, por enviar, para recoger, en
-  camino, entregados, anuladas; envío o Pick Up; y por mes.
+- Filtros: pendientes, por facturar, por empacar, para recoger,
+  terminados, anuladas; envío o Pick Up; y por mes.
 - "⬇️ Excel": la lista (con el filtro actual) con el diseño DJI.
 - Todo se guarda en la nube de la tienda (lo ven todas las computadoras).
 
@@ -83,4 +96,5 @@ ARCHIVOS (no borrar)
   index.html              -> la sección
   lector.js               -> lee los PDF de las órdenes
   apps-script-drive.txt   -> el código que se pega en Google Apps Script
-  lib/pdf.min.mjs, lib/pdf.worker.min.mjs -> pdf.js (Mozilla, licencia Apache 2.0)
+  plantilla-envio.svg     -> el formulario "DJI E-Commerce Envío" para imprimir la guía
+  lib/pdf.min.mjs, lib/pdf.worker.min.mjs, lib/standard_fonts/ -> pdf.js (Mozilla, licencia Apache 2.0)

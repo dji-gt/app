@@ -285,8 +285,13 @@
     if(/FACTURA|DTE\b|DOCUMENTO TRIBUTARIO|SAT\b|AUTORIZACION/.test(t)) return "factura";
     return "";
   }
-  function numeroGuia(texto){
-    const m=String(texto||"").match(/gu[ií]a\s*(?:n[o°º.]*|n[uú]mero|#)?\s*:?\s*([A-Z]{0,4}\d{6,})/i);
+  function numeroGuia(texto, nombreArchivo){
+    const t=String(texto||"");
+    let m=t.match(/\bFD\s?(\d{6,})-\d+\b/i);                       // Forza: código de barras "FD42795369-1"
+    if(m) return m[1];
+    m=String(nombreArchivo||"").match(/GU[IÍ]A[_\s-]*(\d{6,})/i);     // archivo "GUIA_42795369_2026-10-05….pdf"
+    if(m) return m[1];
+    m=t.match(/gu[ií]a\s*(?:n[o°º.]*|n[uú]mero|#)?\s*:?\s*([A-Z]{0,4}\d{6,})/i);
     return m ? m[1] : "";
   }
   function numeroFactura(texto){
@@ -337,7 +342,7 @@
     return {items, titulo, texto, paginas};
   }
 
-  const api={parsear, segmentos, tipoDocumento, numeroGuia, numeroFactura, leerPdf, dinero, fold};
+  const api={parsear, segmentos, tipoDocumento, numeroGuia, numeroFactura, leerPdf, textoDePagina, dinero, fold};
   if(typeof module!=="undefined" && module.exports) module.exports=api;
   else raiz.LectorOrden=api;
 })(typeof window!=="undefined" ? window : globalThis);

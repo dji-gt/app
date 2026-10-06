@@ -51,7 +51,7 @@
   .kpi.k-fact .bar{background:var(--warn)}
   .kpi.k-env .bar{background:var(--accent)}
   .kpi.k-rec .bar{background:var(--teal)}
-  .kpi.k-cam .bar{background:var(--violet)}
+  .kpi.k-cam .bar{background:var(--ok)}
 
   /* ===== Layout ===== */
   .layout{display:grid;grid-template-columns:1fr;gap:16px}
@@ -122,7 +122,7 @@
   .oc.e-guia{border-left-color:var(--accent)}
   .oc.e-listo{border-left-color:var(--teal)}
   .oc.e-enviado{border-left-color:var(--violet)}
-  .oc.e-entregado{border-left-color:#c3c9d3;opacity:.86}
+  .oc.e-entregado,.oc.e-empacado{border-left-color:#c3c9d3;opacity:.86}
   .oc.anulada{border-left-color:var(--err);opacity:.6}
   .oc.resalta{animation:resalta 1.6s ease}
   @keyframes resalta{0%,40%{box-shadow:0 0 0 4px rgba(37,99,235,.35)}100%{box-shadow:var(--shadow-sm)}}
@@ -185,6 +185,8 @@
   .doc.pend{border-style:solid;border-color:var(--warn-br);background:var(--warn-bg);color:#8a5b12}
   .doc.sobre{border-color:var(--accent);background:var(--accent-bg);color:var(--accent);border-style:solid}
   .doc small{font-weight:600;opacity:.8}
+  .doc.imp{border-style:solid;border-color:var(--black);background:var(--black);color:#fff}
+  .doc.imp:hover{background:var(--black-2);color:#fff;border-color:var(--black-2)}
 
   /* pasos del proceso */
   .pasos{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:12px}
@@ -200,7 +202,7 @@
   .paso.actual.p-facturado,.paso.actual.p-guia{background:var(--accent);border-color:var(--accent)}
   .paso.actual.p-listo{background:var(--teal);border-color:var(--teal)}
   .paso.actual.p-enviado{background:var(--violet);border-color:var(--violet)}
-  .paso.actual.p-entregado{background:var(--ok);border-color:var(--ok)}
+  .paso.actual.p-entregado,.paso.actual.p-empacado{background:var(--ok);border-color:var(--ok)}
   .empty{background:var(--card);border:1.5px dashed var(--line);border-radius:var(--r);padding:44px 22px;text-align:center;color:var(--muted)}
   .empty b{color:var(--ink);display:block;font-size:16px;margin-bottom:5px}
 
@@ -315,9 +317,9 @@
 <div class="wrap">
   <div class="kpis">
     <button class="kpi k-fact" data-f="porFacturar"><i class="bar"></i><div class="kpi-n" id="k-porFacturar">0</div><div class="kpi-l">Por facturar</div></button>
-    <button class="kpi k-env" data-f="porEnviar"><i class="bar"></i><div class="kpi-n" id="k-porEnviar">0</div><div class="kpi-l">Por enviar (Forza)</div></button>
+    <button class="kpi k-env" data-f="porEmpacar"><i class="bar"></i><div class="kpi-n" id="k-porEmpacar">0</div><div class="kpi-l">Por empacar (Forza)</div></button>
     <button class="kpi k-rec" data-f="paraRecoger"><i class="bar"></i><div class="kpi-n" id="k-paraRecoger">0</div><div class="kpi-l">Para recoger (Pick Up)</div></button>
-    <button class="kpi k-cam" data-f="enCamino"><i class="bar"></i><div class="kpi-n" id="k-enCamino">0</div><div class="kpi-l">En camino</div></button>
+    <button class="kpi k-cam" data-f="terminados"><i class="bar"></i><div class="kpi-n" id="k-terminados">0</div><div class="kpi-l">Terminados hoy</div></button>
   </div>
 
   <div class="layout">
@@ -378,14 +380,23 @@
   </div>
 </div>
 
+<!-- ===== Modal: guía guardada, ¿imprimir? ===== -->
+<div class="modal-ov" id="imModal" style="z-index:110">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-h"><b>🏷️ Guía guardada</b><button class="modal-x" onclick="cerrarIm()" title="Cerrar">✕</button></div>
+    <div class="msec"><p id="imTxt" style="font-size:14.5px;color:var(--ink-2);margin:0"></p></div>
+    <div class="mfoot"><button class="btn ghost" onclick="cerrarIm()">Después</button><span class="sp"></span><button class="btn primary" id="imOk">🖨️ Imprimir con la plantilla</button></div>
+  </div>
+</div>
+
 <input type="file" id="archivoDoc" accept="application/pdf,.pdf,image/*" hidden>
 <div class="velo" id="velo">Soltá el archivo aquí</div>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261006a"></script>
+<script src="../nube.js?v=20261006b"></script>
 <script src="../recepcion/lib/exceljs.min.js"></script>
-<script src="../recepcion/catalog.js?v=20261006a"></script>
-<script src="lector.js?v=20261006a"></script>
+<script src="../recepcion/catalog.js?v=20261006b"></script>
+<script src="lector.js?v=20261006b"></script>
 <script>
 /* ============================================================
    Pedidos Online — las órdenes que llegan por correo (PDF):
@@ -409,23 +420,24 @@ const P = {
   nuevo:     {l:"Orden recibida",       c:"Recibida",     ic:"📥"},
   facturado: {l:"Facturada",            c:"Facturada",    ic:"🧾"},
   guia:      {l:"Guía lista",           c:"Guía lista",   ic:"🏷️"},
-  enviado:   {l:"Enviado por Forza",    c:"Enviado",      ic:"🚚"},
+  empacado:  {l:"Empacado y listo",     c:"Empacado",     ic:"📦"},
+  enviado:   {l:"Enviado por Forza",    c:"Enviado",      ic:"🚚"},   // ya no se usa (las viejas pasan a Empacado)
   listo:     {l:"Listo para recoger",   c:"Para recoger", ic:"🏬"},
   entregado: {l:"Entregado al cliente", c:"Entregado",    ic:"✅"}
 };
-const pasosDe = m => m==="pickup" ? ["nuevo","facturado","listo","entregado"] : ["nuevo","facturado","guia","enviado","entregado"];
+const pasosDe = m => m==="pickup" ? ["nuevo","facturado","listo","entregado"] : ["nuevo","facturado","guia","empacado"];
+const terminado = o => o.estado==="empacado" || o.estado==="entregado";
 const DOCS = {
   orden:   {l:"Orden",   ic:"📄"},
   factura: {l:"Factura", ic:"🧾"},
   guia:    {l:"Guía",    ic:"🏷️"}
 };
 const FILTROS = {
-  activos:     {l:"Pendientes",   f:o=>!o.anulada && o.estado!=="entregado"},
+  activos:     {l:"Pendientes",   f:o=>!o.anulada && !terminado(o)},
   porFacturar: {l:"Por facturar", f:o=>!o.anulada && o.estado==="nuevo"},
-  porEnviar:   {l:"Por enviar",   f:o=>!o.anulada && o.modo!=="pickup" && (o.estado==="facturado"||o.estado==="guia")},
+  porEmpacar:  {l:"Por empacar",  f:o=>!o.anulada && o.modo!=="pickup" && (o.estado==="facturado"||o.estado==="guia")},
   paraRecoger: {l:"Para recoger", f:o=>!o.anulada && o.modo==="pickup" && (o.estado==="facturado"||o.estado==="listo")},
-  enCamino:    {l:"En camino",    f:o=>!o.anulada && o.estado==="enviado"},
-  entregado:   {l:"Entregados",   f:o=>!o.anulada && o.estado==="entregado"},
+  terminados:  {l:"Terminados",   f:o=>!o.anulada && terminado(o)},
   anuladas:    {l:"Anuladas",     f:o=>o.anulada},
   todos:       {l:"Todos",        f:()=>true}
 };
@@ -493,7 +505,10 @@ function limpiarOrden(r){
   const modo=MODOS[r.modo] ? r.modo : "forza";
   const lista=pasosDe(modo);
   let estado=S(r.estado);
-  if(!lista.includes(estado)) estado = (estado==="guia"||estado==="enviado") ? "listo" : (estado==="listo" ? "guia" : "nuevo");
+  if(!lista.includes(estado)){
+    if(modo==="pickup") estado = (estado==="guia"||estado==="enviado"||estado==="empacado") ? "listo" : "nuevo";
+    else estado = (estado==="enviado"||estado==="entregado") ? "empacado" : (estado==="listo" ? "guia" : "nuevo");
+  }
   if(!lista.includes(estado)) estado="nuevo";
   const o={
     id, orden:id, fecha:/^\d{4}-\d{2}-\d{2}$/.test(S(r.fecha))?S(r.fecha):"", plataforma:S(r.plataforma),
@@ -513,6 +528,8 @@ function limpiarOrden(r){
     carpeta:(r.carpeta && typeof r.carpeta==="object" && S(r.carpeta.id)) ? {id:S(r.carpeta.id), url:S(r.carpeta.url)} : null
   };
   if(r.actualizado) o.actualizado=S(r.actualizado);
+  // las que estaban en "Enviado"/"Entregado" quedan en "Empacado" con esa misma fecha
+  if(o.estado==="empacado" && !o.pasos.empacado && r.pasos && typeof r.pasos==="object"){ const f=S(r.pasos.enviado)||S(r.pasos.entregado); if(f) o.pasos.empacado=f; }
   return o;
 }
 function limpiarAj(a){
@@ -742,9 +759,222 @@ async function ponerArchivo(id, tipo, f, opciones){
   o.actualizado=ahora;
   guardar(); render();
   if(detId===id && $("detModal").classList.contains("show")){ pintarDocs(); $("detPasos").innerHTML=htmlPasos(o); }
+  if(tipo==="guia"){ await guardarCopia(id, f); if(!(opciones && opciones.sinPreguntar)) ofrecerImprimir(id); }
   procesarCola();
 }
 function marcarPaso(o,k,ahora){ o.estado=k; o.pasos=Object.assign({},o.pasos,{[k]:ahora}); }
+
+// ============================================================
+//  GUÍA CON LA PLANTILLA DJI (para imprimir y pegar al paquete)
+//  Hoja carta horizontal con 2 formularios "DJI E-Commerce Envío" y la guía de Forza en medio,
+//  igual que la plantilla de Pages de la tienda.
+// ============================================================
+// copia de la guía para poder imprimirla después (aunque ya se haya subido a Drive)
+const COPIAS = (()=>{
+  let db=null; const mem=new Map();
+  function abrir(){
+    if(db) return db;
+    db=new Promise(res=>{
+      try{ const r=indexedDB.open("online_dji_guias",1); r.onupgradeneeded=()=>r.result.createObjectStore("copias",{keyPath:"k"}); r.onsuccess=()=>res(r.result); r.onerror=()=>res(null); }
+      catch(e){ res(null); }
+    });
+    return db;
+  }
+  async function hacer(modo, fn, porMem){
+    const d=await abrir(); if(!d) return porMem();
+    return new Promise((res,rej)=>{ const t=d.transaction("copias",modo), rq=fn(t.objectStore("copias")); t.oncomplete=()=>res(rq && "result" in rq ? rq.result : undefined); t.onerror=()=>rej(t.error); t.onabort=()=>rej(t.error); });
+  }
+  return {
+    put:v=>hacer("readwrite",st=>st.put(v),()=>{ mem.set(v.k,v); }),
+    get:k=>hacer("readonly",st=>st.get(k),()=>mem.get(k)),
+    del:k=>hacer("readwrite",st=>st.delete(k),()=>{ mem.delete(k); })
+  };
+})();
+const MAX_NUBE_GUIA = 600*1024;   // la nube guarda guías chicas (las de Forza pesan ~35 KB)
+async function achicarImagen(blob){
+  try{
+    const url=URL.createObjectURL(blob), im=new Image();
+    await new Promise((ok,mal)=>{ im.onload=ok; im.onerror=mal; im.src=url; });
+    const k=Math.min(1, 1600/Math.max(im.naturalWidth, im.naturalHeight));
+    const c=document.createElement("canvas"); c.width=Math.round(im.naturalWidth*k); c.height=Math.round(im.naturalHeight*k);
+    const x=c.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,c.width,c.height); x.drawImage(im,0,0,c.width,c.height); URL.revokeObjectURL(url);
+    for(const [tipo,cal] of [["image/png"],["image/jpeg",.92],["image/jpeg",.8]]){
+      const b=await new Promise(r=>c.toBlob(r,tipo,cal)); if(b && b.size<=MAX_NUBE_GUIA) return b;
+    }
+  }catch(e){}
+  return null;
+}
+async function guardarCopia(id, f){
+  const mime=f.type || (esPdf(f)?"application/pdf":"application/octet-stream");
+  try{ await COPIAS.put({k:id, blob:f, mime, nombre:f.name||"", t:Date.now()}); }catch(e){}
+  if(window.Nube && Nube.conectado()) subirCopiaNube(id, f, mime);   // sin esperar: la impresión no depende de esto
+}
+async function subirCopiaNube(id, f, mime){
+  try{
+    let b=f; if(b.size>MAX_NUBE_GUIA && esImagen(f)) b=await achicarImagen(f);
+    if(!b || b.size>MAX_NUBE_GUIA) return;
+    if(!await Nube.iniciar()) return;
+    await Nube.guardarMapa("guias", id, {archivo:{nombre:f.name||"guia", tipo:b.type||mime, data:await aBase64(b), fecha:new Date().toISOString()}}, {});
+  }catch(e){ console.warn("Copia de la guía en la nube:", e); }
+}
+function borrarCopia(id){
+  COPIAS.del(id).catch(()=>{});
+  if(window.Nube && Nube.conectado()) Nube.iniciar().then(db=>{ if(db) Nube.guardarMapa("guias", id, {}, {archivo:1}); }).catch(()=>{});
+}
+async function obtenerGuia(id){
+  try{ const c=await COPIAS.get(id); if(c && c.blob) return {blob:c.blob, mime:c.mime, nombre:c.nombre}; }catch(e){}
+  try{ const p=await IDB.get(id+"|guia"); if(p && p.blob) return {blob:p.blob, mime:p.mime, nombre:p.original}; }catch(e){}
+  if(window.Nube && Nube.conectado()){
+    try{
+      if(await Nube.iniciar()){
+        const r=await Nube.leerMapa("guias", id), a=r && r.mapa && r.mapa.archivo;
+        if(a && a.data){
+          const bin=atob(a.data), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
+          const blob=new Blob([u],{type:a.tipo||"application/pdf"});
+          COPIAS.put({k:id, blob, mime:blob.type, nombre:a.nombre||"", t:Date.now()}).catch(()=>{});
+          return {blob, mime:blob.type, nombre:a.nombre};
+        }
+      }
+    }catch(e){ console.warn("Guía desde la nube:", e); }
+  }
+  return null;
+}
+const leerComoUrl = blob => new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result)); r.onerror=()=>rej(r.error); r.readAsDataURL(blob); });
+// la guía como imagen nítida (PDF dibujado con pdf.js a ~430 dpi) + su tamaño en puntos
+async function guiaImagen(g){
+  const pdf = /pdf/i.test(g.mime||"") || /\.pdf$/i.test(g.nombre||"");
+  if(!pdf){
+    const url=await leerComoUrl(g.blob), im=new Image();
+    await new Promise((ok,mal)=>{ im.onload=ok; im.onerror=()=>mal(new Error("La guía no es una imagen que se pueda abrir")); im.src=url; });
+    return {url, w:im.naturalWidth, h:im.naturalHeight, pdf:false, texto:""};
+  }
+  const L=await pdfjs();
+  const doc=await L.getDocument({data:new Uint8Array(await g.blob.arrayBuffer()), isEvalSupported:false, standardFontDataUrl:new URL("./lib/standard_fonts/", location.href).href}).promise;
+  try{
+    const pg=await doc.getPage(1), vp1=pg.getViewport({scale:1}), esc6=6, vp=pg.getViewport({scale:esc6});
+    const c=document.createElement("canvas"); c.width=Math.ceil(vp.width); c.height=Math.ceil(vp.height);
+    const x=c.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,c.width,c.height);
+    await pg.render({canvasContext:x, viewport:vp}).promise;
+    let texto=""; try{ texto=(await LectorOrden.textoDePagina(pg)).items.map(i=>i.str).join(" "); }catch(e){}
+    return {url:c.toDataURL("image/png"), w:vp1.width, h:vp1.height, pdf:true, texto};
+  }finally{ try{ await doc.destroy(); }catch(e){} }
+}
+function servicioDe(o, texto){
+  const t=LectorOrden.fold(texto), te=LectorOrden.fold(o.tipoEnvio);
+  if(/NEXT ?DAY|SERVICIO (NXT|ND|EXP)/.test(t)) return "next";
+  if(/\bSTD\b|STANDARD|ESTANDAR/.test(t)) return "std";
+  if(/EXPRESS|NEXT|SIGUIENTE|URGENTE/.test(te)) return "next";
+  if(/STANDARD|ESTANDAR|\bSTD\b/.test(te)) return "std";
+  return "";
+}
+// medidas sacadas de la plantilla (puntos; hoja carta horizontal 792 × 612)
+const PL = {
+  formIzq:{x:21.2, y:10.1}, formDer:{x:376.6, y:10.1},       // dónde va cada formulario (396 × 612)
+  guia:{x:53.9, y:210.8, lado:288},                         // guía de Forza 4" × 4" dentro del formulario
+  centro:{x:197.9, y:354.8}, libre:{x0:34, y0:156, x1:360, y1:540},
+  casillas:{next:{x:170.2, y:134.8}, std:{x:292.2, y:134.8}}
+};
+function cajaGuia(img){
+  if(img.pdf && Math.abs(img.w-PL.guia.lado)<=24 && Math.abs(img.h-PL.guia.lado)<=24) return {x:PL.guia.x, y:PL.guia.y, w:img.w, h:img.h};
+  const maxW = img.pdf ? PL.libre.x1-PL.libre.x0 : 280, maxH = img.pdf ? PL.libre.y1-PL.libre.y0 : 330;
+  let w=img.pdf ? img.w : maxW, h=img.pdf ? img.h : maxW*img.h/img.w;
+  const k=Math.min(1, maxW/w, maxH/h); w*=k; h*=k;
+  let x=PL.centro.x-w/2, y=PL.centro.y-h/2;
+  x=Math.max(PL.libre.x0, Math.min(x, PL.libre.x1-w)); y=Math.max(PL.libre.y0, Math.min(y, PL.libre.y1-h));
+  return {x, y, w, h};
+}
+function htmlImpresion(o, img){
+  const fondo=new URL("plantilla-envio.svg"+(VER?"?v="+encodeURIComponent(VER):""), location.href).href;
+  const b=cajaGuia(img), serv=servicioDe(o, img.texto);
+  const yOrden=Math.min(b.y+b.h+14, PL.libre.y1-4);
+  const check=`<svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5.5 5.5L20 6"/></svg>`;
+  const copia=lado=>`<div class="f ${lado}">
+      <img class="fondo" src="${esc(fondo)}" alt="">
+      <img class="g" src="${img.url}" alt="Guía" style="left:${b.x.toFixed(1)}pt;top:${b.y.toFixed(1)}pt;width:${b.w.toFixed(1)}pt;height:${b.h.toFixed(1)}pt">
+      <span class="chk n" style="left:${(PL.casillas.next.x-6.5).toFixed(1)}pt;top:${(PL.casillas.next.y-6.5).toFixed(1)}pt">${check}</span>
+      <span class="chk s" style="left:${(PL.casillas.std.x-6.5).toFixed(1)}pt;top:${(PL.casillas.std.y-6.5).toFixed(1)}pt">${check}</span>
+      <div class="ord" style="top:${yOrden.toFixed(1)}pt">Pedido online #${esc(o.orden)} · ${esc(o.nombre)}</div>
+    </div>`;
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Guía ${esc(o.guiaNum||"")} · Pedido #${esc(o.orden)} · ${esc(o.nombre)}</title><style>
+  @page{size:11in 8.5in;margin:0}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#fff;font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .hoja{position:relative;width:792pt;height:612pt;overflow:hidden;background:#fff}
+  .f{position:absolute;top:10.1pt;width:396pt;height:612pt}
+  .f.i{left:21.2pt}.f.d{left:376.6pt}
+  .f .fondo{position:absolute;left:0;top:0;width:396pt;height:612pt}
+  .f .g{position:absolute;image-rendering:auto}
+  .f .chk{position:absolute;width:13pt;height:13pt;display:none}
+  .f .chk svg{width:100%;height:100%;display:block}
+  body.next .chk.n,body.std .chk.s{display:block}
+  .f .ord{position:absolute;left:34pt;width:326pt;text-align:center;font-size:9pt;font-weight:700;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  body.sin-orden .ord{display:none}
+  body.una .f.d{display:none}
+  .barra{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:center;background:#111318;color:#fff;padding:10px 14px;font-size:13.5px}
+  .barra b{font-size:14px}
+  .grupo{display:inline-flex;gap:4px;align-items:center}
+  .barra button{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:7px 11px;font:700 13px inherit;cursor:pointer}
+  .barra button[aria-pressed="true"]{background:#2563eb;border-color:#2563eb}
+  .barra .imp{background:#0e9f6e;border-color:#0e9f6e;font-size:14px;padding:8px 16px}
+  .barra label{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+  .barra small{color:rgba(255,255,255,.65);width:100%;text-align:center}
+  @media screen{body{background:#d9dde3}.hoja{margin:16px auto 40px;box-shadow:0 8px 28px rgba(0,0,0,.2)}}
+  @media print{.barra{display:none!important}html,body{background:#fff}}
+</style></head><body class="${serv}">
+  <div class="barra">
+    <b>Pedido #${esc(o.orden)} · ${esc(o.nombre)}</b>
+    <span class="grupo">Servicio: <button data-s="next">Next Day</button><button data-s="std">Standard</button><button data-s="">Sin marcar</button></span>
+    <span class="grupo">Copias: <button data-c="2">2 (como la plantilla)</button><button data-c="1">1</button></span>
+    <label><input type="checkbox" id="vOrden" checked> N.º de pedido</label>
+    <button class="imp" onclick="window.print()">🖨️ Imprimir</button>
+    <small>En la ventana de imprimir: tamaño Carta, orientación horizontal y escala 100 %.</small>
+  </div>
+  <div class="hoja">${copia("i")}${copia("d")}</div>
+<script>
+  var B=document.body;
+  function pintar(){
+    var s=B.classList.contains("next")?"next":(B.classList.contains("std")?"std":"");
+    document.querySelectorAll("[data-s]").forEach(function(x){ x.setAttribute("aria-pressed", String(x.getAttribute("data-s")===s)); });
+    var c=B.classList.contains("una")?"1":"2";
+    document.querySelectorAll("[data-c]").forEach(function(x){ x.setAttribute("aria-pressed", String(x.getAttribute("data-c")===c)); });
+  }
+  document.querySelectorAll("[data-s]").forEach(function(x){ x.onclick=function(){ B.classList.remove("next","std"); if(x.getAttribute("data-s")) B.classList.add(x.getAttribute("data-s")); pintar(); }; });
+  document.querySelectorAll("[data-c]").forEach(function(x){ x.onclick=function(){ B.classList.toggle("una", x.getAttribute("data-c")==="1"); pintar(); }; });
+  document.getElementById("vOrden").onchange=function(e){ B.classList.toggle("sin-orden", !e.target.checked); };
+  pintar();
+  var imgs=[].slice.call(document.images);
+  Promise.all(imgs.map(function(i){ return i.complete ? 1 : new Promise(function(r){ i.onload=i.onerror=r; }); })).then(function(){ setTimeout(function(){ window.focus(); window.print(); }, 350); });
+<\/script></body></html>`;
+}
+async function imprimirGuia(id){
+  const o=ordenDe(id); if(!o) return;
+  const w=window.open("","_blank");
+  if(!w){ alert("El navegador bloqueó la ventana para imprimir. Permití las ventanas emergentes para esta página y volvé a tocar 🖨️."); return; }
+  try{ w.document.write('<!DOCTYPE html><meta charset="UTF-8"><title>Preparando la guía…</title><p style="font:16px -apple-system,Segoe UI,sans-serif;padding:40px;color:#3b424d">⏳ Preparando la guía del pedido #'+esc(o.orden)+'…</p>'); }catch(e){}
+  try{
+    const g=await obtenerGuia(id);
+    if(!g){
+      w.close();
+      alert(`No encontré el archivo de la guía de la orden #${o.orden} en esta computadora ni en la nube.\n\nSubila otra vez con el botón 🏷️ (Reemplazar) y ya se puede imprimir desde cualquier computadora.`);
+      return;
+    }
+    const img=await guiaImagen(g);
+    w.document.open(); w.document.write(htmlImpresion(o, img)); w.document.close();
+  }catch(e){
+    console.error(e);
+    try{ w.document.body.innerHTML='<p style="font:16px sans-serif;padding:40px;color:#b71c1c">⚠️ No se pudo preparar la guía: '+esc(e && e.message || e)+'</p>'; }catch(x){ alert("No se pudo preparar la guía: "+(e && e.message || e)); }
+  }
+}
+let imId=null;
+function ofrecerImprimir(id){
+  const o=ordenDe(id); if(!o) return;
+  imId=id;
+  $("imTxt").innerHTML=`Se guardó la guía${o.guiaNum?` <b>${esc(o.guiaNum)}</b>`:""} en la orden <b>#${esc(o.orden)}</b> · ${esc(o.nombre)}.<br>¿Querés imprimirla ya con la plantilla DJI (2 copias en una hoja carta)?`;
+  $("imModal").classList.add("show");
+}
+function cerrarIm(){ $("imModal").classList.remove("show"); imId=null; }
+$("imOk").addEventListener("click",()=>{ const id=imId; cerrarIm(); if(id) imprimirGuia(id); });
+$("imModal").addEventListener("click",e=>{ if(e.target.id==="imModal") cerrarIm(); });
 
 // ---------- Google Drive (Apps Script de la tienda) ----------
 const driveListo = () => !!(aj.drive.ok && aj.drive.url && aj.drive.clave);
@@ -866,10 +1096,8 @@ function textoWa(o){
       return pick
         ? `¡Hola ${n}! 👋 Le saludamos de DJI Store Guatemala. Recibimos su pedido online ${num}: ${prods}. Le avisamos en cuanto esté listo para recogerlo en ${tienda}. 😊`
         : `¡Hola ${n}! 👋 Le saludamos de DJI Store Guatemala. Recibimos su pedido online ${num}: ${prods}. Ya lo estamos preparando y le avisamos cuando salga con Forza. 😊`;
-    case "guia":
-      return `¡Hola ${n}! 👋 Su pedido online ${num} (${prods}) ya está empacado y sale con Forza 🚚.${o.guiaNum?` Su número de guía es *${o.guiaNum}*.`:""}`;
-    case "enviado":
-      return `¡Hola ${n}! 👋 Su pedido online ${num} (${prods}) ya fue enviado por Forza 🚚.${o.guiaNum?` Su número de guía es *${o.guiaNum}*.`:""} ¡Gracias por su compra!`;
+    case "guia": case "empacado":
+      return `¡Hola ${n}! 👋 Su pedido online ${num} (${prods}) ya está empacado y sale con Forza 🚚.${o.guiaNum?` Su número de guía es *${o.guiaNum}*.`:""} ¡Gracias por su compra!`;
     case "listo":
       return `¡Hola ${n}! 👋 ¡Su pedido online ${num} (${prods}) ya está listo! 🎉 Puede pasar a recogerlo a ${tienda}.`+(o.recibeNombre?` Lo recoge *${o.recibeNombre}* presentando su DPI.`:" Por favor traiga su DPI.");
     default:
@@ -984,7 +1212,9 @@ document.addEventListener("click", async e=>{
 
 function render(){
   const R=datos.ordenes;
-  ["porFacturar","porEnviar","paraRecoger","enCamino"].forEach(k=>$("k-"+k).textContent=R.filter(FILTROS[k].f).length);
+  ["porFacturar","porEmpacar","paraRecoger"].forEach(k=>$("k-"+k).textContent=R.filter(FILTROS[k].f).length);
+  const hoy=hoyISO(), diaLocal=ts=>{ const d=new Date(ts); return isNaN(d) ? "" : d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+  $("k-terminados").textContent=R.filter(o=>FILTROS.terminados.f(o) && diaLocal(o.pasos[o.estado])===hoy).length;
 
   // meses
   const meses=[...new Set(R.map(o=>(o.fecha||o.creado.slice(0,10)).slice(0,7)))].sort().reverse();
@@ -1014,7 +1244,7 @@ function render(){
         ${o.nota?`<div>📝 ${esc(o.nota)}</div>`:""}</div>
       <button type="button" class="fac-tog" aria-expanded="${facAbierta(o)}" onclick="toggleFac(${jsq(o.id)})">🧾 Datos para facturar <small>· nombre, NIT, teléfono, correo</small><span class="fle">▾</span></button>
       <div class="fac"${facAbierta(o)?"":" hidden"}>${htmlFactura(o)}</div>
-      <div class="docs">${docs.map(t=>htmlDoc(o,t)).join("")}</div>
+      <div class="docs">${docs.map(t=>htmlDoc(o,t)).join("")}${o.archivos.guia?`<button class="doc imp" onclick="imprimirGuia(${jsq(o.id)})" title="Imprimir la guía con la plantilla DJI">🖨️ Imprimir guía</button>`:""}</div>
       ${htmlPasos(o)}
     </div>`;
   }).join("");
@@ -1042,6 +1272,7 @@ function borrarOrden(id){
   if(!confirm(`¿Borrar la orden #${o.orden} de ${o.nombre}?\n\nSe quita de la lista (los archivos que ya están en Google Drive NO se borran).`)) return;
   datos.ordenes=datos.ordenes.filter(x=>x.id!==id);
   Object.keys(DOCS).forEach(t=>{ IDB.del(id+"|"+t).catch(()=>{}); pendLocal.delete(id+"|"+t); });
+  borrarCopia(id);
   if(detId===id) cerrarDetalle(true);
   guardar(); render(); toast("Orden borrada");
 }
@@ -1061,8 +1292,9 @@ async function subirDocA(id, tipo, f){
   const o=ordenDe(id); if(!o) return;
   if(o.archivos[tipo] && (o.archivos[tipo].url || o.archivos[tipo].pendiente) && !confirm(`La orden #${o.orden} ya tiene ${tipo==="guia"?"guía":tipo}. ¿Reemplazarla por "${f.name}"?`)) return;
   let numero="";
+  if(tipo==="guia" && !esPdf(f)) numero=LectorOrden.numeroGuia("", f.name);
   if(tipo!=="orden" && esPdf(f)){
-    try{ const r=await leerArchivo(f); numero = tipo==="guia" ? LectorOrden.numeroGuia(r.texto) : LectorOrden.numeroFactura(r.texto); }catch(e){}
+    try{ const r=await leerArchivo(f); numero = tipo==="guia" ? LectorOrden.numeroGuia(r.texto, f.name) : LectorOrden.numeroFactura(r.texto); }catch(e){}
   }
   await ponerArchivo(id, tipo, f, {numero: (tipo==="factura"&&o.facturaNum)||(tipo==="guia"&&o.guiaNum) ? "" : numero});
   toast(`${DOCS[tipo].ic} ${DOCS[tipo].l} guardada en la orden #${o.orden}`+(driveListo()?"":" (se sube a Drive al conectarlo)"));
@@ -1100,7 +1332,7 @@ function asignarDocumento(f, texto, tipo){
 function pintarAsTipo(){
   document.querySelectorAll("#asTipo button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===asEstado.tipo));
   $("asNumL").textContent = asEstado.tipo==="guia" ? "N.º de guía (opcional)" : "N.º de factura (opcional)";
-  $("asNum").value = asEstado.tipo==="guia" ? LectorOrden.numeroGuia(asEstado.texto) : LectorOrden.numeroFactura(asEstado.texto);
+  $("asNum").value = asEstado.tipo==="guia" ? LectorOrden.numeroGuia(asEstado.texto, asEstado.f.name) : LectorOrden.numeroFactura(asEstado.texto);
 }
 function pintarCands(){
   const qs=fold($("asQ").value).split(" ").filter(Boolean);
@@ -1212,6 +1444,7 @@ function pintarDocs(){
     if(f && f.url) est=`<span class="ok">✓ En Google Drive · ${esc(f.nombre)}</span>`;
     else if(f && f.pendiente) est=`<span class="pend">⏳ ${pendLocal.has(o.id+"|"+t)?(driveListo()?"Subiendo a Drive…":"Guardado en esta computadora: se sube al conectar Drive"):"Se sube desde la computadora donde se cargó"} · ${esc(f.nombre)}</span>`;
     return `<div class="drow"><span class="di">${d.ic}</span><div class="dt"><b>${d.l}${t==="guia"&&o.modo==="pickup"?" <small style=\"color:var(--muted);font-weight:600\">(no hace falta en Pick Up)</small>":""}</b>${est}</div>
+      ${t==="guia"&&f?`<button class="btn dark sm" onclick="imprimirGuia(${jsq(o.id)})">🖨️ Imprimir</button>`:""}
       ${f&&f.url?`<a class="btn ghost sm" href="${esc(f.url)}" target="_blank" rel="noopener">Abrir</a>`:""}
       <button class="btn ${f?"ghost":"dark"} sm" data-doc="${t}" data-id="${esc(o.id)}" onclick="clicDoc(event)">${f?"Reemplazar":"Subir"}</button></div>`;
   }).join("");
@@ -1416,7 +1649,8 @@ $("drModal").addEventListener("click",e=>{ if(e.target.id==="drModal") cerrarDri
 document.querySelectorAll(".kpi").forEach(k=>k.addEventListener("click",()=>{ filtro=k.dataset.f; render(); }));
 document.addEventListener("keydown",e=>{
   if(e.key!=="Escape") return;
-  if($("asModal").classList.contains("show")) cerrarAs(false);
+  if($("imModal").classList.contains("show")) cerrarIm();
+  else if($("asModal").classList.contains("show")) cerrarAs(false);
   else if($("detModal").classList.contains("show")) cerrarDetalle();
   else if($("drModal").classList.contains("show")) cerrarDrive();
 });
