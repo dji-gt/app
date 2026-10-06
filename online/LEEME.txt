@@ -42,7 +42,10 @@ Sale la misma plantilla de siempre: hoja carta horizontal con 2 copias
 del formulario "DJI E-Commerce Envío" y la guía en medio.
 - Marca sola STANDARD o NEXT DAY según la guía (se puede cambiar arriba).
 - Arriba también se elige 2 copias o 1, y si lleva el número de pedido.
-- En la ventana de imprimir: tamaño Carta, horizontal, escala 100 %.
+- En la ventana de imprimir: tamaño Carta, orientación VERTICAL (la normal),
+  escala 100 %. La hoja ya sale girada: en papel queda igual que la
+  plantilla (2 guías, se corta por la mitad). En Safari conviene quitar
+  "Imprimir encabezados y pies de página".
 - Se puede volver a imprimir cuando quieras, desde cualquier computadora.
 
 PASOS DE CADA ORDEN (se tocan en la tarjeta)

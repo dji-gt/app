@@ -398,10 +398,10 @@
 <div class="velo" id="velo">Soltá el archivo aquí</div>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261006c"></script>
+<script src="../nube.js?v=20261006d"></script>
 <script src="../recepcion/lib/exceljs.min.js"></script>
-<script src="../recepcion/catalog.js?v=20261006c"></script>
-<script src="lector.js?v=20261006c"></script>
+<script src="../recepcion/catalog.js?v=20261006d"></script>
+<script src="lector.js?v=20261006d"></script>
 <script>
 /* ============================================================
    Pedidos Online — las órdenes que llegan por correo (PDF):
@@ -907,10 +907,13 @@ function htmlImpresion(o, img){
       <div class="ord" style="top:${yOrden.toFixed(1)}pt">Pedido online #${esc(o.orden)} · ${esc(o.nombre)}</div>
     </div>`;
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Guía ${esc(o.guiaNum||"")} · Pedido #${esc(o.orden)} · ${esc(o.nombre)}</title><style>
-  @page{size:11in 8.5in;margin:0}
+  /* Safari no respeta la hoja horizontal: se imprime en carta VERTICAL (la normal) con la hoja girada,
+     que en papel es exactamente lo mismo que la plantilla horizontal. */
+  @page{size:8.5in 11in;margin:0}
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#fff;font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-  .hoja{position:relative;width:792pt;height:612pt;overflow:hidden;background:#fff}
+  .pagina{position:relative;width:792pt;height:612pt;overflow:hidden;background:#fff}
+  .hoja{position:absolute;left:0;top:0;width:792pt;height:612pt;overflow:hidden;background:#fff}
   .f{position:absolute;top:10.1pt;width:396pt;height:612pt}
   .f.i{left:21.2pt}.f.d{left:376.6pt}
   .f .fondo{position:absolute;left:0;top:0;width:396pt;height:612pt}
@@ -929,8 +932,13 @@ function htmlImpresion(o, img){
   .barra .imp{background:#0e9f6e;border-color:#0e9f6e;font-size:14px;padding:8px 16px}
   .barra label{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
   .barra small{color:rgba(255,255,255,.65);width:100%;text-align:center}
-  @media screen{body{background:#d9dde3}.hoja{margin:16px auto 40px;box-shadow:0 8px 28px rgba(0,0,0,.2)}}
-  @media print{.barra{display:none!important}html,body{background:#fff}}
+  @media screen{body{background:#d9dde3}.pagina{margin:16px auto 40px;box-shadow:0 8px 28px rgba(0,0,0,.2)}}
+  @media print{
+    .barra{display:none!important}
+    html,body{background:#fff;width:612pt;height:792pt;overflow:hidden}
+    .pagina{width:612pt;height:792pt;margin:0;box-shadow:none;break-inside:avoid;page-break-inside:avoid}
+    .hoja{transform-origin:0 0;transform:translate(612pt,0) rotate(90deg)}
+  }
 </style></head><body class="${serv}">
   <div class="barra">
     <b>Pedido #${esc(o.orden)} · ${esc(o.nombre)}</b>
@@ -938,9 +946,9 @@ function htmlImpresion(o, img){
     <span class="grupo">Copias: <button data-c="2">2 (como la plantilla)</button><button data-c="1">1</button></span>
     <label><input type="checkbox" id="vOrden" checked> N.º de pedido</label>
     <button class="imp" onclick="window.print()">🖨️ Imprimir</button>
-    <small>En la ventana de imprimir: tamaño Carta, orientación horizontal y escala 100 %.</small>
+    <small>En la ventana de imprimir: tamaño Carta, orientación vertical (la normal) y escala 100 %. En Safari, quitá “Imprimir encabezados y pies de página”.</small>
   </div>
-  <div class="hoja">${copia("i")}${copia("d")}</div>
+  <div class="pagina"><div class="hoja">${copia("i")}${copia("d")}</div></div>
 <script>
   var B=document.body;
   function pintar(){
