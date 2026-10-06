@@ -398,10 +398,10 @@
 <div class="velo" id="velo">Soltá el archivo aquí</div>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261006e"></script>
+<script src="../nube.js?v=20261006f"></script>
 <script src="../recepcion/lib/exceljs.min.js"></script>
-<script src="../recepcion/catalog.js?v=20261006e"></script>
-<script src="lector.js?v=20261006e"></script>
+<script src="../recepcion/catalog.js?v=20261006f"></script>
+<script src="lector.js?v=20261006f"></script>
 <script>
 /* ============================================================
    Pedidos Online — las órdenes que llegan por correo (PDF):
@@ -895,76 +895,107 @@ function cajaGuia(img){
   return {x, y, w, h};
 }
 function htmlImpresion(o, img){
+  // La hoja se dibuja como UNA imagen (canvas a 300 dpi), ya girada para carta vertical, y se imprime con
+  // medidas fijas en pulgadas. Así Safari no la agranda ni la corta: imprime la imagen del tamaño indicado.
   const fondo=new URL("plantilla-envio.svg"+(VER?"?v="+encodeURIComponent(VER):""), location.href).href;
   const b=cajaGuia(img), serv=servicioDe(o, img.texto);
-  const yOrden=Math.min(b.y+b.h+14, PL.libre.y1-4);
-  const check=`<svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5.5 5.5L20 6"/></svg>`;
-  const copia=lado=>`<div class="f ${lado}">
-      <img class="fondo" src="${esc(fondo)}" alt="">
-      <img class="g" src="${img.url}" alt="Guía" style="left:${b.x.toFixed(1)}pt;top:${b.y.toFixed(1)}pt;width:${b.w.toFixed(1)}pt;height:${b.h.toFixed(1)}pt">
-      <span class="chk n" style="left:${(PL.casillas.next.x-6.5).toFixed(1)}pt;top:${(PL.casillas.next.y-6.5).toFixed(1)}pt">${check}</span>
-      <span class="chk s" style="left:${(PL.casillas.std.x-6.5).toFixed(1)}pt;top:${(PL.casillas.std.y-6.5).toFixed(1)}pt">${check}</span>
-      <div class="ord" style="top:${yOrden.toFixed(1)}pt">Pedido online #${esc(o.orden)} · ${esc(o.nombre)}</div>
-    </div>`;
+  let tam=0.92; try{ const t=parseFloat(localStorage.getItem("online_dji_tam_guia")); if(t>=0.7 && t<=1) tam=t; }catch(e){}
+  const D={fondo, guia:img.url, b, yOrden:Math.min(b.y+b.h+14, PL.libre.y1-4), orden:`Pedido online #${o.orden} · ${o.nombre}`, serv, tam,
+    formIzq:PL.formIzq, formDer:PL.formDer, casillas:PL.casillas,
+    corte:{x0:44, y0:34.5, x1:747.5, x1una:391.5, y1:597.5}};   // solo la parte con dibujo de la plantilla (pt)
+  const json=JSON.stringify(D).replace(/</g,"\\u003c");
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Guía ${esc(o.guiaNum||"")} · Pedido #${esc(o.orden)} · ${esc(o.nombre)}</title><style>
-  /* Safari no respeta la hoja horizontal ni "sin márgenes": se imprime en carta VERTICAL (la normal)
-     con la hoja girada (en papel queda igual que la plantilla horizontal). Solo se imprime la parte con
-     dibujo (556 × 696 pt) y se centra en el espacio que deje la impresora, al 100 % (la guía no se achica). */
   @page{size:8.5in 11in;margin:0.25in}
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#fff;font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-  .pagina{position:relative;width:792pt;height:612pt;overflow:hidden;background:#fff}
-  .hoja{position:absolute;left:0;top:0;width:792pt;height:612pt;overflow:hidden;background:#fff}
-  .f{position:absolute;top:10.1pt;width:396pt;height:612pt}
-  .f.i{left:21.2pt}.f.d{left:376.6pt}
-  .f .fondo{position:absolute;left:0;top:0;width:396pt;height:612pt}
-  .f .g{position:absolute;image-rendering:auto}
-  .f .chk{position:absolute;width:13pt;height:13pt;display:none}
-  .f .chk svg{width:100%;height:100%;display:block}
-  body.next .chk.n,body.std .chk.s{display:block}
-  .f .ord{position:absolute;left:34pt;width:326pt;text-align:center;font-size:9pt;font-weight:700;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  body.sin-orden .ord{display:none}
-  body.una .f.d{display:none}
   .barra{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:center;background:#111318;color:#fff;padding:10px 14px;font-size:13.5px}
   .barra b{font-size:14px}
   .grupo{display:inline-flex;gap:4px;align-items:center}
   .barra button{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:7px 11px;font:700 13px inherit;cursor:pointer}
   .barra button[aria-pressed="true"]{background:#2563eb;border-color:#2563eb}
-  .barra .imp{background:#0e9f6e;border-color:#0e9f6e;font-size:14px;padding:8px 16px}
+  .barra .imp-btn{background:#0e9f6e;border-color:#0e9f6e;font-size:14px;padding:8px 16px}
   .barra label{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
   .barra small{color:rgba(255,255,255,.65);width:100%;text-align:center}
-  @media screen{body{background:#d9dde3}.pagina{margin:16px auto 40px;box-shadow:0 8px 28px rgba(0,0,0,.2)}}
-  @media print{
-    .barra{display:none!important}
-    html,body{background:#fff;margin:0;padding:0}
-    .centro{display:flex;align-items:center;justify-content:center;width:100%;height:100vh;overflow:hidden}
-    .pagina{flex:none;width:560pt;height:700pt;margin:0;box-shadow:none;break-inside:avoid;page-break-inside:avoid}
-    .hoja{transform-origin:0 0;transform:translate(596.0pt,-45.8pt) rotate(90deg)}
-  }
-</style></head><body class="${serv}">
+  #msg{font-size:15px;color:#3b424d;text-align:center;padding:30px}
+  #imp{display:none}
+  @media screen{body{background:#d9dde3}#vista{display:block;margin:16px auto 40px;width:min(1040px,calc(100% - 32px));height:auto;background:#fff;box-shadow:0 8px 28px rgba(0,0,0,.2)}}
+  @media print{.barra,#vista,#msg{display:none!important}html,body{background:#fff}#imp{display:block;margin-left:auto;margin-right:auto;page-break-inside:avoid;break-inside:avoid}}
+</style></head><body>
   <div class="barra">
     <b>Pedido #${esc(o.orden)} · ${esc(o.nombre)}</b>
     <span class="grupo">Servicio: <button data-s="next">Next Day</button><button data-s="std">Standard</button><button data-s="">Sin marcar</button></span>
     <span class="grupo">Copias: <button data-c="2">2 (como la plantilla)</button><button data-c="1">1</button></span>
+    <span class="grupo">Tamaño: <button data-t="0.95">Grande</button><button data-t="0.92">Normal</button><button data-t="0.86">Chico</button></span>
     <label><input type="checkbox" id="vOrden" checked> N.º de pedido</label>
-    <button class="imp" onclick="window.print()">🖨️ Imprimir</button>
-    <small>En la ventana de imprimir: tamaño Carta, orientación vertical (la normal) y escala 100 %. En Safari, quitá “Imprimir encabezados y pies de página”.</small>
+    <button class="imp-btn" id="btnImp">🖨️ Imprimir</button>
+    <small>En la ventana de imprimir: tamaño Carta, orientación vertical (la normal) y escala 100 %. Si algo queda muy grande o muy chico, cambiá el Tamaño aquí arriba.</small>
   </div>
-  <div class="centro"><div class="pagina"><div class="hoja">${copia("i")}${copia("d")}</div></div></div>
+  <div id="msg">⏳ Preparando la hoja…</div>
+  <canvas id="vista" width="10" height="10"></canvas>
+  <img id="imp" alt="Guía para imprimir">
+  <script type="application/json" id="datos">${json}<\/script>
 <script>
-  var B=document.body;
-  function pintar(){
-    var s=B.classList.contains("next")?"next":(B.classList.contains("std")?"std":"");
-    document.querySelectorAll("[data-s]").forEach(function(x){ x.setAttribute("aria-pressed", String(x.getAttribute("data-s")===s)); });
-    var c=B.classList.contains("una")?"1":"2";
-    document.querySelectorAll("[data-c]").forEach(function(x){ x.setAttribute("aria-pressed", String(x.getAttribute("data-c")===c)); });
+(function(){
+  var D=JSON.parse(document.getElementById("datos").textContent);
+  var est={serv:D.serv, una:false, orden:true, tam:D.tam};
+  var PX_IMP=300/72, PX_VISTA=1.6, fondo=null, guia=null, url=null, listo=Promise.resolve();
+  var vista=document.getElementById("vista"), imp=document.getElementById("imp");
+  function cargar(src){ return new Promise(function(ok,mal){ var i=new Image(); i.onload=function(){ ok(i); }; i.onerror=function(){ mal(new Error("No se pudo cargar una imagen")); }; i.src=src; }); }
+  function medidas(){ var c=D.corte; return {W:(est.una?c.x1una:c.x1)-c.x0, H:c.y1-c.y0, Wfull:c.x1-c.x0}; }
+  function dibujar(ctx, k, girar){
+    var c=D.corte, m=medidas();
+    ctx.save();
+    if(girar){ ctx.translate(m.H*k,0); ctx.rotate(Math.PI/2); }
+    ctx.scale(k,k); ctx.translate(-c.x0,-c.y0);
+    ctx.imageSmoothingEnabled=true; try{ ctx.imageSmoothingQuality="high"; }catch(e){}
+    ctx.fillStyle="#fff"; ctx.fillRect(c.x0,c.y0,m.W,m.H);
+    (est.una?[D.formIzq]:[D.formIzq,D.formDer]).forEach(function(f){
+      ctx.save(); ctx.translate(f.x,f.y);
+      ctx.drawImage(fondo,0,0,396,612);
+      ctx.drawImage(guia,D.b.x,D.b.y,D.b.w,D.b.h);
+      var cas=est.serv==="next"?D.casillas.next:(est.serv==="std"?D.casillas.std:null);
+      if(cas){ ctx.save(); ctx.translate(cas.x-6.5,cas.y-6.5); ctx.scale(13/24,13/24); ctx.strokeStyle="#000"; ctx.lineWidth=4; ctx.lineCap="round"; ctx.lineJoin="round"; ctx.beginPath(); ctx.moveTo(4,12.5); ctx.lineTo(9.5,18); ctx.lineTo(20,6); ctx.stroke(); ctx.restore(); }
+      if(est.orden){ ctx.fillStyle="#111"; ctx.font="bold 9px -apple-system, Helvetica, Arial, sans-serif"; ctx.textAlign="center"; ctx.textBaseline="top"; var t=D.orden; while(ctx.measureText(t).width>326 && t.length>4) t=t.slice(0,-2)+"…"; ctx.fillText(t,197.9,D.yOrden); }
+      ctx.restore();
+    });
+    ctx.restore();
   }
-  document.querySelectorAll("[data-s]").forEach(function(x){ x.onclick=function(){ B.classList.remove("next","std"); if(x.getAttribute("data-s")) B.classList.add(x.getAttribute("data-s")); pintar(); }; });
-  document.querySelectorAll("[data-c]").forEach(function(x){ x.onclick=function(){ B.classList.toggle("una", x.getAttribute("data-c")==="1"); pintar(); }; });
-  document.getElementById("vOrden").onchange=function(e){ B.classList.toggle("sin-orden", !e.target.checked); };
+  function componer(){
+    var m=medidas();
+    vista.width=Math.round(m.W*PX_VISTA); vista.height=Math.round(m.H*PX_VISTA);
+    dibujar(vista.getContext("2d"), PX_VISTA, false);
+    var cv=document.createElement("canvas"); cv.width=Math.round(m.H*PX_IMP); cv.height=Math.round(m.W*PX_IMP);
+    dibujar(cv.getContext("2d"), PX_IMP, true);
+    // tamaño en papel (pt): ancho = alto de la hoja girada. Se centra en carta y siempre cabe en una hoja,
+    // aunque Safari ponga encabezado y pie de página (espacio útil de ~712 pt de alto).
+    var alto=m.Wfull*est.tam;
+    imp.style.width=(m.H*est.tam).toFixed(1)+"pt"; imp.style.height=(m.W*est.tam).toFixed(1)+"pt";
+    imp.style.marginTop=Math.max(0, Math.min((756-alto)/2, 711-alto)).toFixed(1)+"pt";
+    return new Promise(function(ok,mal){
+      try{
+        cv.toBlob(function(bl){
+          if(!bl){ mal(new Error("el navegador no pudo crear la imagen")); return; }
+          if(url) URL.revokeObjectURL(url); url=URL.createObjectURL(bl); imp.onload=function(){ ok(); }; imp.onerror=function(){ ok(); }; imp.src=url;
+        }, "image/png");
+      }catch(e){ mal(e); }
+    });
+  }
+  function pintar(){
+    [].forEach.call(document.querySelectorAll("[data-s]"),function(x){ x.setAttribute("aria-pressed", String(x.getAttribute("data-s")===est.serv)); });
+    [].forEach.call(document.querySelectorAll("[data-c]"),function(x){ x.setAttribute("aria-pressed", String(x.getAttribute("data-c")===(est.una?"1":"2"))); });
+    [].forEach.call(document.querySelectorAll("[data-t]"),function(x){ x.setAttribute("aria-pressed", String(Math.abs(parseFloat(x.getAttribute("data-t"))-est.tam)<0.001)); });
+  }
+  function cambio(){ pintar(); listo=listo.then(componer).catch(function(e){ alert("No se pudo preparar la hoja: "+e.message); }); }
+  [].forEach.call(document.querySelectorAll("[data-s]"),function(x){ x.onclick=function(){ est.serv=x.getAttribute("data-s"); cambio(); }; });
+  [].forEach.call(document.querySelectorAll("[data-c]"),function(x){ x.onclick=function(){ est.una=x.getAttribute("data-c")==="1"; cambio(); }; });
+  [].forEach.call(document.querySelectorAll("[data-t]"),function(x){ x.onclick=function(){ est.tam=parseFloat(x.getAttribute("data-t")); try{ localStorage.setItem("online_dji_tam_guia", String(est.tam)); }catch(e){} cambio(); }; });
+  document.getElementById("vOrden").onchange=function(e){ est.orden=e.target.checked; cambio(); };
+  document.getElementById("btnImp").onclick=function(){ listo.then(function(){ window.print(); }); };
   pintar();
-  var imgs=[].slice.call(document.images);
-  Promise.all(imgs.map(function(i){ return i.complete ? 1 : new Promise(function(r){ i.onload=i.onerror=r; }); })).then(function(){ setTimeout(function(){ window.focus(); window.print(); }, 350); });
+  listo=Promise.all([cargar(D.fondo),cargar(D.guia)]).then(function(r){ fondo=r[0]; guia=r[1]; return componer(); })
+    .then(function(){ document.getElementById("msg").remove(); window.__listo=true; setTimeout(function(){ window.focus(); window.print(); }, 350); })
+    .catch(function(e){ document.getElementById("msg").textContent="⚠️ No se pudo preparar la hoja: "+e.message; });
+})();
 <\/script></body></html>`;
 }
 async function imprimirGuia(id){
