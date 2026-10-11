@@ -179,6 +179,28 @@
   .msec p{margin:0 0 12px;font-size:13px;color:var(--muted)}
   .mrow{display:flex;gap:9px;flex-wrap:wrap}
 
+  /* ===== orden de servicio (Protection Plus) ===== */
+  .odsb{display:inline-flex;align-items:center;gap:6px;margin-top:10px;border:1.5px solid var(--violet-br);background:var(--violet-bg);color:#5b21b6;border-radius:10px;padding:7px 12px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit}
+  .odsb:hover{background:#ebe2fd;border-color:#c9b6f8}
+  .odsb small{font-size:12px;font-weight:700;color:#6d28d9}
+  .f-hint{margin-top:10px;font-size:13px;color:#5b21b6;background:var(--violet-bg);border:1px solid var(--violet-br);border-radius:10px;padding:9px 12px;font-weight:600;line-height:1.4}
+  .status .st-act{margin-left:auto;flex:none}
+  .modal.ancho{max-width:1120px;max-height:90vh}
+  .ods-body{display:grid;grid-template-columns:1fr;gap:18px;padding:6px 20px 18px;overflow:auto;min-height:0;flex:1}
+  .ods-hint{margin:12px 0 0;font-size:13px;color:var(--muted)}
+  .ods-prev .fl{margin-top:12px}
+  .ods-prev .hoja{background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:5%}
+  .ods-prev canvas{width:100%;height:auto;display:block}
+  .ods-acts{display:flex;gap:10px;justify-content:flex-end;align-items:center;padding:14px 20px;border-top:1px solid var(--line);flex-wrap:wrap;background:#fafbfc}
+  .ods-acts span{margin-right:auto;font-size:12.5px;color:var(--muted);font-weight:600}
+  .row3{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:10px}
+  @media(min-width:900px){
+    .ods-body{grid-template-columns:1fr 1fr;align-items:start}
+    .ods-prev{position:sticky;top:0}
+    .ods-prev .hoja{padding:16px;margin:0 auto;width:max(340px,min(100%,calc(.6 * (90vh - 250px) + 34px)))}  /* la hoja entera a la vista */
+  }
+  @media(max-width:720px){ .modal.ancho{max-height:none;height:100vh;height:100dvh;min-height:0} }
+
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--black);color:#fff;padding:11px 16px;border-radius:11px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:200;box-shadow:var(--shadow-lg);max-width:calc(100% - 32px)}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
@@ -197,6 +219,8 @@
     .ab-btn span{display:none}
     .ab-btn{padding:9px}
     .row2{grid-template-columns:1fr}
+    .row3{grid-template-columns:1fr 1fr}
+    .row3>div:first-child{grid-column:1/-1}
     .pasos{grid-template-columns:repeat(5,minmax(0,1fr))}
     .paso{font-size:10.5px;padding:6px 2px}
     .paso small{display:none}
@@ -232,6 +256,7 @@
 
         <span class="fl">¿Qué necesita?</span>
         <div class="seg" id="fTipo"></div>
+        <div class="f-hint" id="fOdsHint" hidden>📄 Protection Plus: al guardarlo, en la tarjeta queda la <b>Orden de servicio</b> (la hoja del Word) lista para revisar e imprimir.</div>
 
         <div class="f-sec">Equipo</div>
         <label class="fl" for="fProd">Producto</label>
@@ -259,8 +284,10 @@
           <div><label class="fl" for="fNom">Nombre</label><input class="in" id="fNom" placeholder="Nombre y apellido" autocomplete="off"></div>
           <div><label class="fl" for="fTel">Teléfono</label><input class="in" id="fTel" type="tel" inputmode="tel" placeholder="Ej: 5517-4104" autocomplete="off"></div>
         </div>
-        <label class="fl" for="fCorreo">Correo <i>(opcional)</i></label>
-        <input class="in" id="fCorreo" type="email" inputmode="email" autocomplete="off">
+        <div class="row2">
+          <div><label class="fl" for="fCorreo">Correo <i>(opcional)</i></label><input class="in" id="fCorreo" type="email" inputmode="email" autocomplete="off"></div>
+          <div><label class="fl" for="fNit">NIT <i>(opcional)</i></label><input class="in" id="fNit" placeholder="Ej: 1234567-8 o CF" autocomplete="off" spellcheck="false"></div>
+        </div>
 
         <div class="f-sec">Entrega del equipo</div>
         <div id="fLlegadaBox">
@@ -280,7 +307,7 @@
           <button class="btn primary" id="fGuardar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span id="fGuardarTxt">Guardar ingreso</span></button>
           <button class="btn ghost" id="fCancelar" hidden>Cancelar</button>
         </div>
-        <div class="status" id="status"><span class="ic"></span><span class="msg"></span></div>
+        <div class="status" id="status"><span class="ic"></span><span class="msg"></span><button type="button" class="btn dark sm st-act" id="stAct" hidden></button></div>
         <div class="save-ind"><span class="dot"></span><span id="saveTxt">Se guarda en este equipo</span></div>
       </div>
     </div>
@@ -317,12 +344,55 @@
     </div>
   </div>
 </div>
+<!-- ===== Modal: orden de servicio (el Word "Recepción de Producto") ===== -->
+<div class="modal-ov" id="odsModal">
+  <div class="modal ancho">
+    <div class="modal-h"><b>📄 Orden de servicio <span class="num" id="odsNum"></span></b><button class="modal-x" onclick="cerrarOds()" title="Cerrar">✕</button></div>
+    <div class="ods-body">
+      <div class="ods-form">
+        <p class="ods-hint">Es la hoja del Word <b>Recepción de Producto</b>. Se llena sola con lo del ingreso; lo que cambiés aquí se guarda en el ingreso y se ve en la vista previa de la hoja.</p>
+        <div class="row3">
+          <div><label class="fl" for="oFecha">Fecha</label><input class="in" id="oFecha" type="date"></div>
+          <div><label class="fl" for="oOds">ODS # <i>(opcional)</i></label><input class="in" id="oOds" autocomplete="off" spellcheck="false"></div>
+          <div><label class="fl" for="oCot">Cotización # <i>(opcional)</i></label><input class="in" id="oCot" autocomplete="off" spellcheck="false"></div>
+        </div>
+        <label class="fl" for="oNom">Nombre</label>
+        <input class="in" id="oNom" autocomplete="off">
+        <div class="row2">
+          <div><label class="fl" for="oNit">NIT</label><input class="in" id="oNit" placeholder="Ej: 1234567-8 o CF" autocomplete="off" spellcheck="false"></div>
+          <div><label class="fl" for="oTel">Tel</label><input class="in" id="oTel" type="tel" inputmode="tel" autocomplete="off"></div>
+        </div>
+        <label class="fl" for="oCorreo">Email</label>
+        <input class="in" id="oCorreo" type="email" inputmode="email" autocomplete="off">
+        <div class="row2">
+          <div><label class="fl" for="oMod">Modelo</label><input class="in" id="oMod" list="dlProd" autocomplete="off" spellcheck="false"></div>
+          <div><label class="fl" for="oSerie">S/N <i>(número de serie)</i></label><input class="in up" id="oSerie" autocomplete="off" spellcheck="false"></div>
+        </div>
+        <label class="fl" for="oRef">Línea debajo del modelo <i>(en el Word dice GTEC)</i></label>
+        <input class="in" id="oRef" autocomplete="off" spellcheck="false">
+        <label class="fl" for="oDet">Detalles <i>(la falla)</i></label>
+        <textarea class="in" id="oDet" rows="4" placeholder="Ej: Unidad no permite volar, marca error de comunicación con la batería…"></textarea>
+        <label class="fl" for="oRec">Se recibe</label>
+        <textarea class="in" id="oRec" rows="2" placeholder="Ej: Dron, protector gimbal, control, 3 baterías, cable de carga"></textarea>
+        <label class="fl" for="oObs">Observaciones <i>(cómo viene · opcional, si está vacío no sale)</i></label>
+        <textarea class="in" id="oObs" rows="2" placeholder="Ej: rayón en el brazo izquierdo"></textarea>
+      </div>
+      <div class="ods-prev"><span class="fl">Así sale en la hoja <i>(en papel van 2 copias iguales y los términos)</i></span><div class="hoja"><canvas id="odsVista" width="10" height="10"></canvas></div></div>
+    </div>
+    <div class="ods-acts">
+      <span id="odsGuardado">Se guarda solo al cerrar o imprimir</span>
+      <button class="btn ghost" onclick="cerrarOds()">Listo</button>
+      <button class="btn primary" id="odsImp">🖨️ Imprimir orden de servicio</button>
+    </div>
+  </div>
+</div>
 <input type="file" id="archivo" accept=".json,application/json" hidden>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261009b"></script>
+<script src="../nube.js?v=20261011a"></script>
 <script src="../recepcion/lib/exceljs.min.js"></script>
-<script src="../recepcion/catalog.js?v=20261009b"></script>
+<script src="../recepcion/catalog.js?v=20261011a"></script>
+<script src="orden-servicio.js?v=20261011a"></script>
 <script>
 /* ============================================================
    Garantías y Protection Plus — clientes que dejan (o van a
@@ -374,7 +444,10 @@ const tipoDe = k => TIPOS.find(t=>t.k===k)||TIPOS[0];
 const pasoDe = k => PASOS.find(p=>p.k===k)||PASOS[1];
 let tToast;
 function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tToast); tToast=setTimeout(()=>t.classList.remove("show"),2600); }
-function setStatus(type,ic,msg){ const s=$("status"); s.className="status show "+type; s.querySelector(".ic").textContent=ic; s.querySelector(".msg").textContent=msg; }
+function setStatus(type,ic,msg,accion){
+  const s=$("status"); s.className="status show "+type; s.querySelector(".ic").textContent=ic; s.querySelector(".msg").textContent=msg;
+  const b=$("stAct"); b.hidden=!accion; b.onclick=accion?accion.fn:null; if(accion) b.textContent=accion.txt;
+}
 
 // ---------- guardado ----------
 function limpiarRegistro(r){
@@ -407,6 +480,61 @@ function cargarVendedores(){
 function guardarLocal(){ try{ localStorage.setItem(LS_DATOS,JSON.stringify(datos)); }catch(e){ toast("⚠️ No se pudo guardar en este navegador"); } }
 function guardar(){ guardarLocal(); subirNube(); }
 
+// ---------- orden de servicio: NIT, N.º de ODS y cotización, fecha y la línea debajo del modelo ----------
+// Van en su propia colección ("ordenes_servicio", una por ingreso) y no dentro del ingreso:
+// así una computadora que todavía tenga abierta la versión anterior no los borra al guardar.
+const LS_ODS = "garantias_dji_ods_v1";     // {idIngreso: {nit, ods, cot, ref, fecha, actualizado}}
+const REF_INICIAL = "GTEC";
+const CAMPOS_ODS = ["nit","ods","cot","ref","fecha"];
+let odsDatos = {}, nubeOds = null, odsSinSubir = false;
+function limpiarOds(x){
+  if(!x || typeof x!=="object") return null;
+  const S=v=>String(v??"").trim(), f=S(x.fecha);
+  const o={nit:S(x.nit), ods:S(x.ods), cot:S(x.cot), fecha:/^\d{4}-\d{2}-\d{2}$/.test(f)?f:""};
+  if(typeof x.ref==="string") o.ref=S(x.ref);
+  if(x.actualizado) o.actualizado=S(x.actualizado);
+  return o;
+}
+function limpiarMapaOds(m){ const out={}; for(const id in (m||{})){ const o=limpiarOds(m[id]); if(o) out[id]=o; } return out; }
+function cargarOds(){ try{ odsDatos=limpiarMapaOds(JSON.parse(localStorage.getItem(LS_ODS)||"{}")); }catch(e){ odsDatos={}; } }
+function guardarOdsLocal(){ try{ localStorage.setItem(LS_ODS,JSON.stringify(odsDatos)); }catch(e){ toast("⚠️ No se pudo guardar en este navegador"); } }
+const odsDe = id => odsDatos[id] || {};
+function subirOds(){
+  if(!window.Nube || !Nube.conectado()) return;
+  if(nubeOds===null){ odsSinSubir=true; return; }
+  Nube.guardarColeccion("ordenes_servicio", odsDatos, nubeOds);
+}
+function setOds(id, campos){
+  const prev=odsDatos[id], nuevo=limpiarOds(Object.assign({}, prev||{}, campos));
+  if(prev ? CAMPOS_ODS.every(k=>(prev[k]??null)===(nuevo[k]??null)) : CAMPOS_ODS.every(k=>!nuevo[k])) return false;
+  nuevo.actualizado=new Date().toISOString();
+  odsDatos[id]=nuevo; guardarOdsLocal(); subirOds();
+  return true;
+}
+function borrarOds(id){ if(!odsDatos[id]) return; delete odsDatos[id]; guardarOdsLocal(); subirOds(); }
+function unirOds(nube, locales){
+  const out=limpiarMapaOds(nube);
+  for(const id in locales){ const l=locales[id], c=out[id]; if(!c || (l.actualizado||"")>(c.actualizado||"")) out[id]=l; }
+  return out;
+}
+async function conectarOds(){
+  const unido=await Nube.unirUnaVez("ordenes_servicio", async ()=>{
+    const nube=await Nube.leerColeccion("ordenes_servicio");
+    await Nube.guardarColeccion("ordenes_servicio", unirOds(nube, odsDatos), nube);
+  });
+  if(!unido && localStorage.getItem("dji_nube_unido_ordenes_servicio")!==Nube.clave()){
+    addEventListener("online", ()=>conectarOds(), {once:true});
+    return;
+  }
+  Nube.escucharColeccion("ordenes_servicio",(mapa)=>{
+    let m=limpiarMapaOds(mapa);
+    nubeOds=mapa;
+    if(odsSinSubir){ odsSinSubir=false; m=unirOds(mapa, odsDatos); Nube.guardarColeccion("ordenes_servicio", m, mapa); }
+    if(Nube.estable(m)===Nube.estable(odsDatos)) return;
+    odsDatos=m; guardarOdsLocal(); render();
+  });
+}
+
 // ---------- nube (todas las computadoras conectadas ven lo mismo) ----------
 let nubeReg=null, cambiosSinSubir=false;
 const mapaRegistros = lista => { const m={}; lista.forEach(r=>{ m[r.id]=r; }); return m; };
@@ -429,6 +557,7 @@ async function conectarNube(){
   $("saveTxt").textContent="Se guarda en la nube";
   $("respaldoTxt").textContent="Los ingresos ya se guardan en la nube y los ven todas las computadoras conectadas. El respaldo sirve para tener una copia en un archivo.";
   if(!await Nube.iniciar()) return;
+  conectarOds();
   const unido=await Nube.unirUnaVez("garantias", async ()=>{
     const nube=await Nube.leerColeccion("garantias");
     await Nube.guardarColeccion("garantias", mapaRegistros(unirRegistros(nube, datos.registros)), nube);
@@ -459,6 +588,7 @@ addEventListener("storage",e=>{ if(e.key===LS_CLIENTES){ cargarVendedores(); ren
 // ============================================================
 function renderTipos(){
   $("fTipo").innerHTML=TIPOS.map(t=>`<button type="button" aria-pressed="${t.k===tipo}" onclick="elegirTipo('${t.k}')">${t.ic} ${t.l}</button>`).join("");
+  $("fOdsHint").hidden = tipo!=="protection";
 }
 function elegirTipo(k){ tipo=k; renderTipos(); }
 function renderLlegada(){
@@ -486,7 +616,7 @@ function productoCanonico(t){ const k=fold(t); return [...PRODUCTOS_DJI, ...dato
 const CAMPOS={fProd:"producto",fSerie:"serie",fMotivo:"motivo",fAcc:"accesorios",fNota:"nota",fCompra:"compra",fFactura:"factura",fNom:"nombre",fTel:"telefono",fCorreo:"correo"};
 function limpiarForm(){
   editId=null; tipo="garantia"; llegada=null;
-  Object.keys(CAMPOS).forEach(id=>$(id).value=""); $("fCita").value=""; $("fCita2").value="";
+  Object.keys(CAMPOS).forEach(id=>$(id).value=""); $("fNit").value=""; $("fCita").value=""; $("fCita2").value="";
   try{ const u=localStorage.getItem(LS_ULTIMO); registro=(u && vendedores.includes(u)) ? u : null; }catch(e){ registro=null; }
   $("fcard").classList.remove("editing");
   $("fTitle").textContent="Nuevo ingreso";
@@ -505,27 +635,30 @@ function guardarIngreso(){
   if(!editId && !llegada){ setStatus("warn","📥","Indicá si ya dejó el equipo o viene después."); return; }
   if(!editId && llegada==="cita" && !$("fCita").value){ setStatus("warn","📅","Elegí el día en que viene a dejarlo."); $("fCita").focus(); return; }
   if(!registro){ setStatus("warn","🙋","Elegí quién lo está registrando."); return; }
-  const ahora=new Date().toISOString();
+  const ahora=new Date().toISOString(), nit=$("fNit").value.trim();
   if(editId){
     const r=datos.registros.find(x=>x.id===editId);
-    if(r){ Object.assign(r,f,{tipo,registro,pp:tipo==="protection",actualizado:ahora}); r.cita=$("fCita2").value; }
+    if(r){ Object.assign(r,f,{tipo,registro,pp:tipo==="protection",actualizado:ahora}); r.cita=$("fCita2").value; setOds(r.id,{nit}); }
     guardar(); limpiarForm(); render(); renderDatalist();
-    setStatus("ok","✔","Cambios guardados."); return;
+    setStatus("ok","✔","Cambios guardados.", r && r.tipo==="protection" ? {txt:"📄 Orden de servicio", fn:()=>abrirOds(r.id)} : null); return;
   }
   const numero=datos.registros.reduce((m,x)=>Math.max(m,x.numero||0),0)+1;
   const r=Object.assign({id:nuevoId(),numero,fecha:ahora,tipo,registro,estado:llegada,cita:llegada==="cita"?$("fCita").value:"",pasos:{[llegada]:ahora}},f);
   r.pp = tipo==="protection";
   datos.registros.push(limpiarRegistro(r));
+  if(nit) setOds(r.id,{nit});
   guardar();
   const reg=registro; limpiarForm(); registro=reg; renderVendedoresForm();
   render(); renderDatalist();
-  setStatus("ok","✔",`Listo, quedó anotado: ${numTxt(numero)} · ${r.producto} de ${r.nombre}.`+(r.estado==="recibido"?" Podés imprimir la boleta desde la lista.":""));
+  const pp=r.tipo==="protection";
+  setStatus("ok","✔",`Listo, quedó anotado: ${numTxt(numero)} · ${r.producto} de ${r.nombre}.`+(r.estado==="recibido"?(pp?" Ya podés llenar e imprimir la orden de servicio.":" Podés imprimir la boleta desde la lista."):""),
+    pp ? {txt:"📄 Orden de servicio", fn:()=>abrirOds(r.id)} : null);
 }
 function editarIngreso(id){
   const r=datos.registros.find(x=>x.id===id); if(!r) return;
   editId=id; tipo=r.tipo;
   for(const fid in CAMPOS) $(fid).value=r[CAMPOS[fid]]||"";
-  $("fCita2").value=r.cita||"";
+  $("fCita2").value=r.cita||""; $("fNit").value=odsDe(id).nit||"";
   registro=r.registro||null;
   renderTipos(); renderVendedoresForm();
   $("fLlegadaBox").hidden=true; $("fCitaEdit").hidden=false;
@@ -541,7 +674,8 @@ function borrarIngreso(id){
   if(!confirm(`¿Borrar ${numTxt(r.numero)} (${r.producto} de ${r.nombre})? No se puede deshacer.`)) return;
   datos.registros=datos.registros.filter(x=>x.id!==id);
   if(editId===id) limpiarForm();
-  guardar(); render(); renderDatalist(); toast("Ingreso borrado");
+  if(odsId===id) cerrarOds(true);
+  guardar(); borrarOds(id); render(); renderDatalist(); toast("Ingreso borrado");
 }
 function setPaso(id,k){
   const r=datos.registros.find(x=>x.id===id); if(!r || r.estado===k) return;
@@ -564,7 +698,8 @@ function filtrados(sinEstado){
     if(!sinEstado && !pasaEstado(r,filtro)) return false;
     if(filtroTipo && r.tipo!==filtroTipo) return false;
     if(qs.length){
-      const k=fold([r.nombre,r.producto,r.serie,r.motivo,r.registro,r.nota,r.accesorios,r.factura,numTxt(r.numero),tipoDe(r.tipo).l].join(" "))+" "+soloDigitos(r.telefono);
+      const o=odsDe(r.id);
+      const k=fold([r.nombre,r.producto,r.serie,r.motivo,r.registro,r.nota,r.accesorios,r.factura,numTxt(r.numero),tipoDe(r.tipo).l,o.nit,o.ods,o.cot].join(" "))+" "+soloDigitos(r.telefono);
       if(!qs.every(q=>k.includes(q))) return false;
     }
     return true;
@@ -623,6 +758,7 @@ function render(){
         ${r.nota?`<div><b>Notas:</b> ${esc(r.nota)}</div>`:""}
         ${compra?`<div><b>Compra:</b> ${compra}</div>`:""}
       </div>
+      ${r.tipo==="protection"?`<button class="odsb" onclick="abrirOds(${jsq(r.id)})" title="Ver, completar e imprimir la orden de servicio">📄 Orden de servicio${odsDe(r.id).ods?` <small>· ODS# ${esc(odsDe(r.id).ods)}</small>`:""}</button>`:""}
       <div class="gc-meta">Registró <b>${esc(r.registro||"—")}</b> · ${esc(fechaBonita(r.fecha))}</div>
       <div class="pasos">${PASOS.map((p,i)=>`<button class="paso p-${p.k}${i===iAct?" actual":(i<iAct?" hecho":"")}" onclick="setPaso(${jsq(r.id)},'${p.k}')" title="${p.l}"><i>${p.ic}</i>${p.c}${r.pasos[p.k]?`<small>${fechaCorta(r.pasos[p.k]).slice(0,5)}</small>`:""}</button>`).join("")}</div>
     </div>`;
@@ -669,12 +805,173 @@ function imprimirBoleta(id){
 }
 
 // ============================================================
+//  ORDEN DE SERVICIO (Protection Plus) — el Word "Recepción de Producto"
+//  editable: se llena con lo del ingreso, se puede cambiar y se imprime
+//  igual que el Word (carta horizontal, 2 copias + hoja de términos).
+// ============================================================
+const ODS_CAMPOS={oFecha:"fecha",oOds:"ods",oCot:"cot",oNom:"nombre",oNit:"nit",oTel:"telefono",oCorreo:"correo",oMod:"producto",oSerie:"serie",oRef:"ref",oDet:"motivo",oRec:"accesorios",oObs:"nota"};
+const ODS_DEL_INGRESO=["nombre","telefono","correo","producto","serie","motivo","accesorios","nota"];
+let odsId=null, odsInicial="", odsLogo=null, odsLogoP=null, odsRaf=0;
+function ymdLocal(iso){ const d=new Date(iso); if(isNaN(d)) return hoyISO(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function valoresOds(r){
+  const o=odsDe(r.id), v={};
+  ODS_DEL_INGRESO.forEach(k=>v[k]=r[k]||"");
+  return Object.assign(v,{fecha:o.fecha||ymdLocal((r.pasos&&r.pasos.recibido)||r.fecha), ods:o.ods||"", cot:o.cot||"", nit:o.nit||"", ref:typeof o.ref==="string"?o.ref:REF_INICIAL});
+}
+function leerOdsForm(){ const v={}; for(const id in ODS_CAMPOS) v[ODS_CAMPOS[id]]=$(id).value.trim(); v.serie=v.serie.toUpperCase(); return v; }
+// lo que se escribe en la hoja
+function hojaOds(v){
+  return {fecha:v.fecha?ymdCorto(v.fecha):"", nombre:v.nombre, nit:v.nit, tel:telBonito(v.telefono), correo:v.correo, modelo:v.producto, serie:v.serie,
+    ref:v.ref, detalles:v.motivo, recibe:v.accesorios, obs:v.nota, ods:v.ods, cot:v.cot};
+}
+function logoOds(){
+  if(!odsLogoP) odsLogoP=OrdenServicio.cargarLogo(new URL("../recepcion/logo.png", location.href).href).then(l=>{ odsLogo=l; });
+  return odsLogoP;
+}
+function abrirOds(id){
+  const r=datos.registros.find(x=>x.id===id); if(!r) return;
+  if(odsId && odsId!==id) guardarOdsForm();
+  odsId=id;
+  const v=valoresOds(r);
+  for(const fid in ODS_CAMPOS) $(fid).value=v[ODS_CAMPOS[fid]];
+  odsInicial=JSON.stringify(leerOdsForm());
+  $("odsNum").textContent=numTxt(r.numero)+" · "+r.nombre;
+  $("odsModal").classList.add("show"); $("odsModal").scrollTop=0; document.querySelector("#odsModal .ods-body").scrollTop=0;
+  vistaOds(); logoOds().then(vistaOds);
+}
+function vistaOds(){
+  cancelAnimationFrame(odsRaf);
+  odsRaf=requestAnimationFrame(()=>{
+    if(!odsId) return;
+    const cv=$("odsVista"), ancho=Math.max(220, cv.clientWidth||480), dpr=Math.min(3, window.devicePixelRatio||1);
+    const k=ancho*dpr/OrdenServicio.CW;
+    cv.width=Math.round(OrdenServicio.CW*k); cv.height=Math.round(OrdenServicio.H*k);
+    OrdenServicio.dibujar(cv.getContext("2d"), k, "orden", hojaOds(leerOdsForm()), odsLogo, {una:true});
+  });
+}
+// pasa lo escrito al ingreso (nombre, modelo, serie, falla…) y a la orden (NIT, ODS, cotización…)
+function guardarOdsForm(){
+  const r=datos.registros.find(x=>x.id===odsId); if(!r) return false;
+  const v=leerOdsForm();
+  if(JSON.stringify(v)===odsInicial) return false;
+  // el ingreso necesita el modelo y el nombre: si se borraron, se dejan como estaban
+  if(!v.producto){ v.producto=r.producto; $("oMod").value=v.producto; }
+  if(!v.nombre){ v.nombre=r.nombre; $("oNom").value=v.nombre; }
+  v.producto=productoCanonico(v.producto);
+  let cambio=false;
+  ODS_DEL_INGRESO.forEach(k=>{ if((r[k]||"")!==v[k]){ r[k]=v[k]; cambio=true; } });
+  if(cambio){ r.actualizado=new Date().toISOString(); guardar(); renderDatalist(); }
+  const cambioOds=setOds(r.id,{nit:v.nit, ods:v.ods, cot:v.cot, ref:v.ref, fecha:v.fecha});
+  odsInicial=JSON.stringify(leerOdsForm());
+  // si este mismo ingreso está abierto en el formulario de la izquierda, se actualiza
+  if(editId===r.id){ for(const fid in CAMPOS) if(ODS_DEL_INGRESO.includes(CAMPOS[fid])) $(fid).value=r[CAMPOS[fid]]||""; $("fNit").value=odsDe(r.id).nit||""; }
+  if(cambio||cambioOds){ render(); $("odsGuardado").textContent="✔ Guardado "+new Date().toLocaleTimeString("es-GT",{hour:"2-digit",minute:"2-digit"}); }
+  return cambio||cambioOds;
+}
+function cerrarOds(sinGuardar){
+  if(!odsId) return;
+  if(!sinGuardar && guardarOdsForm()) toast("Orden de servicio guardada");
+  $("odsModal").classList.remove("show"); odsId=null; $("odsGuardado").textContent="Se guarda solo al cerrar o imprimir";
+}
+function imprimirOds(){
+  const r=datos.registros.find(x=>x.id===odsId); if(!r) return;
+  guardarOdsForm();
+  const w=window.open("","_blank");
+  if(!w){ alert("El navegador bloqueó la ventana para imprimir. Permití las ventanas emergentes para esta página y volvé a tocar 🖨️."); return; }
+  w.document.open(); w.document.write(htmlImpresionOds(r, hojaOds(leerOdsForm()))); w.document.close();
+}
+function htmlImpresionOds(r, d){
+  // La hoja se dibuja como UNA imagen (canvas a 300 dpi), ya girada para carta vertical, con medida fija
+  // en pulgadas: igual que la guía de Online, así Safari no la agranda ni la corta.
+  const js=(document.querySelector('script[src*="orden-servicio.js"]')||{}).src||new URL("orden-servicio.js", location.href).href;
+  let tam=0.92, hojas="ambas";
+  try{ const t=parseFloat(localStorage.getItem("garantias_dji_tam_ods")); if(t>=0.7 && t<=1) tam=t; }catch(e){}
+  try{ const h=localStorage.getItem("garantias_dji_hojas_ods"); if(["ambas","orden","terminos"].includes(h)) hojas=h; }catch(e){}
+  const titulo=`Orden de servicio ${numTxt(r.numero)} · ${r.nombre}`;
+  const json=JSON.stringify({d, logo:new URL("../recepcion/logo.png", location.href).href, tam, hojas}).replace(/</g,"\\u003c");
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${esc(titulo)}</title><style>
+  @page{size:8.5in 11in;margin:0.25in}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#fff;font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .barra{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:center;background:#111318;color:#fff;padding:10px 14px;font-size:13.5px}
+  .barra b{font-size:14px}
+  .grupo{display:inline-flex;gap:4px;align-items:center;flex-wrap:wrap}
+  .barra button{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:7px 11px;font:700 13px inherit;cursor:pointer}
+  .barra button[aria-pressed="true"]{background:#2563eb;border-color:#2563eb}
+  .barra .imp-btn{background:#0e9f6e;border-color:#0e9f6e;font-size:14px;padding:8px 16px}
+  .barra small{color:rgba(255,255,255,.65);width:100%;text-align:center;line-height:1.4}
+  #msg{font-size:15px;color:#3b424d;text-align:center;padding:30px}
+  #imp{display:none}
+  #imp img{display:block;margin-left:auto;margin-right:auto;page-break-inside:avoid;break-inside:avoid}
+  @media screen{body{background:#d9dde3}#vistas .hoja{margin:16px auto 22px;width:min(1040px,calc(100% - 32px));background:#fff;padding:3%;box-shadow:0 8px 28px rgba(0,0,0,.2)}#vistas canvas{display:block;width:100%;height:auto}}
+  @media print{.barra,#vistas,#msg{display:none!important}html,body{background:#fff}#imp{display:block}#imp img.salto{page-break-after:always;break-after:page}}
+</style></head><body>
+  <div class="barra">
+    <b>${esc(titulo)}</b>
+    <span class="grupo">Hojas: <button data-h="ambas">Orden + Términos</button><button data-h="orden">Solo la orden</button><button data-h="terminos">Solo términos</button></span>
+    <span class="grupo">Tamaño: <button data-t="0.95">Grande</button><button data-t="0.92">Normal</button><button data-t="0.86">Chico</button></span>
+    <button class="imp-btn" id="btnImp">🖨️ Imprimir</button>
+    <small>En la ventana de imprimir: tamaño Carta, orientación vertical (la normal) y escala 100 %. Salen 2 copias por hoja (se corta por la mitad).<br>Para que los términos queden atrás, elegí doble cara; o imprimí "Solo la orden", volvé a meter la hoja y después "Solo términos".</small>
+  </div>
+  <div id="msg">⏳ Preparando la hoja…</div>
+  <div id="vistas"></div>
+  <div id="imp"></div>
+  <script src="${esc(js)}"><\/script>
+  <script type="application/json" id="datos">${json}<\/script>
+<script>
+(function(){
+  var D=JSON.parse(document.getElementById("datos").textContent);
+  var OS=window.OrdenServicio, est={hojas:D.hojas, tam:D.tam}, PX_IMP=300/72, PX_VISTA=1.6, logo=null, urls=[], listo=Promise.resolve();
+  var msg=document.getElementById("msg");
+  if(!OS){ msg.textContent="⚠️ No se pudo cargar la hoja. Revisá el internet y volvé a tocar 🖨️."; return; }
+  function lista(){ return est.hojas==="ambas" ? ["orden","terminos"] : [est.hojas]; }
+  function componer(){
+    var m=OS.medidas(false), hs=lista(), vistas=document.getElementById("vistas"), imp=document.getElementById("imp");
+    vistas.innerHTML="";
+    hs.forEach(function(h){ var c=document.createElement("canvas"), caja=document.createElement("div"); c.width=Math.round(m.W*PX_VISTA); c.height=Math.round(m.H*PX_VISTA); OS.dibujar(c.getContext("2d"), PX_VISTA, h, D.d, logo, {}); caja.className="hoja"; caja.appendChild(c); vistas.appendChild(caja); });
+    // en papel (pt): ancho = alto de la hoja girada. Centrada en carta y siempre en una hoja,
+    // aunque Safari ponga encabezado y pie de página (espacio útil de ~712 pt de alto).
+    var alto=m.W*est.tam, arriba=Math.max(0, Math.min((756-alto)/2, 711-alto)).toFixed(1)+"pt";
+    return Promise.all(hs.map(function(h){ return new Promise(function(ok,mal){
+      try{
+        var cv=document.createElement("canvas"); cv.width=Math.round(m.H*PX_IMP); cv.height=Math.round(m.W*PX_IMP);
+        OS.dibujar(cv.getContext("2d"), PX_IMP, h, D.d, logo, {girar:true});
+        cv.toBlob(function(bl){ if(!bl){ mal(new Error("el navegador no pudo crear la imagen")); return; } ok(URL.createObjectURL(bl)); }, "image/png");
+      }catch(e){ mal(e); }
+    }); })).then(function(us){
+      urls.forEach(function(u){ URL.revokeObjectURL(u); }); urls=us;
+      imp.innerHTML="";
+      return Promise.all(us.map(function(u,i){ return new Promise(function(ok){
+        var im=new Image(); im.alt="Orden de servicio";
+        im.style.width=(m.H*est.tam).toFixed(1)+"pt"; im.style.height=(m.W*est.tam).toFixed(1)+"pt"; im.style.marginTop=arriba;
+        if(i<us.length-1) im.className="salto";
+        im.onload=function(){ ok(); }; im.onerror=function(){ ok(); }; im.src=u; imp.appendChild(im);
+      }); }));
+    });
+  }
+  function pintar(){
+    [].forEach.call(document.querySelectorAll("[data-h]"),function(x){ x.setAttribute("aria-pressed", String(x.getAttribute("data-h")===est.hojas)); });
+    [].forEach.call(document.querySelectorAll("[data-t]"),function(x){ x.setAttribute("aria-pressed", String(Math.abs(parseFloat(x.getAttribute("data-t"))-est.tam)<0.001)); });
+  }
+  function cambio(){ pintar(); listo=listo.then(componer).catch(function(e){ alert("No se pudo preparar la hoja: "+e.message); }); }
+  [].forEach.call(document.querySelectorAll("[data-h]"),function(x){ x.onclick=function(){ est.hojas=x.getAttribute("data-h"); try{ localStorage.setItem("garantias_dji_hojas_ods", est.hojas); }catch(e){} cambio(); }; });
+  [].forEach.call(document.querySelectorAll("[data-t]"),function(x){ x.onclick=function(){ est.tam=parseFloat(x.getAttribute("data-t")); try{ localStorage.setItem("garantias_dji_tam_ods", String(est.tam)); }catch(e){} cambio(); }; });
+  document.getElementById("btnImp").onclick=function(){ listo.then(function(){ window.print(); }); };
+  pintar();
+  listo=OS.cargarLogo(D.logo).then(function(l){ logo=l; return componer(); })
+    .then(function(){ msg.remove(); window.__listo=true; setTimeout(function(){ window.focus(); window.print(); }, 350); })
+    .catch(function(e){ msg.textContent="⚠️ No se pudo preparar la hoja: "+e.message; });
+})();
+<\/script></body></html>`;
+}
+
+// ============================================================
 //  AJUSTES: respaldo
 // ============================================================
 function abrirAjustes(){ $("ajModal").classList.add("show"); }
 function cerrarAjustes(){ $("ajModal").classList.remove("show"); }
 function descargarRespaldo(){
-  const blob=new Blob([JSON.stringify({tipo:"garantias_dji",exportado:new Date().toISOString(),...datos},null,2)],{type:"application/json"});
+  const blob=new Blob([JSON.stringify({tipo:"garantias_dji",exportado:new Date().toISOString(),...datos,ods:odsDatos},null,2)],{type:"application/json"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
   a.download="Respaldo garantias DJI "+fechaCorta(new Date().toISOString()).replace(/\//g,"-")+".json";
   document.body.appendChild(a); a.click(); a.remove();
@@ -691,6 +988,11 @@ $("archivo").addEventListener("change",async e=>{
       if(!ex){ datos.registros.push(r); nuevos++; }
       else if((r.actualizado||r.fecha)>(ex.actualizado||ex.fecha)){ Object.assign(ex,r); act++; }
     });
+    if(d.ods && typeof d.ods==="object"){
+      let n=0;
+      for(const id in d.ods){ const o=limpiarOds(d.ods[id]), ex=odsDatos[id]; if(o && (!ex || (o.actualizado||"")>(ex.actualizado||""))){ odsDatos[id]=o; n++; } }
+      if(n){ guardarOdsLocal(); subirOds(); }
+    }
     guardar(); render(); renderDatalist();
     alert(`Respaldo cargado: ${plural(nuevos,"ingreso nuevo","ingresos nuevos")}${act?`, ${plural(act,"actualizado","actualizados")}`:""}.`);
   }catch(err){ alert("Ese archivo no es un respaldo de garantías válido."); }
@@ -705,8 +1007,8 @@ async function exportExcel(){
   const DARK="FF44546A", WHITE="FFFFFFFF", INK="FF4A4F59", GRIDBG="FFF7F8FA";
   const wb=new ExcelJS.Workbook();
   const ws=wb.addWorksheet("Garantías",{views:[{showGridLines:false,state:"frozen",ySplit:5}]});
-  const heads=["N.º","Fecha","Tipo","Paso","Producto","N.º de serie","Falla / motivo","Deja","Notas","Compra","Factura","Cliente","Teléfono","Correo","Viene el","Registró"];
-  const widths=[9,11,16,19,26,18,34,26,26,11,12,24,12,24,11,12];
+  const heads=["N.º","Fecha","Tipo","Paso","Producto","N.º de serie","Falla / motivo","Deja","Notas","Compra","Factura","Cliente","Teléfono","Correo","Viene el","Registró","NIT","ODS #","Cotización #"];
+  const widths=[9,11,16,19,26,18,34,26,26,11,12,24,12,24,11,12,14,11,13];
   ws.columns=[{width:3},...widths.map(w=>({width:w})),{width:3}];
   const B=2, K=B+heads.length-1;
   const thin={style:"thin",color:{argb:"FFB9C0CC"}}, border={top:thin,left:thin,bottom:thin,right:thin};
@@ -722,7 +1024,8 @@ async function exportExcel(){
   const font={name:"Calibri",size:11,color:{argb:INK}};
   let r=6;
   L.forEach(x=>{
-    const vals=[numTxt(x.numero),fechaCorta(x.fecha),tipoDe(x.tipo).l,pasoDe(x.estado).l,x.producto,x.serie,x.motivo,x.accesorios,x.nota,x.compra?ymdCorto(x.compra):"",x.factura,x.nombre,telBonito(x.telefono),x.correo,x.cita?ymdCorto(x.cita):"",x.registro];
+    const o=odsDe(x.id);
+    const vals=[numTxt(x.numero),fechaCorta(x.fecha),tipoDe(x.tipo).l,pasoDe(x.estado).l,x.producto,x.serie,x.motivo,x.accesorios,x.nota,x.compra?ymdCorto(x.compra):"",x.factura,x.nombre,telBonito(x.telefono),x.correo,x.cita?ymdCorto(x.cita):"",x.registro,o.nit||"",o.ods||"",o.cot||""];
     vals.forEach((v,i)=>{ const c=ws.getCell(r,B+i); c.value=v; c.font=font; c.border=border; c.fill={type:"pattern",pattern:"solid",fgColor:{argb:GRIDBG}}; c.alignment={vertical:"top",wrapText:[6,7,8].includes(i),horizontal:[0,1,9,12,14].includes(i)?"center":"left",indent:[0,1,9,12,14].includes(i)?0:1}; });
     r++;
   });
@@ -749,10 +1052,15 @@ $("btnExport").addEventListener("click",exportExcel);
 $("btnAjustes").addEventListener("click",abrirAjustes);
 $("ajModal").addEventListener("click",e=>{ if(e.target.id==="ajModal") cerrarAjustes(); });
 document.querySelectorAll(".kpi").forEach(k=>k.addEventListener("click",()=>{ filtro=k.dataset.f; render(); }));
-document.addEventListener("keydown",e=>{ if(e.key==="Escape" && $("ajModal").classList.contains("show")) cerrarAjustes(); });
+document.addEventListener("keydown",e=>{ if(e.key!=="Escape") return; if($("odsModal").classList.contains("show")) cerrarOds(); else if($("ajModal").classList.contains("show")) cerrarAjustes(); });
+$("odsModal").addEventListener("click",e=>{ if(e.target.id==="odsModal") cerrarOds(); });
+$("odsModal").addEventListener("input",vistaOds);
+$("odsImp").addEventListener("click",imprimirOds);
+addEventListener("resize",()=>{ if(odsId) vistaOds(); });
 
 // ---------- inicio ----------
 cargar();
+cargarOds();
 limpiarForm();
 renderDatalist();
 render();
