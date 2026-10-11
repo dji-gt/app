@@ -217,12 +217,14 @@
   // ---------- hoja completa ----------
   function medidas(una){ return {W:una?CW:W, H}; }
   /* hoja: "orden" | "terminos" · k: pixeles por punto
-     op.girar: gira 90° (para imprimir en carta vertical) · op.una: solo una copia (vista previa) */
+     op.girar: gira 90° para imprimir en carta vertical (-1 = al otro lado: así la hoja de atrás
+     sale al derecho al imprimir a doble cara) · op.una: solo una copia (vista previa) */
   function dibujar(ctx, k, hoja, d, logo, op){
     op=op||{}; d=d||{};
     const m=medidas(op.una);
     ctx.save();
-    if(op.girar){ ctx.translate(m.H*k,0); ctx.rotate(Math.PI/2); }
+    if(op.girar===-1){ ctx.translate(0,m.W*k); ctx.rotate(-Math.PI/2); }
+    else if(op.girar){ ctx.translate(m.H*k,0); ctx.rotate(Math.PI/2); }
     ctx.scale(k,k);
     ctx.fillStyle="#fff"; ctx.fillRect(0,0,m.W,m.H);
     ctx.textBaseline="alphabetic"; ctx.textAlign="left";

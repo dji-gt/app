@@ -389,10 +389,10 @@
 <input type="file" id="archivo" accept=".json,application/json" hidden>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261011a"></script>
+<script src="../nube.js?v=20261011b"></script>
 <script src="../recepcion/lib/exceljs.min.js"></script>
-<script src="../recepcion/catalog.js?v=20261011a"></script>
-<script src="orden-servicio.js?v=20261011a"></script>
+<script src="../recepcion/catalog.js?v=20261011b"></script>
+<script src="orden-servicio.js?v=20261011b"></script>
 <script>
 /* ============================================================
    Garantías y Protection Plus — clientes que dejan (o van a
@@ -884,11 +884,12 @@ function htmlImpresionOds(r, d){
   // La hoja se dibuja como UNA imagen (canvas a 300 dpi), ya girada para carta vertical, con medida fija
   // en pulgadas: igual que la guía de Online, así Safari no la agranda ni la corta.
   const js=(document.querySelector('script[src*="orden-servicio.js"]')||{}).src||new URL("orden-servicio.js", location.href).href;
-  let tam=0.92, hojas="ambas";
+  let tam=0.92, hojas="ambas", voltear=true;
   try{ const t=parseFloat(localStorage.getItem("garantias_dji_tam_ods")); if(t>=0.7 && t<=1) tam=t; }catch(e){}
   try{ const h=localStorage.getItem("garantias_dji_hojas_ods"); if(["ambas","orden","terminos"].includes(h)) hojas=h; }catch(e){}
+  try{ voltear=localStorage.getItem("garantias_dji_voltear_ods")!=="no"; }catch(e){}
   const titulo=`Orden de servicio ${numTxt(r.numero)} · ${r.nombre}`;
-  const json=JSON.stringify({d, logo:new URL("../recepcion/logo.png", location.href).href, tam, hojas}).replace(/</g,"\\u003c");
+  const json=JSON.stringify({d, logo:new URL("../recepcion/logo.png", location.href).href, tam, hojas, voltear}).replace(/</g,"\\u003c");
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${esc(titulo)}</title><style>
   @page{size:8.5in 11in;margin:0.25in}
   *{box-sizing:border-box}
@@ -910,8 +911,9 @@ function htmlImpresionOds(r, d){
     <b>${esc(titulo)}</b>
     <span class="grupo">Hojas: <button data-h="ambas">Orden + Términos</button><button data-h="orden">Solo la orden</button><button data-h="terminos">Solo términos</button></span>
     <span class="grupo">Tamaño: <button data-t="0.95">Grande</button><button data-t="0.92">Normal</button><button data-t="0.86">Chico</button></span>
+    <span class="grupo">Términos atrás: <button data-v="1">Girados (doble cara)</button><button data-v="0">Sin girar</button></span>
     <button class="imp-btn" id="btnImp">🖨️ Imprimir</button>
-    <small>En la ventana de imprimir: tamaño Carta, orientación vertical (la normal) y escala 100 %. Salen 2 copias por hoja (se corta por la mitad).<br>Para que los términos queden atrás, elegí doble cara; o imprimí "Solo la orden", volvé a meter la hoja y después "Solo términos".</small>
+    <small>En la ventana de imprimir: tamaño Carta, orientación vertical (la normal) y escala 100 %. Salen 2 copias por hoja (se corta por la mitad).<br>Para que los términos queden atrás, elegí doble cara; o imprimí "Solo la orden", volvé a meter la hoja y después "Solo términos". Si los términos salen de cabeza, cambiá "Términos atrás".</small>
   </div>
   <div id="msg">⏳ Preparando la hoja…</div>
   <div id="vistas"></div>
@@ -921,7 +923,7 @@ function htmlImpresionOds(r, d){
 <script>
 (function(){
   var D=JSON.parse(document.getElementById("datos").textContent);
-  var OS=window.OrdenServicio, est={hojas:D.hojas, tam:D.tam}, PX_IMP=300/72, PX_VISTA=1.6, logo=null, urls=[], listo=Promise.resolve();
+  var OS=window.OrdenServicio, est={hojas:D.hojas, tam:D.tam, voltear:D.voltear!==false}, PX_IMP=300/72, PX_VISTA=1.6, logo=null, urls=[], listo=Promise.resolve();
   var msg=document.getElementById("msg");
   if(!OS){ msg.textContent="⚠️ No se pudo cargar la hoja. Revisá el internet y volvé a tocar 🖨️."; return; }
   function lista(){ return est.hojas==="ambas" ? ["orden","terminos"] : [est.hojas]; }
@@ -935,7 +937,8 @@ function htmlImpresionOds(r, d){
     return Promise.all(hs.map(function(h){ return new Promise(function(ok,mal){
       try{
         var cv=document.createElement("canvas"); cv.width=Math.round(m.H*PX_IMP); cv.height=Math.round(m.W*PX_IMP);
-        OS.dibujar(cv.getContext("2d"), PX_IMP, h, D.d, logo, {girar:true});
+        // la hoja de términos va girada al otro lado: al imprimir a doble cara queda al derecho detrás de la orden
+        OS.dibujar(cv.getContext("2d"), PX_IMP, h, D.d, logo, {girar:(h==="terminos" && est.voltear) ? -1 : 1});
         cv.toBlob(function(bl){ if(!bl){ mal(new Error("el navegador no pudo crear la imagen")); return; } ok(URL.createObjectURL(bl)); }, "image/png");
       }catch(e){ mal(e); }
     }); })).then(function(us){
@@ -952,10 +955,12 @@ function htmlImpresionOds(r, d){
   function pintar(){
     [].forEach.call(document.querySelectorAll("[data-h]"),function(x){ x.setAttribute("aria-pressed", String(x.getAttribute("data-h")===est.hojas)); });
     [].forEach.call(document.querySelectorAll("[data-t]"),function(x){ x.setAttribute("aria-pressed", String(Math.abs(parseFloat(x.getAttribute("data-t"))-est.tam)<0.001)); });
+    [].forEach.call(document.querySelectorAll("[data-v]"),function(x){ x.setAttribute("aria-pressed", String((x.getAttribute("data-v")==="1")===est.voltear)); });
   }
   function cambio(){ pintar(); listo=listo.then(componer).catch(function(e){ alert("No se pudo preparar la hoja: "+e.message); }); }
   [].forEach.call(document.querySelectorAll("[data-h]"),function(x){ x.onclick=function(){ est.hojas=x.getAttribute("data-h"); try{ localStorage.setItem("garantias_dji_hojas_ods", est.hojas); }catch(e){} cambio(); }; });
   [].forEach.call(document.querySelectorAll("[data-t]"),function(x){ x.onclick=function(){ est.tam=parseFloat(x.getAttribute("data-t")); try{ localStorage.setItem("garantias_dji_tam_ods", String(est.tam)); }catch(e){} cambio(); }; });
+  [].forEach.call(document.querySelectorAll("[data-v]"),function(x){ x.onclick=function(){ est.voltear=x.getAttribute("data-v")==="1"; try{ localStorage.setItem("garantias_dji_voltear_ods", est.voltear?"si":"no"); }catch(e){} cambio(); }; });
   document.getElementById("btnImp").onclick=function(){ listo.then(function(){ window.print(); }); };
   pintar();
   listo=OS.cargarLogo(D.logo).then(function(l){ logo=l; return componer(); })
