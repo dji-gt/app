@@ -121,10 +121,14 @@
   .gc.e-enviado{border-left-color:var(--violet)}
   .gc.e-listo{border-left-color:var(--ok)}
   .gc.e-entregado{border-left-color:#c3c9d3;opacity:.86}
+  .gc.e-espera{border-left-color:var(--warn)}
+  .gc.e-avisado{border-left-color:var(--teal)}
+  .gc.e-atendido{border-left-color:#c3c9d3;opacity:.86}
   .gc-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .tipo{font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:20px;letter-spacing:.3px;white-space:nowrap}
   .tipo.garantia{background:var(--accent-bg);color:#1e40af}
   .tipo.protection{background:var(--violet-bg);color:#5b21b6}
+  .tipo.taller{background:var(--teal-bg);color:var(--teal)}
   .num{font-family:"Consolas","SF Mono",monospace;font-weight:800;font-size:12.5px;color:var(--muted)}
   .gc-acts{margin-left:auto;display:flex;gap:6px}
   .ib{width:32px;height:32px;border-radius:9px;border:none;background:var(--line-2);color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center}
@@ -161,6 +165,11 @@
   .paso.actual.p-enviado{background:var(--violet);border-color:var(--violet)}
   .paso.actual.p-listo{background:var(--ok);border-color:var(--ok)}
   .paso.actual.p-entregado{background:var(--ink-2);border-color:var(--ink-2)}
+  .pasos.p3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .paso.actual.p-espera{background:var(--warn);border-color:var(--warn)}
+  .paso.actual.p-avisado{background:var(--teal);border-color:var(--teal)}
+  .paso.actual.p-atendido{background:var(--ink-2);border-color:var(--ink-2)}
+  .chip.t .n{margin-left:2px}
   .empty{background:var(--card);border:1.5px dashed var(--line);border-radius:var(--r);padding:44px 22px;text-align:center;color:var(--muted)}
   .empty b{color:var(--ink);display:block;font-size:16px;margin-bottom:5px}
 
@@ -184,6 +193,7 @@
   .odsb:hover{background:#ebe2fd;border-color:#c9b6f8}
   .odsb small{font-size:12px;font-weight:700;color:#6d28d9}
   .f-hint{margin-top:10px;font-size:13px;color:#5b21b6;background:var(--violet-bg);border:1px solid var(--violet-br);border-radius:10px;padding:9px 12px;font-weight:600;line-height:1.4}
+  .f-hint.tl{color:var(--teal);background:var(--teal-bg);border-color:var(--teal-br)}
   .status .st-act{margin-left:auto;flex:none}
   .modal.ancho{max-width:1120px;max-height:90vh}
   .ods-body{display:grid;grid-template-columns:1fr;gap:18px;padding:6px 20px 18px;overflow:auto;min-height:0;flex:1}
@@ -256,19 +266,24 @@
 
         <span class="fl">¿Qué necesita?</span>
         <div class="seg" id="fTipo"></div>
-        <div class="f-hint" id="fOdsHint" hidden>📄 Protection Plus: al guardarlo, en la tarjeta queda la <b>Orden de servicio</b> (la hoja del Word) lista para revisar e imprimir.</div>
+        <div class="f-hint" id="fOdsHint" hidden>📄 Al guardarlo, en la tarjeta queda la <b>Orden de servicio</b> (la hoja del Word) lista para llenar e imprimir.</div>
+        <div class="f-hint tl" id="fTallerHint" hidden>🔧 <b>Taller:</b> anotá el número y lo que quiere el cliente mientras no hay servicio técnico. Cuando regrese el técnico, le avisás desde la lista con WhatsApp.</div>
 
-        <div class="f-sec">Equipo</div>
-        <label class="fl" for="fProd">Producto</label>
+        <div class="f-sec" id="fSecEquipo">Equipo</div>
+        <label class="fl" for="fProd" id="fProdL">Producto</label>
         <input class="in" id="fProd" list="dlProd" placeholder="Ej: DJI Mini 5 Pro" autocomplete="off" spellcheck="false">
         <datalist id="dlProd"></datalist>
-        <label class="fl" for="fSerie">Número de serie <i>(opcional)</i></label>
-        <input class="in up" id="fSerie" placeholder="Viene en la caja o debajo del equipo" autocomplete="off" spellcheck="false">
-        <label class="fl" for="fMotivo">Falla o motivo</label>
+        <div id="fSerieBox">
+          <label class="fl" for="fSerie">Número de serie <i>(opcional)</i></label>
+          <input class="in up" id="fSerie" placeholder="Viene en la caja o debajo del equipo" autocomplete="off" spellcheck="false">
+        </div>
+        <label class="fl" for="fMotivo" id="fMotivoL">Falla o motivo</label>
         <textarea class="in" id="fMotivo" rows="2" placeholder="Ej: el gimbal no se estabiliza / se cayó y se quebró un brazo"></textarea>
-        <label class="fl" for="fAcc">Lo que deja <i>(opcional)</i></label>
-        <input class="in" id="fAcc" placeholder="Ej: dron, control, 2 baterías, cargador, estuche" autocomplete="off">
-        <label class="fl" for="fNota">Cómo viene / notas <i>(opcional)</i></label>
+        <div id="fAccBox">
+          <label class="fl" for="fAcc">Lo que deja <i>(opcional)</i></label>
+          <input class="in" id="fAcc" placeholder="Ej: dron, control, 2 baterías, cargador, estuche" autocomplete="off">
+        </div>
+        <label class="fl" for="fNota" id="fNotaL">Cómo viene / notas <i>(opcional)</i></label>
         <textarea class="in" id="fNota" rows="2" placeholder="Ej: rayón en el brazo izquierdo, hélice quebrada"></textarea>
 
         <div id="fCompraBox">
@@ -286,9 +301,10 @@
         </div>
         <div class="row2">
           <div><label class="fl" for="fCorreo">Correo <i>(opcional)</i></label><input class="in" id="fCorreo" type="email" inputmode="email" autocomplete="off"></div>
-          <div><label class="fl" for="fNit">NIT <i>(opcional)</i></label><input class="in" id="fNit" placeholder="Ej: 1234567-8 o CF" autocomplete="off" spellcheck="false"></div>
+          <div id="fNitBox"><label class="fl" for="fNit">NIT <i>(opcional)</i></label><input class="in" id="fNit" placeholder="Ej: 1234567-8 o CF" autocomplete="off" spellcheck="false"></div>
         </div>
 
+        <div id="fEntregaBox">
         <div class="f-sec">Entrega del equipo</div>
         <div id="fLlegadaBox">
           <span class="fl">¿Ya dejó el equipo?</span>
@@ -299,6 +315,7 @@
           <div id="fCitaBox" hidden><label class="fl" for="fCita">¿Qué día viene?</label><input class="in" id="fCita" type="date"></div>
         </div>
         <div id="fCitaEdit" hidden><label class="fl" for="fCita2">Día en que viene <i>(si todavía no lo trae)</i></label><input class="in" id="fCita2" type="date"></div>
+        </div>
 
         <span class="fl">¿Quién lo registró?</span>
         <div class="seg" id="fReg"></div>
@@ -389,10 +406,10 @@
 <input type="file" id="archivo" accept=".json,application/json" hidden>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261016a"></script>
+<script src="../nube.js?v=20261020a"></script>
 <script src="../recepcion/lib/exceljs.min.js"></script>
-<script src="../recepcion/catalog.js?v=20261016a"></script>
-<script src="orden-servicio.js?v=20261016a"></script>
+<script src="../recepcion/catalog.js?v=20261020a"></script>
+<script src="orden-servicio.js?v=20261020a"></script>
 <script>
 /* ============================================================
    Garantías y Protection Plus — clientes que dejan (o van a
@@ -416,12 +433,19 @@ const PASOS = [
   {k:"listo",     l:"Listo para entregar",  c:"Listo",         ic:"✅"},
   {k:"entregado", l:"Entregado al cliente", c:"Entregado",     ic:"🤝"}
 ];
+// Taller: lista de espera de quienes necesitan servicio técnico (se les avisa cuando regrese el técnico)
+const TIPO_TALLER = {k:"taller", l:"Taller", ic:"🔧"};
+const PASOS_TALLER = [
+  {k:"espera",   l:"En espera (por avisar)",   c:"En espera", ic:"⏳"},
+  {k:"avisado",  l:"Ya se le avisó",           c:"Avisado",   ic:"📲"},
+  {k:"atendido", l:"Ya vino / atendido",       c:"Atendido",  ic:"✅"}
+];
 const PRODUCTOS_DJI = ["DJI Neo 2","DJI Lito 1","DJI Lito X1","DJI Mini 5 Pro","DJI Mini 4 Pro","DJI Mini 3","DJI Avata 360","DJI Avata 2","DJI Flip","DJI Air 3S","DJI Air 3","DJI Mavic 4 Pro","DJI Mavic 3 Pro","DJI Osmo Pocket 3","DJI Osmo Pocket 4","DJI Osmo Pocket 4P","DJI Osmo Nano","DJI Osmo Action 6","DJI Osmo Action 5 Pro","DJI Osmo 360 II","DJI Osmo 360","DJI Osmo Mobile 8P","DJI Osmo Mobile 8","DJI Osmo Mobile 7","DJI RS 5","DJI RS 4 Pro","DJI RS 4 Mini","DJI Mic Mini 2","DJI Mic Mini 2S","DJI Mic 2","DJI Goggles 3","DJI Goggles N3","Control DJI RC 2","Control DJI RC-N3","Batería de vuelo inteligente"];
 
 let datos = {v:1, registros:[]};
 let vendedores = VENDEDORES_INICIALES.slice();
-let tipo = "garantia", llegada = null, registro = null, editId = null;
-let filtro = "activos", filtroTipo = "", query = "";
+let tipo = "garantia", llegada = null, registro = null, editId = null, editTaller = null;
+let filtro = "activos", filtroTipo = "", query = "", filtroT = "activos";
 
 const $ = id => document.getElementById(id);
 
@@ -440,6 +464,8 @@ function hoyISO(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMo
 function diaBonito(ymd){ if(!ymd) return ""; const [y,m,d]=ymd.split("-").map(Number); return new Date(y,m-1,d).toLocaleDateString("es-GT",{weekday:"short",day:"numeric",month:"short"}); }
 function ymdCorto(ymd){ if(!ymd) return ""; const [y,m,d]=ymd.split("-"); return d+"/"+m+"/"+y; }
 const numTxt = n => "G-"+String(n||0).padStart(4,"0");
+const numTaller = n => "T-"+String(n||0).padStart(4,"0");
+const pasoTallerDe = k => PASOS_TALLER.find(p=>p.k===k)||PASOS_TALLER[0];
 const tipoDe = k => TIPOS.find(t=>t.k===k)||TIPOS[0];
 const pasoDe = k => PASOS.find(p=>p.k===k)||PASOS[1];
 let tToast;
@@ -558,6 +584,7 @@ async function conectarNube(){
   $("respaldoTxt").textContent="Los ingresos ya se guardan en la nube y los ven todas las computadoras conectadas. El respaldo sirve para tener una copia en un archivo.";
   if(!await Nube.iniciar()) return;
   conectarOds();
+  conectarTaller();
   const unido=await Nube.unirUnaVez("garantias", async ()=>{
     const nube=await Nube.leerColeccion("garantias");
     await Nube.guardarColeccion("garantias", mapaRegistros(unirRegistros(nube, datos.registros)), nube);
@@ -580,6 +607,55 @@ async function conectarNube(){
     vendedores=m.vendedores.map(v=>String(v).trim()).filter(Boolean); renderVendedoresForm();
   });
 }
+// ---------- taller: colección aparte ("taller"), así la versión anterior de la página no la toca ----------
+const LS_TALLER = "garantias_dji_taller_v1";   // {v, registros:[...]}
+let taller = [], nubeTaller = null, tallerSinSubir = false;
+function limpiarTaller(r){
+  if(!r || typeof r!=="object") return null;
+  const S=v=>String(v??"").trim();
+  const o={
+    id:S(r.id)||nuevoId(), numero:Number(r.numero)||0, fecha:S(r.fecha)||new Date().toISOString(),
+    nombre:S(r.nombre), telefono:S(r.telefono), correo:S(r.correo), producto:S(r.producto), pide:S(r.pide), nota:S(r.nota), registro:S(r.registro),
+    estado:PASOS_TALLER.some(p=>p.k===r.estado)?r.estado:"espera",
+    pasos:(r.pasos && typeof r.pasos==="object") ? Object.fromEntries(Object.entries(r.pasos).filter(([k,v])=>PASOS_TALLER.some(p=>p.k===k)&&typeof v==="string")) : {}
+  };
+  if(r.actualizado) o.actualizado=S(r.actualizado);
+  return (o.nombre||o.telefono) ? o : null;
+}
+function cargarTaller(){
+  try{ const d=JSON.parse(localStorage.getItem(LS_TALLER)||"null"); if(d && Array.isArray(d.registros)) taller=d.registros.map(limpiarTaller).filter(Boolean); }catch(e){}
+}
+function guardarTallerLocal(){ try{ localStorage.setItem(LS_TALLER,JSON.stringify({v:1,registros:taller})); }catch(e){ toast("⚠️ No se pudo guardar en este navegador"); } }
+function subirTaller(){
+  if(!window.Nube || !Nube.conectado()) return;
+  if(nubeTaller===null){ tallerSinSubir=true; return; }
+  Nube.guardarColeccion("taller", mapaRegistros(taller), nubeTaller);
+}
+function guardarTaller(){ guardarTallerLocal(); subirTaller(); }
+function unirTaller(nube, locales){
+  const out={};
+  for(const id in nube){ const r=limpiarTaller(Object.assign({id},nube[id])); if(r) out[r.id]=r; }
+  locales.forEach(r=>{ const c=out[r.id]; if(!c || masNuevo(r,c)) out[r.id]=r; });
+  return Object.values(out);
+}
+async function conectarTaller(){
+  const unido=await Nube.unirUnaVez("taller", async ()=>{
+    const nube=await Nube.leerColeccion("taller");
+    await Nube.guardarColeccion("taller", mapaRegistros(unirTaller(nube, taller)), nube);
+  });
+  if(!unido && localStorage.getItem("dji_nube_unido_taller")!==Nube.clave()){
+    addEventListener("online", ()=>conectarTaller(), {once:true});
+    return;
+  }
+  Nube.escucharColeccion("taller",(mapa)=>{
+    let lista=Object.keys(mapa).map(id=>limpiarTaller(Object.assign({id},mapa[id]))).filter(Boolean);
+    nubeTaller=mapa;
+    if(tallerSinSubir){ tallerSinSubir=false; lista=unirTaller(mapa, taller); Nube.guardarColeccion("taller", mapaRegistros(lista), mapa); }
+    const orden=l=>l.slice().sort((a,b)=>a.id.localeCompare(b.id));
+    if(Nube.estable(orden(lista))===Nube.estable(orden(taller))) return;
+    taller=lista; guardarTallerLocal(); render();
+  });
+}
 // si en Clientes cambian los nombres (en esta misma computadora)
 addEventListener("storage",e=>{ if(e.key===LS_CLIENTES){ cargarVendedores(); renderVendedoresForm(); } });
 
@@ -587,8 +663,27 @@ addEventListener("storage",e=>{ if(e.key===LS_CLIENTES){ cargarVendedores(); ren
 //  FORMULARIO
 // ============================================================
 function renderTipos(){
-  $("fTipo").innerHTML=TIPOS.map(t=>`<button type="button" aria-pressed="${t.k===tipo}" onclick="elegirTipo('${t.k}')">${t.ic} ${t.l}</button>`).join("");
-  $("fOdsHint").hidden = tipo!=="protection";
+  // al editar no se cambia entre ingreso (garantía / Protection Plus) y taller
+  const lista = editId ? TIPOS : (editTaller ? [TIPO_TALLER] : [...TIPOS, TIPO_TALLER]);
+  $("fTipo").innerHTML=lista.map(t=>`<button type="button" aria-pressed="${t.k===tipo}" onclick="elegirTipo('${t.k}')">${t.ic} ${t.l}</button>`).join("");
+  aplicarTipoForm();
+}
+// el formulario cambia un poco para el Taller: solo el cliente, su número y lo que quiere
+function aplicarTipoForm(){
+  const t = tipo==="taller";
+  $("fOdsHint").hidden=t; $("fTallerHint").hidden=!t;
+  ["fSerieBox","fAccBox","fCompraBox","fNitBox","fEntregaBox"].forEach(id=>$(id).hidden=t);
+  $("fSecEquipo").textContent = t ? "Lo que necesita" : "Equipo";
+  $("fProdL").innerHTML = t ? "Equipo <i>(opcional)</i>" : "Producto";
+  $("fMotivoL").textContent = t ? "¿Qué quiere el cliente?" : "Falla o motivo";
+  $("fMotivo").placeholder = t ? "Ej: mantenimiento general / revisar el gimbal / cambiar un brazo" : "Ej: el gimbal no se estabiliza / se cayó y se quebró un brazo";
+  $("fNotaL").innerHTML = t ? "Notas <i>(opcional)</i>" : "Cómo viene / notas <i>(opcional)</i>";
+  $("fNota").placeholder = t ? "Ej: prefiere que le escriban por WhatsApp en la tarde" : "Ej: rayón en el brazo izquierdo, hélice quebrada";
+  if(!editId && !editTaller){
+    $("fTitle").textContent = t ? "Anotar para el taller" : "Nuevo ingreso";
+    $("fSub").textContent = t ? "Anotá el número y lo que quiere el cliente: cuando haya servicio técnico, le avisamos." : "Anotá a quien deja (o va a dejar) su equipo por garantía o Protection Plus.";
+    $("fGuardarTxt").textContent = t ? "Guardar en la lista del taller" : "Guardar ingreso";
+  }
 }
 function elegirTipo(k){ tipo=k; renderTipos(); }
 function renderLlegada(){
@@ -615,7 +710,7 @@ function renderDatalist(){
 function productoCanonico(t){ const k=fold(t); return [...PRODUCTOS_DJI, ...datos.registros.map(r=>r.producto)].find(p=>fold(p)===k) || t; }
 const CAMPOS={fProd:"producto",fSerie:"serie",fMotivo:"motivo",fAcc:"accesorios",fNota:"nota",fCompra:"compra",fFactura:"factura",fNom:"nombre",fTel:"telefono",fCorreo:"correo"};
 function limpiarForm(){
-  editId=null; tipo="garantia"; llegada=null;
+  editId=null; editTaller=null; tipo="garantia"; llegada=null;
   Object.keys(CAMPOS).forEach(id=>$(id).value=""); $("fNit").value=""; $("fCita").value=""; $("fCita2").value="";
   try{ const u=localStorage.getItem(LS_ULTIMO); registro=(u && vendedores.includes(u)) ? u : null; }catch(e){ registro=null; }
   $("fcard").classList.remove("editing");
@@ -627,6 +722,7 @@ function limpiarForm(){
 }
 function leerForm(){ const o={}; for(const id in CAMPOS) o[CAMPOS[id]]=$(id).value.trim(); o.serie=o.serie.toUpperCase(); return o; }
 function guardarIngreso(){
+  if(tipo==="taller") return guardarTallerForm();
   const f=leerForm(); f.producto=productoCanonico(f.producto);
   if(!f.producto){ setStatus("warn","📦","Escribí el producto (ej: DJI Mini 5 Pro)."); $("fProd").focus(); return; }
   if(!f.motivo){ setStatus("warn","📝","Escribí la falla o lo que le pasó al equipo."); $("fMotivo").focus(); return; }
@@ -640,7 +736,7 @@ function guardarIngreso(){
     const r=datos.registros.find(x=>x.id===editId);
     if(r){ Object.assign(r,f,{tipo,registro,pp:tipo==="protection",actualizado:ahora}); r.cita=$("fCita2").value; setOds(r.id,{nit}); }
     guardar(); limpiarForm(); render(); renderDatalist();
-    setStatus("ok","✔","Cambios guardados.", r && r.tipo==="protection" ? {txt:"📄 Orden de servicio", fn:()=>abrirOds(r.id)} : null); return;
+    setStatus("ok","✔","Cambios guardados.", r ? {txt:"📄 Orden de servicio", fn:()=>abrirOds(r.id)} : null); return;
   }
   const numero=datos.registros.reduce((m,x)=>Math.max(m,x.numero||0),0)+1;
   const r=Object.assign({id:nuevoId(),numero,fecha:ahora,tipo,registro,estado:llegada,cita:llegada==="cita"?$("fCita").value:"",pasos:{[llegada]:ahora}},f);
@@ -650,9 +746,58 @@ function guardarIngreso(){
   guardar();
   const reg=registro; limpiarForm(); registro=reg; renderVendedoresForm();
   render(); renderDatalist();
-  const pp=r.tipo==="protection";
-  setStatus("ok","✔",`Listo, quedó anotado: ${numTxt(numero)} · ${r.producto} de ${r.nombre}.`+(r.estado==="recibido"?(pp?" Ya podés llenar e imprimir la orden de servicio.":" Podés imprimir la boleta desde la lista."):""),
-    pp ? {txt:"📄 Orden de servicio", fn:()=>abrirOds(r.id)} : null);
+  setStatus("ok","✔",`Listo, quedó anotado: ${numTxt(numero)} · ${r.producto} de ${r.nombre}.`+(r.estado==="recibido"?" Ya podés llenar e imprimir la orden de servicio.":""),
+    {txt:"📄 Orden de servicio", fn:()=>abrirOds(r.id)});
+}
+// ---------- taller: anotar, editar, borrar, pasos ----------
+function guardarTallerForm(){
+  const f=leerForm();
+  const d={nombre:f.nombre, telefono:f.telefono, correo:f.correo, producto:f.producto?productoCanonico(f.producto):"", pide:f.motivo, nota:f.nota};
+  if(!d.nombre){ setStatus("warn","👤","Escribí el nombre del cliente."); $("fNom").focus(); return; }
+  if(soloDigitos(d.telefono).length<8){ setStatus("warn","📱","Escribí el número de teléfono completo (8 dígitos)."); $("fTel").focus(); return; }
+  if(!d.pide){ setStatus("warn","📝","Escribí qué quiere el cliente (ej: mantenimiento, revisar el gimbal)."); $("fMotivo").focus(); return; }
+  if(!registro){ setStatus("warn","🙋","Elegí quién lo está registrando."); return; }
+  const ahora=new Date().toISOString();
+  if(editTaller){
+    const r=taller.find(x=>x.id===editTaller);
+    if(r) Object.assign(r,d,{registro,actualizado:ahora});
+    guardarTaller(); limpiarForm(); render(); renderDatalist();
+    setStatus("ok","✔","Cambios guardados."); return;
+  }
+  const numero=taller.reduce((m,x)=>Math.max(m,x.numero||0),0)+1;
+  const r=limpiarTaller(Object.assign({id:nuevoId(),numero,fecha:ahora,registro,estado:"espera",pasos:{espera:ahora}},d));
+  taller.push(r); guardarTaller();
+  const reg=registro; limpiarForm(); registro=reg; tipo="taller"; renderTipos(); renderVendedoresForm();
+  filtroTipo="taller"; render(); renderDatalist();
+  setStatus("ok","✔",`Listo, quedó en la lista del taller: ${numTaller(numero)} · ${r.nombre}. Cuando regrese el técnico, avisale desde la lista.`);
+}
+function editarTaller(id){
+  const r=taller.find(x=>x.id===id); if(!r) return;
+  limpiarForm();
+  editTaller=id; tipo="taller";
+  $("fProd").value=r.producto; $("fMotivo").value=r.pide; $("fNota").value=r.nota;
+  $("fNom").value=r.nombre; $("fTel").value=r.telefono; $("fCorreo").value=r.correo;
+  registro=r.registro||null;
+  renderTipos(); renderVendedoresForm();
+  $("fcard").classList.add("editing");
+  $("fTitle").textContent="Editar "+numTaller(r.numero)+" · Taller";
+  $("fSub").textContent=`Anotado el ${fechaBonita(r.fecha)}. El paso en que va se cambia en la tarjeta.`;
+  $("fGuardarTxt").textContent="Guardar cambios";
+  $("fCancelar").hidden=false; $("status").className="status";
+  $("fcard").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function borrarTaller(id){
+  const r=taller.find(x=>x.id===id); if(!r) return;
+  if(!confirm(`¿Borrar ${numTaller(r.numero)} (${r.nombre}) de la lista del taller? No se puede deshacer.`)) return;
+  taller=taller.filter(x=>x.id!==id);
+  if(editTaller===id) limpiarForm();
+  guardarTaller(); render(); toast("Quitado de la lista del taller");
+}
+function setPasoTaller(id,k){
+  const r=taller.find(x=>x.id===id); if(!r || r.estado===k) return;
+  const ahora=new Date().toISOString();
+  r.estado=k; r.pasos=Object.assign({},r.pasos,{[k]:ahora}); r.actualizado=ahora;
+  guardarTaller(); render(); toast(`${numTaller(r.numero)}: ${pasoTallerDe(k).l}`);
 }
 function editarIngreso(id){
   const r=datos.registros.find(x=>x.id===id); if(!r) return;
@@ -729,11 +874,14 @@ function htmlCita(r){
 function render(){
   const R=datos.registros;
   PASOS.slice(0,4).forEach(p=>$("k-"+p.k).textContent=R.filter(r=>r.estado===p.k).length);
+  const enEspera=taller.filter(r=>r.estado!=="atendido").length;
+  $("chipsTipo").innerHTML=[["","Todos los tipos"],...TIPOS.map(t=>[t.k,t.ic+" "+t.l]),["taller",TIPO_TALLER.ic+" "+TIPO_TALLER.l+(enEspera?` <span class="n">${enEspera}</span>`:"")]]
+    .map(([k,l])=>`<button class="chip t" aria-pressed="${filtroTipo===k}" onclick="setTipoF('${k}')">${l}</button>`).join("");
+  if(filtroTipo==="taller") return renderTaller();
 
   const base=filtrados(true);
   const chips=[["activos","Pendientes"],...PASOS.map(p=>[p.k,p.c]),["todos","Todos"]];
   $("chipsEstado").innerHTML=chips.map(([k,l])=>`<button class="chip" aria-pressed="${filtro===k}" onclick="setFiltro('${k}')">${l} <span class="n">${base.filter(r=>pasaEstado(r,k)).length}</span></button>`).join("");
-  $("chipsTipo").innerHTML=[["","Todos los tipos"],...TIPOS.map(t=>[t.k,t.ic+" "+t.l])].map(([k,l])=>`<button class="chip t" aria-pressed="${filtroTipo===k}" onclick="setTipoF('${k}')">${l}</button>`).join("");
 
   let L=filtrados();
   if(filtro==="cita") L.sort((a,b)=>(a.cita||"9").localeCompare(b.cita||"9")||a.numero-b.numero);
@@ -758,7 +906,7 @@ function render(){
         ${r.nota?`<div><b>Notas:</b> ${esc(r.nota)}</div>`:""}
         ${compra?`<div><b>Compra:</b> ${compra}</div>`:""}
       </div>
-      ${r.tipo==="protection"?`<button class="odsb" onclick="abrirOds(${jsq(r.id)})" title="Ver, completar e imprimir la orden de servicio">📄 Orden de servicio${odsDe(r.id).ods?` <small>· ODS# ${esc(odsDe(r.id).ods)}</small>`:""}</button>`:""}
+      <button class="odsb" onclick="abrirOds(${jsq(r.id)})" title="Ver, completar e imprimir la orden de servicio">📄 Orden de servicio${odsDe(r.id).ods?` <small>· ODS# ${esc(odsDe(r.id).ods)}</small>`:""}</button>
       <div class="gc-meta">Registró <b>${esc(r.registro||"—")}</b> · ${esc(fechaBonita(r.fecha))}</div>
       <div class="pasos">${PASOS.map((p,i)=>`<button class="paso p-${p.k}${i===iAct?" actual":(i<iAct?" hecho":"")}" onclick="setPaso(${jsq(r.id)},'${p.k}')" title="${p.l}"><i>${p.ic}</i>${p.c}${r.pasos[p.k]?`<small>${fechaCorta(r.pasos[p.k]).slice(0,5)}</small>`:""}</button>`).join("")}</div>
     </div>`;
@@ -767,6 +915,56 @@ function render(){
 function setFiltro(k){ filtro=k; render(); }
 function setTipoF(k){ filtroTipo=k; render(); }
 function quitarFiltros(){ filtro="todos"; filtroTipo=""; query=""; $("q").value=""; render(); }
+
+// ---------- lista del taller ----------
+function pasaTaller(r,f){ return f==="todos" ? true : (f==="activos" ? r.estado!=="atendido" : r.estado===f); }
+function filtradosTaller(sinEstado){
+  const qs=fold(query).split(" ").filter(Boolean);
+  return taller.filter(r=>{
+    if(!sinEstado && !pasaTaller(r,filtroT)) return false;
+    if(qs.length){
+      const k=fold([r.nombre,r.producto,r.pide,r.nota,r.registro,r.correo,numTaller(r.numero),"taller"].join(" "))+" "+soloDigitos(r.telefono);
+      if(!qs.every(q=>k.includes(q))) return false;
+    }
+    return true;
+  });
+}
+function textoWaTaller(r){
+  const n=(r.nombre||"").split(/\s+/)[0]||"", eq=r.producto?`su *${r.producto}*`:"su equipo";
+  switch(r.estado){
+    case "espera": return `¡Hola ${n}! 👋 Le escribimos de la tienda DJI. ¡Buenas noticias! 🎉 Ya tenemos disponible nuestro *servicio técnico* 🛠️. Cuando guste, puede traer ${eq} a la tienda y con mucho gusto le atendemos. ¡Lo esperamos! 😊`;
+    case "avisado": return `¡Hola ${n}! 👋 Le recordamos de la tienda DJI que ya tenemos disponible el *servicio técnico* 🛠️. Cuando guste, puede traer ${eq} y con mucho gusto le atendemos. 😊`;
+    default: return `¡Hola ${n}! 👋 Le escribimos de la tienda DJI. ¡Gracias por su confianza! Cualquier cosa con ${eq}, con gusto le ayudamos. 😊`;
+  }
+}
+function setFiltroT(k){ filtroT=k; render(); }
+function renderTaller(){
+  const base=filtradosTaller(true);
+  const chips=[["activos","Pendientes"],...PASOS_TALLER.map(p=>[p.k,p.c]),["todos","Todos"]];
+  $("chipsEstado").innerHTML=chips.map(([k,l])=>`<button class="chip" aria-pressed="${filtroT===k}" onclick="setFiltroT('${k}')">${l} <span class="n">${base.filter(r=>pasaTaller(r,k)).length}</span></button>`).join("");
+  const L=filtradosTaller().sort((a,b)=>b.numero-a.numero||b.fecha.localeCompare(a.fecha));
+  $("listTitle").textContent="🔧 Taller · "+(filtroT==="activos"?"por avisar":(filtroT==="todos"?"todos":pasoTallerDe(filtroT).c.toLowerCase()));
+  $("listCount").textContent=(filtroT!=="activos"||query)?`${L.length} de ${taller.length}`:plural(L.length,"cliente","clientes");
+  if(!taller.length){ $("list").innerHTML=`<div class="empty"><b>Todavía no hay nadie en la lista del taller</b>Elegí <b>🔧 Taller</b> en el formulario para anotar el número del cliente y lo que quiere. Cuando regrese el técnico, le avisás desde aquí.</div>`; return; }
+  if(!L.length){ $("list").innerHTML=`<div class="empty"><b>No hay nadie aquí</b><button class="btn ghost sm" style="margin-top:10px" onclick="filtroT='todos';query='';$('q').value='';render()">Ver todos</button></div>`; return; }
+  $("list").innerHTML=L.map(r=>{
+    const iAct=PASOS_TALLER.findIndex(p=>p.k===r.estado);
+    return `<div class="gc e-${r.estado}">
+      <div class="gc-top"><span class="tipo taller">${TIPO_TALLER.ic} ${TIPO_TALLER.l}</span><span class="num">${numTaller(r.numero)}</span>
+        <div class="gc-acts"><button class="ib" onclick="editarTaller(${jsq(r.id)})" title="Editar">${IC_EDIT}</button><button class="ib del" onclick="borrarTaller(${jsq(r.id)})" title="Borrar">${IC_DEL}</button></div></div>
+      <div class="gc-prod">${esc(r.producto||"Servicio técnico")}</div>
+      <div class="gc-who"><b>${esc(r.nombre)}</b><a class="tel" href="tel:${esc(soloDigitos(r.telefono))}">${esc(telBonito(r.telefono))}</a>
+        <a class="wa" href="https://wa.me/${esc(telWa(r.telefono))}?text=${esc(encodeURIComponent(textoWaTaller(r)))}" target="_blank" rel="noopener" title="${r.estado==="atendido"?"Abrir chat de WhatsApp":"Avisarle por WhatsApp que ya hay servicio técnico"}">${IC_WA}${r.estado==="atendido"?"WhatsApp":"Avisar por WhatsApp"}</a></div>
+      <div class="gc-info">
+        <div><b>Quiere:</b> ${esc(r.pide)}</div>
+        ${r.nota?`<div><b>Notas:</b> ${esc(r.nota)}</div>`:""}
+        ${r.correo?`<div><b>Correo:</b> ${esc(r.correo)}</div>`:""}
+      </div>
+      <div class="gc-meta">Anotó <b>${esc(r.registro||"—")}</b> · ${esc(fechaBonita(r.fecha))}</div>
+      <div class="pasos p3">${PASOS_TALLER.map((p,i)=>`<button class="paso p-${p.k}${i===iAct?" actual":(i<iAct?" hecho":"")}" onclick="setPasoTaller(${jsq(r.id)},'${p.k}')" title="${p.l}"><i>${p.ic}</i>${p.c}${r.pasos[p.k]?`<small>${fechaCorta(r.pasos[p.k]).slice(0,5)}</small>`:""}</button>`).join("")}</div>
+    </div>`;
+  }).join("");
+}
 
 // ============================================================
 //  BOLETA (para imprimir y entregar al cliente)
@@ -976,7 +1174,7 @@ function htmlImpresionOds(r, d){
 function abrirAjustes(){ $("ajModal").classList.add("show"); }
 function cerrarAjustes(){ $("ajModal").classList.remove("show"); }
 function descargarRespaldo(){
-  const blob=new Blob([JSON.stringify({tipo:"garantias_dji",exportado:new Date().toISOString(),...datos,ods:odsDatos},null,2)],{type:"application/json"});
+  const blob=new Blob([JSON.stringify({tipo:"garantias_dji",exportado:new Date().toISOString(),...datos,ods:odsDatos,taller},null,2)],{type:"application/json"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
   a.download="Respaldo garantias DJI "+fechaCorta(new Date().toISOString()).replace(/\//g,"-")+".json";
   document.body.appendChild(a); a.click(); a.remove();
@@ -998,8 +1196,16 @@ $("archivo").addEventListener("change",async e=>{
       for(const id in d.ods){ const o=limpiarOds(d.ods[id]), ex=odsDatos[id]; if(o && (!ex || (o.actualizado||"")>(ex.actualizado||""))){ odsDatos[id]=o; n++; } }
       if(n){ guardarOdsLocal(); subirOds(); }
     }
+    let nT=0;
+    if(Array.isArray(d.taller)){
+      d.taller.map(limpiarTaller).filter(Boolean).forEach(r=>{
+        const ex=taller.find(x=>x.id===r.id);
+        if(!ex){ taller.push(r); nT++; } else if((r.actualizado||r.fecha)>(ex.actualizado||ex.fecha)){ Object.assign(ex,r); nT++; }
+      });
+      if(nT) guardarTaller();
+    }
     guardar(); render(); renderDatalist();
-    alert(`Respaldo cargado: ${plural(nuevos,"ingreso nuevo","ingresos nuevos")}${act?`, ${plural(act,"actualizado","actualizados")}`:""}.`);
+    alert(`Respaldo cargado: ${plural(nuevos,"ingreso nuevo","ingresos nuevos")}${nT?`, ${plural(nT,"cliente del taller","clientes del taller")}`:""}${act?`, ${plural(act,"actualizado","actualizados")}`:""}.`);
   }catch(err){ alert("Ese archivo no es un respaldo de garantías válido."); }
 });
 
@@ -1007,6 +1213,7 @@ $("archivo").addEventListener("change",async e=>{
 //  EXPORTAR A EXCEL (diseño DJI)
 // ============================================================
 async function exportExcel(){
+  if(filtroTipo==="taller") return exportExcelTaller();
   const L=filtrados().sort((a,b)=>a.numero-b.numero);
   if(!L.length){ alert(datos.registros.length?"No hay ingresos con el filtro actual.":"Todavía no hay ingresos registrados."); return; }
   const DARK="FF44546A", WHITE="FFFFFFFF", INK="FF4A4F59", GRIDBG="FFF7F8FA";
@@ -1048,6 +1255,48 @@ async function exportExcel(){
   toast("Excel exportado");
 }
 
+// lista del taller (con el filtro actual), mismo diseño DJI
+async function exportExcelTaller(){
+  const L=filtradosTaller().sort((a,b)=>a.numero-b.numero);
+  if(!L.length){ alert(taller.length?"No hay nadie en la lista del taller con el filtro actual.":"Todavía no hay nadie en la lista del taller."); return; }
+  const DARK="FF44546A", WHITE="FFFFFFFF", INK="FF4A4F59", GRIDBG="FFF7F8FA";
+  const wb=new ExcelJS.Workbook();
+  const ws=wb.addWorksheet("Taller",{views:[{showGridLines:false,state:"frozen",ySplit:5}]});
+  const heads=["N.º","Fecha","Paso","Cliente","Teléfono","Correo","Equipo","Qué quiere","Notas","Anotó","Avisado el"];
+  const widths=[9,11,18,26,12,26,24,40,30,12,11];
+  ws.columns=[{width:3},...widths.map(w=>({width:w})),{width:3}];
+  const B=2, K=B+heads.length-1;
+  const thin={style:"thin",color:{argb:"FFB9C0CC"}}, border={top:thin,left:thin,bottom:thin,right:thin};
+  const band=c=>{ c.fill={type:"pattern",pattern:"solid",fgColor:{argb:DARK}}; c.font={name:"Calibri",size:12,bold:true,color:{argb:WHITE}}; };
+  ws.mergeCells(1,B,3,K);
+  for(let r=1;r<=3;r++) for(let c=B;c<=K;c++) band(ws.getCell(r,c));
+  try{ const img=wb.addImage({base64:window.DJI_LOGO_B64,extension:"png"}); ws.addImage(img,{tl:{col:K-1.2,row:0.25},ext:{width:95,height:52},editAs:"oneCell"}); }catch(e){}
+  ws.mergeCells(4,B,4,B+5); const t=ws.getCell(4,B); t.value="Taller · lista de espera   ·   Exportado: "+fechaCorta(new Date().toISOString()); band(t); t.alignment={vertical:"middle",indent:1};
+  ws.mergeCells(4,B+6,4,K); const tr=ws.getCell(4,B+6); tr.value=plural(L.length,"cliente","clientes"); band(tr); tr.alignment={vertical:"middle",horizontal:"right",indent:1};
+  ws.getRow(4).height=20;
+  heads.forEach((h,i)=>{ const c=ws.getCell(5,B+i); c.value=h; band(c); c.border=border; c.alignment={vertical:"middle",horizontal:"center",wrapText:true}; });
+  ws.getRow(5).height=30;
+  const font={name:"Calibri",size:11,color:{argb:INK}};
+  let r=6;
+  L.forEach(x=>{
+    const vals=[numTaller(x.numero),fechaCorta(x.fecha),pasoTallerDe(x.estado).l,x.nombre,telBonito(x.telefono),x.correo,x.producto,x.pide,x.nota,x.registro,x.pasos.avisado?fechaCorta(x.pasos.avisado):""];
+    vals.forEach((v,i)=>{ const c=ws.getCell(r,B+i); c.value=v; c.font=font; c.border=border; c.fill={type:"pattern",pattern:"solid",fgColor:{argb:GRIDBG}}; c.alignment={vertical:"top",wrapText:[7,8].includes(i),horizontal:[0,1,4,10].includes(i)?"center":"left",indent:[0,1,4,10].includes(i)?0:1}; });
+    r++;
+  });
+  ws.mergeCells(r,B,r,B+5); const g1=ws.getCell(r,B); g1.value="TOTAL";
+  ws.mergeCells(r,B+6,r,K); const g2=ws.getCell(r,B+6);
+  g2.value=PASOS_TALLER.map(p=>[p.c,L.filter(x=>x.estado===p.k).length]).filter(([,n])=>n).map(([l,n])=>`${l}: ${n}`).join("  ·  ");
+  for(let c=B;c<=K;c++){ const cell=ws.getCell(r,c); band(cell); cell.border=border; }
+  g1.alignment={horizontal:"left",indent:1}; g2.alignment={horizontal:"right",indent:1};
+  ws.getRow(r).height=22;
+  const buf=await wb.xlsx.writeBuffer();
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
+  a.download="Taller DJI "+fechaCorta(new Date().toISOString()).replace(/\//g,"-")+".xlsx";
+  document.body.appendChild(a); a.click(); a.remove();
+  toast("Excel del taller exportado");
+}
+
 // ---------- eventos ----------
 $("fGuardar").addEventListener("click",guardarIngreso);
 $("fCancelar").addEventListener("click",()=>{ limpiarForm(); $("status").className="status"; });
@@ -1056,7 +1305,7 @@ $("q").addEventListener("input",e=>{ query=e.target.value; render(); });
 $("btnExport").addEventListener("click",exportExcel);
 $("btnAjustes").addEventListener("click",abrirAjustes);
 $("ajModal").addEventListener("click",e=>{ if(e.target.id==="ajModal") cerrarAjustes(); });
-document.querySelectorAll(".kpi").forEach(k=>k.addEventListener("click",()=>{ filtro=k.dataset.f; render(); }));
+document.querySelectorAll(".kpi").forEach(k=>k.addEventListener("click",()=>{ filtro=k.dataset.f; if(filtroTipo==="taller") filtroTipo=""; render(); }));
 document.addEventListener("keydown",e=>{ if(e.key!=="Escape") return; if($("odsModal").classList.contains("show")) cerrarOds(); else if($("ajModal").classList.contains("show")) cerrarAjustes(); });
 $("odsModal").addEventListener("click",e=>{ if(e.target.id==="odsModal") cerrarOds(); });
 $("odsModal").addEventListener("input",vistaOds);
@@ -1066,6 +1315,7 @@ addEventListener("resize",()=>{ if(odsId) vistaOds(); });
 // ---------- inicio ----------
 cargar();
 cargarOds();
+cargarTaller();
 limpiarForm();
 renderDatalist();
 render();
