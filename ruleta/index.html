@@ -81,8 +81,6 @@
   .tools input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
   .lista{display:flex;flex-direction:column;gap:8px;max-height:560px;overflow:auto}
   .en{display:flex;gap:11px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:9px 10px;background:#fff}
-  .en.anulada{opacity:.55;background:#fafbfc}
-  .en.anulada .en-p{text-decoration:line-through}
   .en-f{width:52px;height:52px;border-radius:10px;flex:none;background:var(--line-2);display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden;border:0;padding:0;cursor:pointer}
   .en-f img{width:100%;height:100%;object-fit:cover;display:block}
   .en-b{flex:1;min-width:0}
@@ -306,9 +304,9 @@
 <canvas id="confeti"></canvas>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261024b"></script>
+<script src="../nube.js?v=20261024c"></script>
 <script src="../recepcion/lib/exceljs.min.js"></script>
-<script src="../recepcion/catalog.js?v=20261024b"></script>
+<script src="../recepcion/catalog.js?v=20261024c"></script>
 <script>
 /* ============================================================
    Girá y Ganá — ruleta de premios con inventario.
@@ -385,19 +383,19 @@ function limpiarAj(a){
 const RX_FOTO = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
 function limpiarEntrega(e){
   if(!e || typeof e!=="object") return null;
+  if(e.anulada) return null;   // los giros anulados ya no se guardan (se quitan de la lista y de la nube)
   const foto=S(e.foto);
   const o={
     id:S(e.id)||nuevoId(), n:Number(e.n)||0, fecha:S(e.fecha)||new Date().toISOString(),
     premio:S(e.premio), premioNombre:S(e.premioNombre), emoji:S(e.emoji)||"🎁", frase:S(e.frase)||FRASES[0],
     nombre:S(e.nombre), telefono:S(e.telefono), registro:S(e.registro),
-    foto:(RX_FOTO.test(foto) && foto.length<900000) ? foto : "",
-    anulada:!!e.anulada
+    foto:(RX_FOTO.test(foto) && foto.length<900000) ? foto : ""
   };
   if(e.drive && typeof e.drive==="object" && S(e.drive.url)) o.drive={url:S(e.drive.url), id:S(e.drive.id)};
   if(e.actualizado) o.actualizado=S(e.actualizado);
   return o.premio ? o : null;
 }
-const validas = () => entregas.filter(e=>!e.anulada);
+const validas = () => entregas;
 const entregados = k => validas().filter(e=>e.premio===k).length;
 const quedan = p => Math.max(0, p.cantidad - entregados(p.k));
 const totalQuedan = () => aj.premios.reduce((s,p)=>s+quedan(p),0);
@@ -503,6 +501,11 @@ async function conectarEntregas(){
     let lista=Object.keys(mapa).map(id=>limpiarEntrega(Object.assign({id},mapa[id]))).filter(Boolean);
     nubeEnt=mapa;
     if(entSinSubir){ entSinSubir=false; lista=unirEntregas(mapa, entregas); Nube.guardarColeccion("ruleta", mapaDe(lista), mapa); }
+    else if(lista.length!==Object.keys(mapa).length){
+      // en la nube quedaron giros anulados (de antes): se borran, sin tocar los demás
+      const vivos={}; lista.forEach(e=>{ vivos[e.id]=mapa[e.id]; });
+      Nube.guardarColeccion("ruleta", vivos, mapa);
+    }
     const orden=l=>l.slice().sort((a,b)=>a.id.localeCompare(b.id));
     if(Nube.estable(orden(lista))===Nube.estable(orden(entregas))) return;
     entregas=lista; guardarLocal(); render();
@@ -681,13 +684,12 @@ function mostrarPremio(e, p, frase){
   resId=e?e.id:null; resPrueba=e?null:{p, frase}; fotoNueva=null;
   $("resGana").innerHTML=`<div class="em">${esc(emoji)}</div><div class="fr">${esc(e?e.frase:frase)}</div>
     <div class="pr">Se lleva:<b>${esc(nombre)}</b></div>
-    ${e?`<div class="num">Entrega ${numTxt(e.n)} · ${esc(fechaBonita(e.fecha))}${e.anulada?" · ANULADA":""}</div>`:`<div class="aviso">🧪 Modo prueba: no se descontó del inventario</div>`}`;
+    ${e?`<div class="num">Entrega ${numTxt(e.n)} · ${esc(fechaBonita(e.fecha))}</div>`:`<div class="aviso">🧪 Modo prueba: no se descontó del inventario</div>`}`;
   $("resDatos").hidden=!e; $("rAnular").hidden=!e;
   if(e){
     $("rNom").value=e.nombre; $("rTel").value=e.telefono;
     regSel=e.registro||null; pintarRegistro();
     pintarFoto(e.foto);
-    $("rAnular").textContent=e.anulada?"↪️ Volver a contarlo":"↩️ Anular este giro";
   }
   abrir("resModal");
 }
@@ -726,12 +728,13 @@ async function cerrarPremio(){
   }
   fotoNueva=null; resId=null; resPrueba=null; cerrar("resModal");
 }
-function anularActual(){
+// anular = el premio NO se entregó: vuelve al inventario y el giro se quita de la lista
+async function anularActual(){
   const e=entregas.find(x=>x.id===resId); if(!e) return;
-  if(!e.anulada && !confirm(`¿Anular la entrega ${numTxt(e.n)} (${nombrePremio(e)})?\n\nEl premio vuelve al inventario. Usalo solo si el premio NO se entregó.`)) return;
-  if(e.anulada){ const p=premioDe(e.premio); if(p && quedan(p)<=0){ alert(`Ya no quedan ${p.nombre} en el inventario: no se puede volver a contar.`); return; } }
-  e.anulada=!e.anulada; e.actualizado=new Date().toISOString();
-  guardar(); render(); toast(e.anulada?"Giro anulado: el premio volvió al inventario":"Entrega contada otra vez");
+  if(!confirm(`¿Anular la entrega ${numTxt(e.n)} (${nombrePremio(e)})?\n\nEl premio vuelve al inventario y el giro se quita de la lista. Usalo solo si el premio NO se entregó.`)) return;
+  entregas=entregas.filter(x=>x.id!==e.id);
+  await IDB.del("cola",e.id); pendientes.delete(e.id);
+  guardar(); render(); toast("Giro anulado: el premio volvió al inventario");
   fotoNueva=null; resId=null; cerrar("resModal");
 }
 function verFoto(id){
@@ -833,8 +836,8 @@ function renderInventario(){
       <div class="ip-bar"><i style="width:${pc}%"></i></div>
       <div class="ip-s">${qq<=0?"⚠️ Agotado · ":""}${plural(ent,"entregado","entregados")}</div></div>`;
   }).join("");
-  const ent=validas().length, anul=entregas.length-ent;
-  $("invTxt").innerHTML=`<b>${plural(ent,"premio entregado","premios entregados")}</b>${anul?` · ${plural(anul,"giro anulado","giros anulados")}`:""}${local.prueba?" · 🧪 esta computadora está en modo prueba":""}`;
+  const ent=validas().length;
+  $("invTxt").innerHTML=`<b>${plural(ent,"premio entregado","premios entregados")}</b>${local.prueba?" · 🧪 esta computadora está en modo prueba":""}`;
 }
 function renderDrive(){
   const L=$("driveLine"), n=pendientes.size;
@@ -855,19 +858,19 @@ function renderLista(){
   const qs=fold(query).split(" ").filter(Boolean);
   const L=entregas.filter(e=>{
     if(!qs.length) return true;
-    const k=fold([nombrePremio(e),e.nombre,e.registro,numTxt(e.n),String(e.n),e.anulada?"anulada":""].join(" "))+" "+soloDigitos(e.telefono);
+    const k=fold([nombrePremio(e),e.nombre,e.registro,numTxt(e.n),String(e.n)].join(" "))+" "+soloDigitos(e.telefono);
     return qs.every(q=>k.includes(q));
   }).sort((a,b)=>b.n-a.n||b.fecha.localeCompare(a.fecha));
   const ent=validas().length;
   $("entCount").textContent=qs.length?`${L.length} de ${entregas.length}`:plural(ent,"entrega","entregas");
   if(!entregas.length){ $("lista").innerHTML=`<div class="vacio"><b>Todavía no hay entregas</b>Cada vez que alguien gira, queda anotado aquí con su premio. Después le podés agregar el nombre y la foto.</div>`; return; }
   if(!L.length){ $("lista").innerHTML=`<div class="vacio">No hay entregas con esa búsqueda.</div>`; return; }
-  $("lista").innerHTML=L.map(e=>`<div class="en${e.anulada?" anulada":""}">
+  $("lista").innerHTML=L.map(e=>`<div class="en">
       <button class="en-f" onclick="verFoto(${jsq(e.id)})" title="${e.foto?"Ver foto":"Agregar foto"}">${e.foto?`<img src="${e.foto}" alt="">`:esc(emojiPremio(e))}</button>
       <div class="en-b">
-        <div class="en-p"><span>${numTxt(e.n)}</span>${esc(emojiPremio(e))} ${esc(nombrePremio(e))}${e.anulada?" · anulada":""}</div>
+        <div class="en-p"><span>${numTxt(e.n)}</span>${esc(emojiPremio(e))} ${esc(nombrePremio(e))}</div>
         <div class="en-s">${esc(e.nombre||"Cliente sin nombre")}${e.telefono?" · "+esc(telBonito(e.telefono)):""}${e.registro?" · entregó "+esc(e.registro):""} · ${esc(fechaBonita(e.fecha))}</div>
-        ${e.anulada?"":estadoFoto(e)}
+        ${estadoFoto(e)}
       </div>
       <div class="en-a"><button class="ib" onclick="editarEntrega(${jsq(e.id)})" title="Agregar o cambiar nombre, teléfono y foto">${e.foto?"✏️":"📷 Foto"}</button></div>
     </div>`).join("");
@@ -949,9 +952,9 @@ async function exportExcel(){
   const hoy=fechaCorta(new Date().toISOString());
   const L=entregas.slice().sort((a,b)=>a.n-b.n);
   const h1=hoja("Entregas", `${aj.titulo} · Entregas · Exportado: ${hoy}`, plural(validas().length,"premio entregado","premios entregados"),
-    ["N.º","Fecha","Hora","Premio","Cliente","Teléfono","Entregó","Foto","Google Drive","Estado"], [8,12,8,16,26,12,13,9,34,12],
-    L.map(e=>[numTxt(e.n),fechaCorta(e.fecha),horaDe(e.fecha),nombrePremio(e),e.nombre,telBonito(e.telefono),e.registro,e.foto?"Sí":"No",e.drive?{text:"Abrir foto",hyperlink:e.drive.url}:"",e.anulada?"Anulada":"Entregado"]),
-    [0,1,2,5,7,9]);
+    ["N.º","Fecha","Hora","Premio","Cliente","Teléfono","Entregó","Foto","Google Drive"], [8,12,8,16,26,12,13,9,34],
+    L.map(e=>[numTxt(e.n),fechaCorta(e.fecha),horaDe(e.fecha),nombrePremio(e),e.nombre,telBonito(e.telefono),e.registro,e.foto?"Sí":"No",e.drive?{text:"Abrir foto",hyperlink:e.drive.url}:""]),
+    [0,1,2,5,7]);
   if(!L.length){ const c=h1.ws.getCell(6,h1.B); c.value="Todavía no hay entregas"; c.font=font; }
   const total=aj.premios.reduce((s,p)=>s+p.cantidad,0), ent=aj.premios.reduce((s,p)=>s+entregados(p.k),0);
   const h2=hoja("Inventario", `${aj.titulo} · Inventario · ${hoy}`, `Quedan ${totalQuedan()} de ${total}`,

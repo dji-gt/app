@@ -31,7 +31,7 @@ FOTO DE LA ENTREGA (respaldo)
 SI ALGO SALIÓ MAL
 -----------------
 - "↩️ Anular este giro" (en la ventana del premio o desde la lista): el premio
-  vuelve al inventario. Usalo solo si el premio NO se entregó.
+  vuelve al inventario y el giro se quita de la lista. Usalo solo si el premio NO se entregó.
 
 AJUSTES (⚙️)
 ------------
