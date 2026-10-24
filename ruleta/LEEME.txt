@@ -30,6 +30,9 @@ FOTO DE LA ENTREGA (respaldo)
 
 SI ALGO SALIÓ MAL
 -----------------
+- ¿Le dieron otro premio del que salió? Tocá la entrega en la lista (✏️ o 📷)
+  → "Premio que se entregó" → elegí el que se llevó → Listo. El inventario se
+  ajusta solo y queda anotado qué había salido en la ruleta.
 - "↩️ Anular este giro" (en la ventana del premio o desde la lista): el premio
   vuelve al inventario y el giro se quita de la lista. Usalo solo si el premio NO se entregó.
 
