@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Girá y Ganá · Ruleta DJI</title>
+<style>
+  :root{
+    --bg:#f3f4f7; --card:#ffffff; --ink:#14171c; --ink-2:#3b424d; --muted:#8b93a1;
+    --line:#e9ebef; --line-2:#f1f3f6;
+    --black:#111318; --black-2:#1b1e26;
+    --accent:#2563eb; --accent-d:#1d4ed8; --accent-bg:#eef3fe;
+    --cyan:#1fb5f0; --cyan-d:#0e8fd0;
+    --ok:#0e9f6e; --ok-bg:#e7f7f0; --ok-br:#bfe9d7;
+    --warn:#b7791f; --warn-bg:#fdf6e6; --warn-br:#f0e0b8;
+    --err:#e02424; --err-bg:#fdecec; --err-br:#f6c9c9;
+    --shadow-sm:0 1px 2px rgba(16,24,40,.06);
+    --shadow:0 1px 3px rgba(16,24,40,.06),0 10px 26px rgba(16,24,40,.05);
+    --shadow-lg:0 18px 44px rgba(16,24,40,.13);
+    --r:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  [hidden]{display:none!important}
+  input,select,textarea,button{font-family:inherit}
+
+  /* ===== barra ===== */
+  .appbar{background:var(--black);color:#fff;padding:0 22px;display:flex;align-items:center;gap:12px;height:66px;position:sticky;top:0;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.16)}
+  .appbar b{font-size:17px;font-weight:750}
+  .appbar .sub{font-size:13px;color:rgba(255,255,255,.6);font-weight:600}
+  .ab-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .ab-btn{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 13px;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+  .ab-btn:hover{background:rgba(255,255,255,.18)}
+  .ab-btn.cy{background:var(--cyan);border-color:var(--cyan)}
+  .ab-btn.cy:hover{background:var(--cyan-d)}
+
+  .wrap{max-width:1240px;margin:0 auto;padding:22px 20px 40px}
+  .layout{display:grid;grid-template-columns:1fr;gap:18px;align-items:start}
+  @media(min-width:960px){ .layout{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} }
+
+  /* ===== afiche (la imagen de la ruleta) ===== */
+  .escena{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .afiche{position:relative;width:min(100%,520px,calc((100vh - 120px) * 600 / 1040));background:#000;border-radius:14px;box-shadow:0 18px 44px rgba(0,0,0,.28);overflow:hidden;container-type:inline-size;user-select:none;-webkit-user-select:none}
+  .afiche svg{display:block;width:100%;height:auto}
+  .girar{position:absolute;left:50%;top:83.3%;transform:translate(-50%,-50%);width:50%;padding:2.6cqw 0;border:0;border-radius:999px;cursor:pointer;
+    background:linear-gradient(180deg,#5fd4ff,#1fb5f0 45%,#0d86cc);color:#fff;font-weight:900;font-style:italic;font-size:7cqw;letter-spacing:.06em;
+    box-shadow:0 0 0 .9cqw rgba(31,181,240,.22),0 1.6cqw 4cqw rgba(31,181,240,.45);text-shadow:0 2px 6px rgba(0,40,80,.4);transition:transform .12s, filter .12s}
+  .girar:hover{filter:brightness(1.06)}
+  .girar:active{transform:translate(-50%,-48%) scale(.98)}
+  .girar:disabled{cursor:default;filter:grayscale(.85) brightness(.75);box-shadow:none}
+  .prueba-tag{position:absolute;left:3cqw;top:3cqw;background:#f6c344;color:#3b2a00;font-weight:800;font-size:3.2cqw;border-radius:999px;padding:1cqw 2.6cqw}
+  .ayuda{margin:0;font-size:13px;color:var(--muted);text-align:center;max-width:520px}
+
+  /* ===== panel ===== */
+  .panel{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px}
+  .card-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .card-h b{font-size:16px;font-weight:800}
+  .card-h span{font-size:13px;color:var(--muted);font-weight:600}
+  .inv{display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:10px}
+  .ip{border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:#fafbfc}
+  .ip-t{display:flex;align-items:center;gap:8px;font-weight:800}
+  .ip-t i{font-style:normal;font-size:20px}
+  .ip-n{font-size:26px;font-weight:850;letter-spacing:-.5px;margin-top:4px;line-height:1}
+  .ip-n small{font-size:13px;color:var(--muted);font-weight:700;letter-spacing:0}
+  .ip-bar{height:7px;border-radius:9px;background:var(--line-2);margin-top:8px;overflow:hidden}
+  .ip-bar i{display:block;height:100%;background:linear-gradient(90deg,#5fd4ff,#1fb5f0);border-radius:9px}
+  .ip-s{font-size:12px;color:var(--muted);font-weight:600;margin-top:5px}
+  .ip.agotado{background:var(--err-bg);border-color:var(--err-br)}
+  .ip.agotado .ip-n{color:#b71c1c}
+  .tot{margin-top:12px;font-size:13.5px;color:var(--ink-2);font-weight:600}
+  .tot b{color:var(--ink)}
+
+  .drive{display:flex;align-items:flex-start;gap:9px;border-radius:11px;padding:10px 12px;font-size:13px;font-weight:600;margin-bottom:12px;line-height:1.4}
+  .drive.ok{background:var(--ok-bg);color:#0b7a53;border:1px solid var(--ok-br)}
+  .drive.warn{background:var(--warn-bg);color:#8a5b12;border:1px solid var(--warn-br)}
+  .drive .btn{margin-left:auto}
+  .tools{display:flex;gap:8px;margin-bottom:10px}
+  .tools input{flex:1;min-width:0;padding:9px 12px;border:1px solid var(--line);border-radius:10px;font-size:14px;outline:none}
+  .tools input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .lista{display:flex;flex-direction:column;gap:8px;max-height:560px;overflow:auto}
+  .en{display:flex;gap:11px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:9px 10px;background:#fff}
+  .en.anulada{opacity:.55;background:#fafbfc}
+  .en.anulada .en-p{text-decoration:line-through}
+  .en-f{width:52px;height:52px;border-radius:10px;flex:none;background:var(--line-2);display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden;border:0;padding:0;cursor:pointer}
+  .en-f img{width:100%;height:100%;object-fit:cover;display:block}
+  .en-b{flex:1;min-width:0}
+  .en-p{font-weight:800;font-size:14.5px}
+  .en-p span{font-family:"Consolas","SF Mono",monospace;color:var(--muted);font-weight:700;font-size:12px;margin-right:4px}
+  .en-s{font-size:12.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .en-d{font-size:12px;font-weight:700;margin-top:2px}
+  .en-d.ok{color:var(--ok)} .en-d.warn{color:var(--warn)} .en-d.mut{color:var(--muted)}
+  .en-d a{color:inherit}
+  .en-a{display:flex;gap:5px;flex:none}
+  .ib{height:32px;min-width:32px;border-radius:9px;border:none;background:var(--line-2);color:var(--ink-2);cursor:pointer;font-weight:700;font-size:12.5px;padding:0 9px}
+  .ib:hover{background:#e3e7ee}
+  .vacio{border:1.5px dashed var(--line);border-radius:12px;padding:26px 16px;text-align:center;color:var(--muted);font-size:14px}
+  .vacio b{display:block;color:var(--ink);margin-bottom:4px}
+
+  /* ===== botones y campos ===== */
+  .btn{border:none;border-radius:10px;padding:12px 17px;font-size:14.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--accent);color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.28)}.btn.primary:hover{background:var(--accent-d)}
+  .btn.dark{background:var(--black);color:#fff}.btn.dark:hover{background:var(--black-2)}
+  .btn.ghost{background:var(--line-2);color:var(--ink-2)}.btn.ghost:hover{background:#e7eaef}
+  .btn.danger{background:var(--err-bg);color:#b71c1c}.btn.danger:hover{background:#fbdada}
+  .btn.sm{padding:8px 12px;font-size:13px;border-radius:9px}
+  .fl{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin:12px 0 6px 2px}
+  .fl i{font-style:normal;text-transform:none;letter-spacing:0;font-weight:600}
+  .in{width:100%;font-size:15.5px;font-weight:600;padding:11px 13px;border:2px solid var(--line);border-radius:12px;outline:none;background:#fafbfc;color:var(--ink)}
+  .in:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.13)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .seg{display:flex;flex-wrap:wrap;gap:8px}
+  .seg button{border:2px solid var(--line);background:#fafbfc;border-radius:11px;padding:9px 13px;font-size:14px;font-weight:700;color:var(--ink-2);cursor:pointer}
+  .seg button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:#fff}
+  .chk{display:flex;align-items:center;gap:9px;margin-top:10px;font-weight:700;font-size:14.5px;cursor:pointer;user-select:none}
+  .chk input{width:19px;height:19px;accent-color:var(--accent)}
+
+  /* ===== ventanas ===== */
+  @keyframes pop{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
+  @keyframes salta{0%{transform:scale(.4) rotate(-12deg)}60%{transform:scale(1.15) rotate(6deg)}100%{transform:scale(1) rotate(0)}}
+  .modal-ov{position:fixed;inset:0;background:rgba(17,19,24,.6);backdrop-filter:blur(3px);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:5vh 16px;overflow:auto}
+  .modal-ov.show{display:flex}
+  .modal{background:var(--card);border-radius:18px;box-shadow:var(--shadow-lg);width:100%;max-width:560px;display:flex;flex-direction:column;overflow:hidden;animation:pop .2s ease}
+  .modal-h{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line)}
+  .modal-h b{font-size:18px}
+  .modal-x{border:none;background:var(--line-2);width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:14px;color:var(--ink-2);font-weight:700}
+  .modal-x:hover{background:var(--err);color:#fff}
+  .msec{padding:16px 20px;border-bottom:1px solid var(--line)}
+  .msec:last-child{border-bottom:none}
+  .msec h3{margin:0 0 4px;font-size:15px}
+  .msec p{margin:0 0 10px;font-size:13px;color:var(--muted)}
+  .mrow{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .macts{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;padding:14px 20px;background:#fafbfc;border-top:1px solid var(--line)}
+  .macts .izq{margin-right:auto}
+
+  .gana{background:radial-gradient(circle at 50% 0,#163a52,#000 70%);color:#fff;text-align:center;padding:26px 20px 22px}
+  .gana .em{font-size:76px;line-height:1;animation:salta .6s ease}
+  .gana .fr{font-size:30px;font-weight:900;font-style:italic;margin-top:10px;letter-spacing:-.3px}
+  .gana .pr{font-size:17px;color:rgba(255,255,255,.75);margin-top:4px;font-weight:600}
+  .gana .pr b{display:block;color:#5fd4ff;font-size:34px;font-weight:900;font-style:italic;text-transform:uppercase;margin-top:4px;letter-spacing:.02em}
+  .gana .num{font-family:"Consolas","SF Mono",monospace;font-size:12.5px;color:rgba(255,255,255,.55);margin-top:8px}
+  .gana .aviso{display:inline-block;margin-top:10px;background:#f6c344;color:#3b2a00;border-radius:999px;padding:4px 12px;font-weight:800;font-size:13px}
+  .fotobox{display:flex;gap:12px;align-items:center;margin-top:4px}
+  .fotoprev{width:92px;height:92px;border-radius:12px;background:var(--line-2);display:flex;align-items:center;justify-content:center;font-size:30px;overflow:hidden;flex:none;border:2px dashed #d5dae2}
+  .fotoprev img{width:100%;height:100%;object-fit:cover;display:block}
+  .fotoprev.has{border-style:solid;border-color:var(--ok-br)}
+  .fotobtns{display:flex;flex-direction:column;gap:7px}
+  .fotonota{font-size:12.5px;color:var(--muted);margin-top:6px}
+  .grande{display:block;width:100%;max-height:72vh;object-fit:contain;background:#000}
+
+  .pr-row{display:grid;grid-template-columns:58px 1fr 96px 34px;gap:8px;align-items:center;margin-bottom:8px}
+  .pr-row .in{padding:9px 10px;font-size:14.5px}
+  .pr-row .em-in{text-align:center;font-size:20px;padding:6px}
+  .pr-row small{grid-column:2/4;margin-top:-4px;font-size:12px;color:var(--muted);font-weight:600}
+  .pr-h{display:grid;grid-template-columns:58px 1fr 96px 34px;gap:8px;font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:6px 0}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--black);color:#fff;padding:11px 16px;border-radius:11px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:300;box-shadow:var(--shadow-lg);max-width:calc(100% - 32px)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #confeti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:250}
+
+  /* ===== pantalla para el cliente ===== */
+  .salir-kiosco{display:none;position:fixed;right:14px;top:14px;z-index:60;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);border-radius:10px;padding:8px 12px;font-weight:700;font-size:13px;cursor:pointer}
+  body.kiosco{background:#000}
+  body.kiosco .appbar, body.kiosco .panel, body.kiosco .ayuda{display:none}
+  body.kiosco .salir-kiosco{display:block}
+  body.kiosco .wrap{max-width:none;padding:10px}
+  body.kiosco .layout{grid-template-columns:1fr}
+  body.kiosco .afiche{width:min(100%,calc((100vh - 20px) * 600 / 1040));border-radius:0;box-shadow:none}
+
+  @media(max-width:720px){
+    .appbar{padding:0 14px;height:60px}
+    .appbar .sub{display:none}
+    .ab-btn span{display:none}
+    .ab-btn{padding:9px}
+    .wrap{padding:14px 12px 40px}
+    .row2{grid-template-columns:1fr}
+    .modal-ov{padding:0}
+    .modal{max-width:100%;min-height:100vh;border-radius:0}
+    .afiche{width:100%}
+  }
+</style>
+</head>
+<body>
+<div class="appbar">
+  <b>🎡 Girá y Ganá</b><span class="sub">Ruleta de premios</span>
+  <div class="ab-right">
+    <span id="nubeEstado"></span>
+    <button class="ab-btn cy" id="btnPantalla" title="Mostrar solo la ruleta en pantalla completa (para el cliente)">📺<span>Pantalla para el cliente</span></button>
+    <button class="ab-btn" id="btnExcel" title="Exportar entregas e inventario a Excel">⬇️<span>Excel</span></button>
+    <button class="ab-btn" id="btnAjustes" title="Premios, textos del afiche y más">⚙️<span>Ajustes</span></button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="layout">
+    <section class="escena">
+      <div class="afiche" id="afiche">
+        <svg id="svg" viewBox="0 0 600 1040" role="img" aria-label="Ruleta Girá y Ganá"></svg>
+        <button class="girar" id="btnGirar">GIRAR</button>
+        <div class="prueba-tag" id="pruebaTag" hidden>🧪 MODO PRUEBA · no descuenta</div>
+      </div>
+      <p class="ayuda">Tocá <b>GIRAR</b> (o la tecla espacio). El premio sale al azar según lo que queda en el inventario, y se descuenta solo.</p>
+    </section>
+
+    <aside class="panel">
+      <div class="card">
+        <div class="card-h"><b>Inventario de premios</b><span id="invTotal"></span></div>
+        <div class="inv" id="inv"></div>
+        <div class="tot" id="invTxt"></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><b>Entregas</b><span id="entCount"></span></div>
+        <div id="driveLine"></div>
+        <div class="tools"><input id="q" type="search" placeholder="Buscar cliente, teléfono, premio o N.º…" autocomplete="off" spellcheck="false"></div>
+        <div class="lista" id="lista"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+<button class="salir-kiosco" id="btnSalir">✕ Salir</button>
+
+<!-- ===== Ventana: premio / datos de la entrega ===== -->
+<div class="modal-ov" id="resModal">
+  <div class="modal">
+    <div class="gana" id="resGana"></div>
+    <div id="resDatos">
+      <div class="msec">
+        <h3>Datos de la entrega <span style="font-weight:600;color:var(--muted);font-size:13px">(para el respaldo)</span></h3>
+        <div class="row2">
+          <div><label class="fl" for="rNom">Cliente <i>(opcional)</i></label><input class="in" id="rNom" placeholder="Nombre" autocomplete="off"></div>
+          <div><label class="fl" for="rTel">Teléfono <i>(opcional)</i></label><input class="in" id="rTel" type="tel" inputmode="tel" placeholder="Ej: 5517-4104" autocomplete="off"></div>
+        </div>
+        <span class="fl">¿Quién lo entregó?</span>
+        <div class="seg" id="rReg"></div>
+        <span class="fl">Foto de la entrega</span>
+        <div class="fotobox">
+          <div class="fotoprev" id="rFoto">📷</div>
+          <div class="fotobtns">
+            <button type="button" class="btn dark sm" id="rCam">📷 Tomar foto</button>
+            <button type="button" class="btn ghost sm" id="rArch">🖼️ Elegir foto</button>
+          </div>
+        </div>
+        <div class="fotonota" id="rFotoNota">La foto se guarda en la nube de la tienda y se sube a Google Drive. Si no la tomás ahora, la podés agregar después desde la lista.</div>
+      </div>
+    </div>
+    <div class="macts">
+      <button class="btn ghost sm izq" id="rAnular">↩️ Anular este giro</button>
+      <button class="btn primary" id="rListo">✅ Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Ventana: ver foto ===== -->
+<div class="modal-ov" id="verModal">
+  <div class="modal">
+    <div class="modal-h"><b id="verTit">Foto de la entrega</b><button class="modal-x" onclick="cerrar('verModal')" title="Cerrar">✕</button></div>
+    <img class="grande" id="verImg" alt="Foto de la entrega">
+    <div class="macts" id="verActs"></div>
+  </div>
+</div>
+
+<!-- ===== Ventana: ajustes ===== -->
+<div class="modal-ov" id="ajModal">
+  <div class="modal">
+    <div class="modal-h"><b>Ajustes de la ruleta</b><button class="modal-x" onclick="cerrar('ajModal')" title="Cerrar">✕</button></div>
+    <div class="msec">
+      <h3>Premios e inventario</h3>
+      <p>Cantidad = cuántos hay en total para la actividad. Lo que queda se calcula solo con las entregas.</p>
+      <div class="pr-h"><span>Ícono</span><span>Premio</span><span>Cantidad</span><span></span></div>
+      <div id="ajPremios"></div>
+      <button class="btn ghost sm" id="ajAgregar">➕ Agregar premio</button>
+    </div>
+    <div class="msec">
+      <h3>Textos del afiche</h3>
+      <label class="fl" for="ajTit">Título</label><input class="in" id="ajTit" autocomplete="off">
+      <div class="row2">
+        <div><label class="fl" for="ajFecha">Fecha</label><input class="in" id="ajFecha" autocomplete="off"></div>
+        <div><label class="fl" for="ajLugar">Lugar</label><input class="in" id="ajLugar" autocomplete="off"></div>
+      </div>
+    </div>
+    <div class="msec">
+      <h3>En esta computadora</h3>
+      <label class="chk"><input type="checkbox" id="ajSonido"> Sonido al girar</label>
+      <label class="chk"><input type="checkbox" id="ajPrueba"> 🧪 Modo prueba (gira pero NO descuenta ni guarda)</label>
+    </div>
+    <div class="msec">
+      <h3>Google Drive</h3>
+      <p id="ajDrive"></p>
+    </div>
+    <div class="msec">
+      <h3>Nueva actividad</h3>
+      <p>Borra todas las entregas para empezar de cero (las fotos que ya están en Drive no se borran). Antes descargá el Excel.</p>
+      <button class="btn danger sm" id="ajBorrar">🗑️ Borrar todas las entregas</button>
+    </div>
+    <div class="macts">
+      <button class="btn ghost" onclick="cerrar('ajModal')">Cancelar</button>
+      <button class="btn primary" id="ajGuardar">Guardar ajustes</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fCam" accept="image/*" capture="environment" hidden>
+<input type="file" id="fArch" accept="image/*" hidden>
+<canvas id="confeti"></canvas>
+<div class="toast" id="toast"></div>
+
+<script src="../nube.js?v=20261024a"></script>
+<script src="../recepcion/lib/exceljs.min.js"></script>
+<script src="../recepcion/catalog.js?v=20261024a"></script>
+<script>
+/* ============================================================
+   Girá y Ganá — ruleta de premios con inventario.
+   - El premio sale al azar según lo que QUEDA (así al final cuadra).
+   - Cada giro queda anotado (se descuenta) apenas se gira.
+   - Foto de la entrega: copia chica en la nube de la tienda y la
+     foto completa a Google Drive (el mismo Drive de Online):
+     DJI Online / Ruleta Girá y Ganá / 2026-10-25 Entregas /
+   ============================================================ */
+"use strict";
+
+const LS_AJ       = "ruleta_dji_ajustes_v1";   // premios y textos del afiche
+const LS_LOCAL    = "ruleta_dji_local_v1";     // sonido y modo prueba (solo esta computadora)
+const LS_CLIENTES = "clientes_dji_v1";         // nombres de quién entrega (los de Clientes)
+const LS_ULTIMO   = "clientes_dji_ultimo";
+const LS_ONLINE   = "online_dji_ajustes_v1";   // la conexión a Google Drive de Online
+const VENDEDORES_INICIALES = ["Enrique","Byron","Audelino"];
+const PREMIOS_INICIALES = [
+  {k:"gorra",    nombre:"Gorra",    emoji:"🧢", cantidad:15},
+  {k:"bolso",    nombre:"Bolso",    emoji:"👜", cantidad:16},
+  {k:"lonchera", nombre:"Lonchera", emoji:"🍱", cantidad:15},
+  {k:"mochila",  nombre:"Mochila",  emoji:"🎒", cantidad:5}
+];
+const FRASES = ["¡Ganaste!","¡Lo lograste!","¡Felicidades!","¡Vuelo ganador!"];
+const CARPETA_DRIVE = "Ruleta Girá y Ganá";
+const MAX_PREMIOS = 8;
+
+let aj = {titulo:"GIRÁ Y GANÁ", fecha:"25 Y 26 DE ABRIL", lugar:"LINCOLN PLAZA", premios:PREMIOS_INICIALES.map(p=>Object.assign({},p))};
+let local = {sonido:true, prueba:false};
+let entregas = [];
+let vendedores = VENDEDORES_INICIALES.slice();
+let drv = {url:"", clave:"", ok:false};
+let rot = 0, girando = false, pendienteAfiche = false, query = "";
+
+const $ = id => document.getElementById(id);
+const S = v => String(v ?? "").trim();
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function jsq(s){return esc(JSON.stringify(String(s)));}
+function fold(s){return (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g," ").trim();}
+function nuevoId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+const soloDigitos = t => String(t||"").replace(/\D/g,"");
+function telBonito(t){ const d=soloDigitos(t); return d.length===8 ? d.slice(0,4)+"-"+d.slice(4) : S(t); }
+const dos = n => String(n).padStart(2,"0");
+function ymdDe(iso){ const d=new Date(iso); return d.getFullYear()+"-"+dos(d.getMonth()+1)+"-"+dos(d.getDate()); }
+function fechaCorta(iso){ const d=new Date(iso); return dos(d.getDate())+"/"+dos(d.getMonth()+1)+"/"+d.getFullYear(); }
+function horaDe(iso){ const d=new Date(iso); return dos(d.getHours())+":"+dos(d.getMinutes()); }
+function fechaBonita(iso){ try{ return new Date(iso).toLocaleString("es-GT",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}); }catch(e){ return iso; } }
+const numTxt = n => "#"+String(n||0).padStart(3,"0");
+function plural(n,uno,varios){return n+" "+(n===1?uno:varios);}
+let tToast;
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tToast); tToast=setTimeout(()=>t.classList.remove("show"),2800); }
+function abrir(id){ $(id).classList.add("show"); }
+function cerrar(id){ $(id).classList.remove("show"); }
+
+// ============================================================
+//  DATOS
+// ============================================================
+function slug(t){ return fold(t).replace(/ /g,"-").slice(0,24) || "premio"; }
+function limpiarAj(a){
+  a = (a && typeof a==="object") ? a : {};
+  const vistos=new Set();
+  let premios = Array.isArray(a.premios) ? a.premios.map(p=>{
+    if(!p || typeof p!=="object") return null;
+    const nombre=S(p.nombre).slice(0,30); if(!nombre) return null;
+    let k=S(p.k)||slug(nombre); while(vistos.has(k)) k+="-2"; vistos.add(k);
+    return {k, nombre, emoji:S(p.emoji).slice(0,8)||"🎁", cantidad:Math.max(0,Math.min(9999,Math.round(Number(p.cantidad)||0)))};
+  }).filter(Boolean).slice(0,MAX_PREMIOS) : [];
+  if(!premios.length) premios=PREMIOS_INICIALES.map(p=>Object.assign({},p));
+  return {titulo:S(a.titulo).slice(0,40)||"GIRÁ Y GANÁ", fecha:S(a.fecha).slice(0,40), lugar:S(a.lugar).slice(0,40), premios};
+}
+const RX_FOTO = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
+function limpiarEntrega(e){
+  if(!e || typeof e!=="object") return null;
+  const foto=S(e.foto);
+  const o={
+    id:S(e.id)||nuevoId(), n:Number(e.n)||0, fecha:S(e.fecha)||new Date().toISOString(),
+    premio:S(e.premio), premioNombre:S(e.premioNombre), emoji:S(e.emoji)||"🎁", frase:S(e.frase)||FRASES[0],
+    nombre:S(e.nombre), telefono:S(e.telefono), registro:S(e.registro),
+    foto:(RX_FOTO.test(foto) && foto.length<900000) ? foto : "",
+    anulada:!!e.anulada
+  };
+  if(e.drive && typeof e.drive==="object" && S(e.drive.url)) o.drive={url:S(e.drive.url), id:S(e.drive.id)};
+  if(e.actualizado) o.actualizado=S(e.actualizado);
+  return o.premio ? o : null;
+}
+const validas = () => entregas.filter(e=>!e.anulada);
+const entregados = k => validas().filter(e=>e.premio===k).length;
+const quedan = p => Math.max(0, p.cantidad - entregados(p.k));
+const totalQuedan = () => aj.premios.reduce((s,p)=>s+quedan(p),0);
+const premioDe = k => aj.premios.find(p=>p.k===k);
+const nombrePremio = e => (premioDe(e.premio)||{}).nombre || e.premioNombre || e.premio;
+const emojiPremio = e => (premioDe(e.premio)||{}).emoji || e.emoji || "🎁";
+
+// ---------- guardado en esta computadora (las fotos chicas no caben en localStorage: van a IndexedDB) ----------
+const IDB = (()=>{
+  let p=null;
+  const db=()=>p||(p=new Promise(res=>{
+    try{
+      const r=indexedDB.open("ruleta_dji",1);
+      r.onupgradeneeded=()=>{ const d=r.result; if(!d.objectStoreNames.contains("cola")) d.createObjectStore("cola",{keyPath:"k"}); if(!d.objectStoreNames.contains("datos")) d.createObjectStore("datos",{keyPath:"k"}); };
+      r.onsuccess=()=>res(r.result); r.onerror=()=>res(null);
+    }catch(e){ res(null); }
+  }));
+  const op=(store,mode,fn)=>db().then(d=>new Promise(res=>{
+    if(!d){ res(null); return; }
+    try{ const tx=d.transaction(store,mode), rq=fn(tx.objectStore(store)); tx.oncomplete=()=>res(rq && "result" in rq ? rq.result : true); tx.onerror=()=>res(null); tx.onabort=()=>res(null); }catch(e){ res(null); }
+  }));
+  return {
+    put:(s,v)=>op(s,"readwrite",st=>st.put(v)),
+    get:(s,k)=>op(s,"readonly",st=>st.get(k)),
+    del:(s,k)=>op(s,"readwrite",st=>st.delete(k)),
+    todos:s=>op(s,"readonly",st=>st.getAll()),
+    vaciar:s=>op(s,"readwrite",st=>st.clear())
+  };
+})();
+async function cargar(){
+  try{ const a=JSON.parse(localStorage.getItem(LS_AJ)||"null"); if(a) aj=limpiarAj(a); }catch(e){}
+  try{ const l=JSON.parse(localStorage.getItem(LS_LOCAL)||"null"); if(l) local={sonido:l.sonido!==false, prueba:!!l.prueba}; }catch(e){}
+  try{ const o=JSON.parse(localStorage.getItem(LS_ONLINE)||"null"); if(o && o.drive) usarDrive(o.drive); }catch(e){}
+  cargarVendedores();
+  const d=await IDB.get("datos","entregas");
+  if(d && Array.isArray(d.v)) entregas=d.v.map(limpiarEntrega).filter(Boolean);
+}
+function cargarVendedores(){
+  try{ const c=JSON.parse(localStorage.getItem(LS_CLIENTES)||"null"); if(c && Array.isArray(c.vendedores) && c.vendedores.length) vendedores=c.vendedores.map(v=>S(v)).filter(Boolean); }catch(e){}
+}
+function guardarLocal(){ IDB.put("datos",{k:"entregas", v:entregas}); }
+function guardar(){ guardarLocal(); subirEntregas(); }
+function guardarAj(){ try{ localStorage.setItem(LS_AJ,JSON.stringify(aj)); }catch(e){} subirAj(); }
+function guardarPrefs(){ try{ localStorage.setItem(LS_LOCAL,JSON.stringify(local)); }catch(e){} }
+
+// ---------- nube: entregas en "ruleta", ajustes en ajustes/ruleta ----------
+let nubeEnt=null, entSinSubir=false, nubeAj=null, ajSinSubir=false;
+const mapaDe = lista => { const m={}; lista.forEach(e=>{ m[e.id]=e; }); return m; };
+const masNuevo = (a,b) => (a.actualizado||a.fecha) > (b.actualizado||b.fecha);
+function unirEntregas(nube, locales){
+  const out={};
+  for(const id in nube){ const e=limpiarEntrega(Object.assign({id},nube[id])); if(e) out[e.id]=e; }
+  locales.forEach(e=>{ const c=out[e.id]; if(!c || masNuevo(e,c)) out[e.id]=e; });
+  return Object.values(out);
+}
+function subirEntregas(){
+  if(!window.Nube || !Nube.conectado()) return;
+  if(nubeEnt===null){ entSinSubir=true; return; }
+  Nube.guardarColeccion("ruleta", mapaDe(entregas), nubeEnt);
+}
+const ajNube = () => ({titulo:aj.titulo, fecha:aj.fecha, lugar:aj.lugar, premios:aj.premios});
+function subirAj(){
+  if(!window.Nube || !Nube.conectado()) return;
+  if(nubeAj===null){ ajSinSubir=true; return; }
+  Nube.guardarMapa("ajustes","ruleta", ajNube(), nubeAj);
+}
+function usarDrive(d){
+  d=d||{};
+  drv={url:S(d.url), clave:S(d.clave), ok:!!d.ok && !!S(d.url) && !!S(d.clave)};
+}
+async function conectarNube(){
+  if(!window.Nube) return;
+  Nube.pintar($("nubeEstado"));
+  if(!Nube.conectado()) return;
+  if(!await Nube.iniciar()) return;
+  Nube.escucharMapa("ajustes","ruleta",(m,existe,meta)=>{
+    if(!existe){ if(meta && !meta.fromCache){ nubeAj={}; ajSinSubir=false; Nube.guardarMapa("ajustes","ruleta", ajNube(), {}); } return; }
+    nubeAj=m;
+    if(ajSinSubir){ ajSinSubir=false; Nube.guardarMapa("ajustes","ruleta", ajNube(), m); return; }
+    const nuevo=limpiarAj(m);
+    if(Nube.estable(nuevo)===Nube.estable(aj)) return;
+    aj=nuevo; try{ localStorage.setItem(LS_AJ,JSON.stringify(aj)); }catch(e){}
+    render();
+  });
+  // Google Drive: la misma conexión que se configuró en Online
+  Nube.escucharMapa("ajustes","online",(m)=>{ if(m && m.drive){ usarDrive(m.drive); renderDrive(); procesarCola(); } });
+  // los nombres de quién entrega son los de Clientes
+  Nube.escucharMapa("ajustes","clientes",(m)=>{ if(Array.isArray(m.vendedores) && m.vendedores.length) vendedores=m.vendedores.map(v=>S(v)).filter(Boolean); });
+  conectarEntregas();
+}
+async function conectarEntregas(){
+  const unido=await Nube.unirUnaVez("ruleta", async ()=>{
+    const nube=await Nube.leerColeccion("ruleta");
+    await Nube.guardarColeccion("ruleta", mapaDe(unirEntregas(nube, entregas)), nube);
+  });
+  if(!unido && localStorage.getItem("dji_nube_unido_ruleta")!==Nube.clave()){
+    addEventListener("online", ()=>conectarEntregas(), {once:true});
+    return;
+  }
+  Nube.escucharColeccion("ruleta",(mapa)=>{
+    let lista=Object.keys(mapa).map(id=>limpiarEntrega(Object.assign({id},mapa[id]))).filter(Boolean);
+    nubeEnt=mapa;
+    if(entSinSubir){ entSinSubir=false; lista=unirEntregas(mapa, entregas); Nube.guardarColeccion("ruleta", mapaDe(lista), mapa); }
+    const orden=l=>l.slice().sort((a,b)=>a.id.localeCompare(b.id));
+    if(Nube.estable(orden(lista))===Nube.estable(orden(entregas))) return;
+    entregas=lista; guardarLocal(); render();
+  });
+}
+
+// ============================================================
+//  AFICHE Y RUEDA (la imagen reconstruida)
+// ============================================================
+const CX=300, CY=500, R_RUEDA=196, R_ARO=244;
+function segmentos(){
+  const P=aj.premios, n=P.length, copias=n<=2?4:(n<=4?2:1), out=[];
+  for(let c=0;c<copias;c++) P.forEach((p,i)=>out.push({p, frase:FRASES[(i+c*2)%FRASES.length]}));
+  return out;
+}
+const pt = (r,a) => { const t=a*Math.PI/180; return [(CX+r*Math.cos(t)).toFixed(2), (CY+r*Math.sin(t)).toFixed(2)]; };
+function arco(r,a0,a1,sweep){ const [x0,y0]=pt(r,a0), [x1,y1]=pt(r,a1); return `M${x0} ${y0} A${r} ${r} 0 0 ${sweep} ${x1} ${y1}`; }
+function renderAfiche(){
+  if(girando){ pendienteAfiche=true; return; }
+  const segs=segmentos(), N=segs.length, s=360/N;
+  const logo=new URL("../recepcion/logo.png", location.href).href;
+  let rueda="";
+  segs.forEach((g,i)=>{
+    const c=-90+i*s, a0=c-s/2, a1=c+s/2, agot=quedan(g.p)<=0;
+    const [x0,y0]=pt(R_RUEDA,a0), [x1,y1]=pt(R_RUEDA,a1);
+    rueda+=`<path d="M${CX} ${CY} L${x0} ${y0} A${R_RUEDA} ${R_RUEDA} 0 ${s>180?1:0} 1 ${x1} ${y1} Z" fill="url(#${agot?"gG":(i%2?"gB":"gA")})"/>`;
+  });
+  segs.forEach((g,i)=>{ const [x,y]=pt(R_RUEDA,-90+i*s-s/2); rueda+=`<line x1="${CX}" y1="${CY}" x2="${x}" y2="${y}" stroke="rgba(255,255,255,.38)" stroke-width="1.6"/>`; });
+  segs.forEach((g,i)=>{
+    const c=-90+i*s, agot=quedan(g.p)<=0, nom=g.p.nombre.toUpperCase();
+    const fs=Math.max(13, Math.min(27, 128/(Math.max(4,nom.length)*0.66)));
+    rueda+=`<g transform="rotate(${c.toFixed(2)} ${CX} ${CY})">
+      <text x="${CX+122}" y="${CY-4}" text-anchor="middle" font-size="${fs.toFixed(1)}" font-weight="900" font-style="italic" fill="#fff" stroke="rgba(0,55,95,.35)" stroke-width="3" paint-order="stroke">${esc(nom)}</text>
+      <text x="${CX+122}" y="${CY+18}" text-anchor="middle" font-size="14" font-weight="700" fill="rgba(255,255,255,.92)" stroke="rgba(0,55,95,.3)" stroke-width="2.4" paint-order="stroke">${agot?"Agotado":esc(g.frase)}</text>
+    </g>`;
+  });
+  const svg=`
+  <defs>
+    <radialGradient id="fondo" cx="50%" cy="45%" r="70%"><stop offset="0" stop-color="#16202a"/><stop offset=".55" stop-color="#07090c"/><stop offset="1" stop-color="#000"/></radialGradient>
+    <radialGradient id="gA" gradientUnits="userSpaceOnUse" cx="${CX}" cy="${CY}" r="${R_RUEDA}"><stop offset="0" stop-color="#d4f3ff"/><stop offset=".38" stop-color="#7fd6f7"/><stop offset="1" stop-color="#1b9fe0"/></radialGradient>
+    <radialGradient id="gB" gradientUnits="userSpaceOnUse" cx="${CX}" cy="${CY}" r="${R_RUEDA}"><stop offset="0" stop-color="#bfeafd"/><stop offset=".38" stop-color="#4fc0ef"/><stop offset="1" stop-color="#0d82c8"/></radialGradient>
+    <radialGradient id="gG" gradientUnits="userSpaceOnUse" cx="${CX}" cy="${CY}" r="${R_RUEDA}"><stop offset="0" stop-color="#e5e7eb"/><stop offset="1" stop-color="#7d8591"/></radialGradient>
+    <filter id="sombra" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000" flood-opacity=".55"/></filter>
+    <filter id="brillo" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="6"/></filter>
+    <path id="arcoSup" d="${arco(214,198,342,1)}"/>
+    <path id="arcoInf" d="${arco(232,160,20,0)}"/>
+  </defs>
+  <rect width="600" height="1040" fill="url(#fondo)"/>
+  <text id="tTitulo" x="300" y="132" text-anchor="middle" font-family="'Avenir Next','Montserrat','Segoe UI',Arial,sans-serif" font-size="76" font-weight="800" font-style="italic" fill="#fff" letter-spacing="-1">${esc(aj.titulo)}</text>
+  ${aj.fecha?`<text id="tFecha" x="300" y="186" text-anchor="middle" font-family="'Avenir Next','Segoe UI',Arial,sans-serif" font-size="28" font-weight="500" fill="#fff" letter-spacing=".5">${esc(aj.fecha)}</text>`:""}
+  <circle cx="${CX}" cy="${CY}" r="${R_ARO+4}" fill="none" stroke="#1fb5f0" stroke-width="10" opacity=".35" filter="url(#brillo)"/>
+  <circle cx="${CX}" cy="${CY}" r="${R_ARO}" fill="#0b0d10" stroke="#1fb5f0" stroke-width="5"/>
+  <text font-family="'Avenir Next','Segoe UI',Arial,sans-serif" font-size="25" font-weight="500" fill="#fff"><textPath href="#arcoSup" startOffset="50%" text-anchor="middle">The future of <tspan font-weight="800">POSSIBLE</tspan></textPath></text>
+  <text font-family="'Avenir Next','Segoe UI',Arial,sans-serif" font-size="24" font-weight="700" font-style="italic" fill="#fff"><textPath href="#arcoInf" startOffset="50%" text-anchor="middle">Creá tu propia historia</textPath></text>
+  <g id="rueda" transform="rotate(${rot.toFixed(3)} ${CX} ${CY})">${rueda}</g>
+  <circle cx="${CX}" cy="${CY}" r="${R_RUEDA}" fill="none" stroke="#5fd4ff" stroke-width="3"/>
+  <circle cx="${CX}" cy="${CY}" r="50" fill="#050608" stroke="#1fb5f0" stroke-width="3" filter="url(#sombra)"/>
+  <image href="${esc(logo)}" x="${CX-33}" y="${CY-19}" width="66" height="37"/>
+  <g filter="url(#sombra)">
+    <polygon points="${CX+184},${CY} ${CX+252},${CY-24} ${CX+252},${CY+24}" fill="#fff" stroke="#1fb5f0" stroke-width="3" stroke-linejoin="round"/>
+    <circle cx="${CX+246}" cy="${CY}" r="7" fill="#1fb5f0"/>
+  </g>
+  ${aj.lugar?`<text id="tLugar" x="300" y="985" text-anchor="middle" font-family="'Avenir Next','Montserrat','Segoe UI',Arial,sans-serif" font-size="34" font-weight="800" font-style="italic" fill="#fff"><tspan font-style="normal" font-size="30">📍</tspan> ${esc(aj.lugar)}</text>`:""}`;
+  $("svg").innerHTML=svg;
+  // que el texto largo no se salga del afiche
+  [["tTitulo",560],["tFecha",540],["tLugar",540]].forEach(([id,max])=>{ const t=$(id); try{ if(t && t.getComputedTextLength()>max){ t.setAttribute("textLength",max); t.setAttribute("lengthAdjust","spacingAndGlyphs"); } }catch(e){} });
+  pintarBoton();
+}
+function pintarBoton(){
+  const hay = local.prueba || totalQuedan()>0;
+  $("btnGirar").disabled = girando || !hay;
+  $("btnGirar").textContent = hay ? "GIRAR" : "AGOTADO";
+  $("pruebaTag").hidden = !local.prueba;
+}
+
+// ---------- sonido ----------
+let actx=null;
+function audio(){
+  if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ actx=null; } }
+  if(actx && actx.state==="suspended") actx.resume();
+  return actx;
+}
+function tono(f, t0, dur, vol, tipo){
+  const a=actx; if(!a) return;
+  const o=a.createOscillator(), g=a.createGain(); o.type=tipo||"triangle"; o.frequency.value=f;
+  g.gain.setValueAtTime(vol, a.currentTime+t0); g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime+t0+dur);
+  o.connect(g); g.connect(a.destination); o.start(a.currentTime+t0); o.stop(a.currentTime+t0+dur+.02);
+}
+const tic = () => { if(local.sonido && actx) tono(1650,0,.045,.07,"square"); };
+const fanfarria = () => { if(local.sonido && actx) [523,659,784,1047].forEach((f,i)=>tono(f,i*.12,.32,.16,"triangle")); };
+
+// ---------- confeti ----------
+function confeti(){
+  const cv=$("confeti"), x=cv.getContext("2d"), dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=innerWidth*dpr; cv.height=innerHeight*dpr;
+  const col=["#1fb5f0","#5fd4ff","#ffffff","#f6c344","#0d82c8"], P=[];
+  for(let i=0;i<160;i++) P.push({x:innerWidth/2+(Math.random()-.5)*120, y:innerHeight*.35, vx:(Math.random()-.5)*15, vy:-Math.random()*15-4, s:5+Math.random()*7, r:Math.random()*6, vr:(Math.random()-.5)*.3, c:col[i%col.length]});
+  const t0=performance.now();
+  (function paso(t){
+    const k=(t-t0)/1000; x.setTransform(dpr,0,0,dpr,0,0); x.clearRect(0,0,innerWidth,innerHeight);
+    P.forEach(p=>{ p.vy+=.42; p.vx*=.99; p.x+=p.vx; p.y+=p.vy; p.r+=p.vr; x.save(); x.translate(p.x,p.y); x.rotate(p.r); x.globalAlpha=Math.max(0,1-k/3.2); x.fillStyle=p.c; x.fillRect(-p.s/2,-p.s/3,p.s,p.s*.6); x.restore(); });
+    if(k<3.3) requestAnimationFrame(paso); else x.clearRect(0,0,innerWidth,innerHeight);
+  })(t0);
+}
+
+// ============================================================
+//  GIRAR
+// ============================================================
+// el premio sale al azar según lo que QUEDA: así nunca se da algo agotado y al final todo cuadra
+function elegirPremio(){
+  let bolsa=aj.premios.map(p=>({p, w:quedan(p)})).filter(x=>x.w>0);
+  if(!bolsa.length && local.prueba) bolsa=aj.premios.map(p=>({p, w:1}));
+  const total=bolsa.reduce((s,x)=>s+x.w,0); if(!total) return null;
+  let r=Math.random()*total;
+  for(const x of bolsa){ if((r-=x.w)<0) return x.p; }
+  return bolsa[bolsa.length-1].p;
+}
+// qué segmento queda en la flecha (a la derecha) con la rueda girada "ang" grados
+const idxEn = (ang, N) => { const s=360/N; return ((Math.round((90-ang)/s)%N)+N)%N; };
+function girar(){
+  if(girando) return;
+  audio();
+  const p=elegirPremio();
+  if(!p){ toast("Ya no quedan premios en el inventario"); pintarBoton(); return; }
+  const segs=segmentos(), N=segs.length, s=360/N;
+  const opciones=segs.map((g,i)=>g.p.k===p.k?i:-1).filter(i=>i>=0);
+  const j=opciones[Math.floor(Math.random()*opciones.length)];
+  const frase=segs[j].frase;
+  // queda anotado YA (se descuenta aunque cierren la ventana)
+  let e=null;
+  if(!local.prueba){
+    const n=entregas.reduce((m,x)=>Math.max(m,x.n||0),0)+1;
+    e=limpiarEntrega({id:nuevoId(), n, fecha:new Date().toISOString(), premio:p.k, premioNombre:p.nombre, emoji:p.emoji, frase, registro:registroSel()||""});
+    entregas.push(e); guardar();
+  }
+  // a dónde llega la rueda: el centro del segmento j queda en la flecha (a la derecha), con un poquito de azar
+  const centro=-90+j*s, margen=Math.max(2, s/2-Math.min(7, s*.18)), azar=(Math.random()*2-1)*margen;
+  const base=((0-centro+azar)%360+360)%360, desde=rot;
+  const vueltas=6+Math.floor(Math.random()*2);
+  const hasta=desde + 360*vueltas + ((base-(desde%360))%360+360)%360;
+  const dur=6200, t0=performance.now();
+  let ultimo=idxEn(desde,N);
+  girando=true; pintarBoton();
+  const rueda=$("rueda");
+  (function paso(t){
+    const k=Math.min(1,(t-t0)/dur), ease=1-Math.pow(1-k,4);
+    rot=desde+(hasta-desde)*ease;
+    rueda.setAttribute("transform",`rotate(${rot.toFixed(3)} ${CX} ${CY})`);
+    const ix=idxEn(rot+s/2,N); if(ix!==ultimo){ ultimo=ix; tic(); }
+    if(k<1){ requestAnimationFrame(paso); return; }
+    rot=hasta%360; rueda.setAttribute("transform",`rotate(${rot.toFixed(3)} ${CX} ${CY})`);
+    girando=false;
+    if(pendienteAfiche){ pendienteAfiche=false; }
+    render();
+    fanfarria(); confeti();
+    mostrarPremio(e, p, frase);
+  })(t0);
+}
+
+// ============================================================
+//  PREMIO Y DATOS DE LA ENTREGA
+// ============================================================
+let resId=null, resPrueba=null, fotoNueva=null, regSel=null;
+function registroSel(){ if(regSel) return regSel; try{ const u=localStorage.getItem(LS_ULTIMO); if(u && vendedores.includes(u)) return u; }catch(e){} return ""; }
+function pintarRegistro(){
+  const nombres=vendedores.slice(); if(regSel && !nombres.includes(regSel)) nombres.push(regSel);
+  $("rReg").innerHTML=nombres.map(n=>`<button type="button" aria-pressed="${n===regSel}" onclick="elegirReg(${jsq(n)})">${esc(n)}</button>`).join("");
+}
+function elegirReg(n){ regSel = regSel===n ? null : n; if(regSel){ try{ localStorage.setItem(LS_ULTIMO,regSel); }catch(e){} } pintarRegistro(); }
+function pintarFoto(src){
+  const b=$("rFoto");
+  b.className="fotoprev"+(src?" has":""); b.innerHTML=src?`<img src="${src}" alt="Foto de la entrega">`:"📷";
+}
+function mostrarPremio(e, p, frase){
+  const nombre=e?nombrePremio(e):p.nombre, emoji=e?emojiPremio(e):p.emoji;
+  resId=e?e.id:null; resPrueba=e?null:{p, frase}; fotoNueva=null;
+  $("resGana").innerHTML=`<div class="em">${esc(emoji)}</div><div class="fr">${esc(e?e.frase:frase)}</div>
+    <div class="pr">Se lleva:<b>${esc(nombre)}</b></div>
+    ${e?`<div class="num">Entrega ${numTxt(e.n)} · ${esc(fechaBonita(e.fecha))}${e.anulada?" · ANULADA":""}</div>`:`<div class="aviso">🧪 Modo prueba: no se descontó del inventario</div>`}`;
+  $("resDatos").hidden=!e; $("rAnular").hidden=!e;
+  if(e){
+    $("rNom").value=e.nombre; $("rTel").value=e.telefono;
+    regSel=e.registro||null; pintarRegistro();
+    pintarFoto(e.foto);
+    $("rAnular").textContent=e.anulada?"↪️ Volver a contarlo":"↩️ Anular este giro";
+  }
+  abrir("resModal");
+}
+function editarEntrega(id){ const e=entregas.find(x=>x.id===id); if(!e) return; const p=premioDe(e.premio)||{nombre:e.premioNombre, emoji:e.emoji}; mostrarPremio(e,p,e.frase); }
+async function elegirFoto(file){
+  if(!file) return;
+  try{
+    $("rFotoNota").textContent="⏳ Preparando la foto…";
+    fotoNueva=await leerFoto(file);
+    pintarFoto(fotoNueva.thumb);
+    $("rFotoNota").textContent="✔ Foto lista. Se guarda al tocar Listo.";
+  }catch(err){ $("rFotoNota").textContent="⚠️ "+(err && err.message || "No se pudo abrir la foto"); }
+}
+// dos tamaños: chica para la nube de la tienda (se ve en todas las computadoras) y completa para Drive
+async function leerFoto(file){
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await new Promise((ok,mal)=>{ const i=new Image(); i.onload=()=>ok(i); i.onerror=()=>mal(new Error("No se pudo abrir la foto (probá con otra o tomala otra vez)")); i.src=url; });
+    const lienzo=max=>{ const k=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)); const c=document.createElement("canvas"); c.width=Math.max(1,Math.round(img.naturalWidth*k)); c.height=Math.max(1,Math.round(img.naturalHeight*k)); const x=c.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,c.width,c.height); x.drawImage(img,0,0,c.width,c.height); return c; };
+    const grande=lienzo(1600);
+    const full=await new Promise((ok,mal)=>grande.toBlob(b=>b?ok(b):mal(new Error("No se pudo preparar la foto")),"image/jpeg",.85));
+    const thumb=lienzo(560).toDataURL("image/jpeg",.72);
+    return {full, thumb};
+  }finally{ URL.revokeObjectURL(url); }
+}
+async function cerrarPremio(){
+  const e=entregas.find(x=>x.id===resId);
+  if(e){
+    const nombre=$("rNom").value.trim(), tel=$("rTel").value.trim(), reg=regSel||"";
+    let cambio=false;
+    if(e.nombre!==nombre||e.telefono!==tel||e.registro!==reg){ e.nombre=nombre; e.telefono=tel; e.registro=reg; cambio=true; }
+    if(fotoNueva){ e.foto=fotoNueva.thumb; delete e.drive; cambio=true; await IDB.put("cola",{k:e.id, t:Date.now(), blob:fotoNueva.full}); pendientes.add(e.id); }
+    if(cambio){ e.actualizado=new Date().toISOString(); guardar(); render(); }
+    if(fotoNueva) procesarCola();
+    toast(fotoNueva?"✔ Entrega guardada con foto":"✔ Entrega guardada");
+  }
+  fotoNueva=null; resId=null; resPrueba=null; cerrar("resModal");
+}
+function anularActual(){
+  const e=entregas.find(x=>x.id===resId); if(!e) return;
+  if(!e.anulada && !confirm(`¿Anular la entrega ${numTxt(e.n)} (${nombrePremio(e)})?\n\nEl premio vuelve al inventario. Usalo solo si el premio NO se entregó.`)) return;
+  if(e.anulada){ const p=premioDe(e.premio); if(p && quedan(p)<=0){ alert(`Ya no quedan ${p.nombre} en el inventario: no se puede volver a contar.`); return; } }
+  e.anulada=!e.anulada; e.actualizado=new Date().toISOString();
+  guardar(); render(); toast(e.anulada?"Giro anulado: el premio volvió al inventario":"Entrega contada otra vez");
+  fotoNueva=null; resId=null; cerrar("resModal");
+}
+function verFoto(id){
+  const e=entregas.find(x=>x.id===id); if(!e) return;
+  if(!e.foto){ editarEntrega(id); return; }
+  $("verTit").textContent=`${numTxt(e.n)} · ${nombrePremio(e)}${e.nombre?" · "+e.nombre:""}`;
+  $("verImg").src=e.foto;
+  $("verActs").innerHTML=`${e.drive?`<a class="btn dark sm" href="${esc(e.drive.url)}" target="_blank" rel="noopener">☁️ Abrir en Google Drive</a>`:""}<button class="btn ghost sm" onclick="cerrar('verModal');editarEntrega(${jsq(e.id)})">📷 Cambiar foto o datos</button>`;
+  abrir("verModal");
+}
+
+// ============================================================
+//  GOOGLE DRIVE (el mismo Apps Script de Online)
+// ============================================================
+let colaCorriendo=false, errorDrive="", pendientes=new Set();
+const carpetas={};   // carpeta de Drive de cada día (para no buscarla cada vez)
+const driveListo = () => drv.ok && !!drv.url && !!drv.clave;
+function aBase64(blob){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(",")[1]||""); r.onerror=()=>rej(r.error); r.readAsDataURL(blob); }); }
+function jsonp(params){
+  return new Promise((res,rej)=>{
+    const cb="__djiRuleta"+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+    const s=document.createElement("script"); let listo=false;
+    const fin=()=>{ listo=true; clearTimeout(tm); try{ delete window[cb]; }catch(e){ window[cb]=undefined; } s.remove(); };
+    const tm=setTimeout(()=>{ if(!listo){ fin(); rej(new Error("sin-respuesta")); } },25000);
+    window[cb]=d=>{ if(listo) return; fin(); res(d); };
+    s.onerror=()=>{ if(!listo){ fin(); rej(new Error("red")); } };
+    s.onload=()=>setTimeout(()=>{ if(!listo){ fin(); rej(new Error("sin-respuesta")); } },300);
+    s.src=drv.url+(drv.url.includes("?")?"&":"?")+new URLSearchParams(Object.assign({clave:drv.clave, callback:cb}, params));
+    document.head.appendChild(s);
+  });
+}
+async function llamarDrive(payload){
+  const body=JSON.stringify(Object.assign({clave:drv.clave}, payload));
+  let r;
+  try{
+    r=await fetch(drv.url,{method:"POST", body, redirect:"follow", credentials:"omit", cache:"no-store"});
+  }catch(e){
+    if(navigator.onLine===false) throw new Error("Sin internet");
+    // el navegador no dejó leer la respuesta: se manda igual y se confirma por otro camino
+    await fetch(drv.url,{method:"POST", body, mode:"no-cors", credentials:"omit", cache:"no-store"});
+    const {datos, tipo, descripcion, ...resto}=payload;
+    return await jsonp(Object.assign({}, resto, {accion:"ver"}));
+  }
+  const t=await r.text();
+  try{ return JSON.parse(t); }catch(e){ throw new Error(r.ok ? "La URL no responde como el Apps Script de la tienda" : "Error "+r.status); }
+}
+function mensajeError(d){
+  if(!d) return "No se pudo subir";
+  if(d.error==="clave") return "La clave de Drive no coincide: revisá la conexión en Online → Drive.";
+  if(/permiso|permission|DriveApp|autoriz|authoriz|scope/i.test(String(d.error||""))) return "Falta darle permiso de Google Drive al código (Online → Drive).";
+  return String(d.error||"No se pudo subir");
+}
+const nombreFoto = e => `${String(e.n).padStart(3,"0")} - ${nombrePremio(e)} - ${e.nombre||"Cliente"} - ${horaDe(e.fecha).replace(":","h")}.jpg`;
+const descripcionFoto = e => [`Girá y Ganá · ${nombrePremio(e)}`, e.nombre, telBonito(e.telefono), e.registro?`entregó ${e.registro}`:"", fechaCorta(e.fecha)+" "+horaDe(e.fecha)].filter(Boolean).join(" · ");
+async function procesarCola(){
+  if(colaCorriendo) return;
+  const lista=((await IDB.todos("cola"))||[]).sort((a,b)=>a.t-b.t);
+  pendientes=new Set(lista.map(p=>p.k));
+  if(!lista.length || !driveListo()){ renderDrive(); renderLista(); return; }
+  colaCorriendo=true; errorDrive=""; renderDrive();
+  let otraVez=false;
+  try{
+    for(const p of lista){
+      const e=entregas.find(x=>x.id===p.k);
+      if(!e){ await IDB.del("cola",p.k); pendientes.delete(p.k); continue; }
+      const ymd=ymdDe(e.fecha);
+      const d=await llamarDrive({accion:"subir", orden:ymd, mes:CARPETA_DRIVE, carpeta:ymd+" Entregas", carpetaId:carpetas[ymd]||"", nombre:nombreFoto(e), tipo:"image/jpeg", datos:await aBase64(p.blob), descripcion:descripcionFoto(e)});
+      if(!d || !d.ok) throw new Error(mensajeError(d));
+      if(d.carpetaId) carpetas[ymd]=String(d.carpetaId);
+      // si mientras subía cambiaron la foto, se queda en la cola para subir la nueva
+      const act=await IDB.get("cola",p.k);
+      if(act && act.t!==p.t){ otraVez=true; continue; }
+      await IDB.del("cola",p.k); pendientes.delete(p.k);
+      const e2=entregas.find(x=>x.id===p.k);
+      if(e2){ e2.drive={url:S(d.url), id:S(d.id)}; e2.actualizado=new Date().toISOString(); guardar(); }
+    }
+  }catch(err){
+    console.warn("Drive:", err);
+    errorDrive=String(err && err.message || err);
+    if(errorDrive==="Failed to fetch" || errorDrive==="red" || errorDrive==="sin-respuesta" || errorDrive==="Load failed") errorDrive="No se pudo conectar con Google Drive";
+    clearTimeout(procesarCola.t); if(!/clave/i.test(errorDrive)) procesarCola.t=setTimeout(procesarCola, 90000);
+  }finally{
+    colaCorriendo=false; renderDrive(); renderLista();
+    if(otraVez) setTimeout(procesarCola, 500);
+  }
+}
+addEventListener("online", ()=>procesarCola());
+
+// ============================================================
+//  INVENTARIO Y LISTA
+// ============================================================
+function renderInventario(){
+  const total=aj.premios.reduce((s,p)=>s+p.cantidad,0), q=totalQuedan();
+  $("invTotal").textContent=`Quedan ${q} de ${total}`;
+  $("inv").innerHTML=aj.premios.map(p=>{
+    const qq=quedan(p), ent=entregados(p.k), pc=p.cantidad?Math.round(qq*100/p.cantidad):0;
+    return `<div class="ip${qq<=0?" agotado":""}"><div class="ip-t"><i>${esc(p.emoji)}</i>${esc(p.nombre)}</div>
+      <div class="ip-n">${qq} <small>de ${p.cantidad}</small></div>
+      <div class="ip-bar"><i style="width:${pc}%"></i></div>
+      <div class="ip-s">${qq<=0?"⚠️ Agotado · ":""}${plural(ent,"entregado","entregados")}</div></div>`;
+  }).join("");
+  const ent=validas().length, anul=entregas.length-ent;
+  $("invTxt").innerHTML=`<b>${plural(ent,"premio entregado","premios entregados")}</b>${anul?` · ${plural(anul,"giro anulado","giros anulados")}`:""}${local.prueba?" · 🧪 esta computadora está en modo prueba":""}`;
+}
+function renderDrive(){
+  const L=$("driveLine"), n=pendientes.size;
+  if(driveListo()){
+    L.innerHTML=`<div class="drive ${errorDrive?"warn":"ok"}"><span>${errorDrive?"⚠️":"☁️"}</span><div>${errorDrive?esc(errorDrive):`Las fotos se suben a Google Drive: <b>DJI Online / ${CARPETA_DRIVE}</b>`}${n?`<br>${colaCorriendo?"⏳ Subiendo":"Faltan"} ${plural(n,"foto","fotos")}…`:""}</div>${n && !colaCorriendo?`<button class="btn ghost sm" onclick="procesarCola()">Reintentar</button>`:""}</div>`;
+  }else{
+    L.innerHTML=`<div class="drive warn"><span>💻</span><div>Google Drive no está conectado en esta computadora: las fotos quedan en la nube de la tienda${n?` y ${plural(n,"foto queda","fotos quedan")} esperando para subirse`:""}. Para conectarlo: apartado <b>Online</b> → botón <b>Drive</b>.</div></div>`;
+  }
+  const a=$("ajDrive"); if(a) a.innerHTML = driveListo() ? `✅ Conectado (el mismo Drive de <b>Online</b>). Las fotos quedan en <b>DJI Online / ${CARPETA_DRIVE} / (fecha) Entregas</b>.` : `Todavía no está conectado. Se conecta una sola vez en el apartado <b>Online</b> → botón <b>Drive</b>, y la ruleta usa esa misma conexión.`;
+}
+function estadoFoto(e){
+  if(e.drive) return `<div class="en-d ok">☁️ Foto en <a href="${esc(e.drive.url)}" target="_blank" rel="noopener">Google Drive</a></div>`;
+  if(pendientes.has(e.id)) return `<div class="en-d warn">⏳ Foto por subir a Drive${driveListo()?"":" (falta conectar Drive)"}</div>`;
+  if(e.foto) return `<div class="en-d ok">📷 Foto guardada</div>`;
+  return `<div class="en-d mut">Sin foto todavía</div>`;
+}
+function renderLista(){
+  const qs=fold(query).split(" ").filter(Boolean);
+  const L=entregas.filter(e=>{
+    if(!qs.length) return true;
+    const k=fold([nombrePremio(e),e.nombre,e.registro,numTxt(e.n),String(e.n),e.anulada?"anulada":""].join(" "))+" "+soloDigitos(e.telefono);
+    return qs.every(q=>k.includes(q));
+  }).sort((a,b)=>b.n-a.n||b.fecha.localeCompare(a.fecha));
+  const ent=validas().length;
+  $("entCount").textContent=qs.length?`${L.length} de ${entregas.length}`:plural(ent,"entrega","entregas");
+  if(!entregas.length){ $("lista").innerHTML=`<div class="vacio"><b>Todavía no hay entregas</b>Cada vez que alguien gira, queda anotado aquí con su premio. Después le podés agregar el nombre y la foto.</div>`; return; }
+  if(!L.length){ $("lista").innerHTML=`<div class="vacio">No hay entregas con esa búsqueda.</div>`; return; }
+  $("lista").innerHTML=L.map(e=>`<div class="en${e.anulada?" anulada":""}">
+      <button class="en-f" onclick="verFoto(${jsq(e.id)})" title="${e.foto?"Ver foto":"Agregar foto"}">${e.foto?`<img src="${e.foto}" alt="">`:esc(emojiPremio(e))}</button>
+      <div class="en-b">
+        <div class="en-p"><span>${numTxt(e.n)}</span>${esc(emojiPremio(e))} ${esc(nombrePremio(e))}${e.anulada?" · anulada":""}</div>
+        <div class="en-s">${esc(e.nombre||"Cliente sin nombre")}${e.telefono?" · "+esc(telBonito(e.telefono)):""}${e.registro?" · entregó "+esc(e.registro):""} · ${esc(fechaBonita(e.fecha))}</div>
+        ${e.anulada?"":estadoFoto(e)}
+      </div>
+      <div class="en-a"><button class="ib" onclick="editarEntrega(${jsq(e.id)})" title="Agregar o cambiar nombre, teléfono y foto">${e.foto?"✏️":"📷 Foto"}</button></div>
+    </div>`).join("");
+}
+function render(){ renderAfiche(); renderInventario(); renderDrive(); renderLista(); }
+
+// ============================================================
+//  AJUSTES
+// ============================================================
+let ajEdit=[];
+function abrirAjustes(){
+  ajEdit=aj.premios.map(p=>Object.assign({},p));
+  $("ajTit").value=aj.titulo; $("ajFecha").value=aj.fecha; $("ajLugar").value=aj.lugar;
+  $("ajSonido").checked=local.sonido; $("ajPrueba").checked=local.prueba;
+  pintarAjPremios(); renderDrive(); abrir("ajModal");
+}
+function leerAjPremios(){
+  document.querySelectorAll("#ajPremios .pr-row").forEach((row,i)=>{
+    const p=ajEdit[i]; if(!p) return;
+    p.emoji=row.querySelector(".em-in").value.trim()||"🎁"; p.nombre=row.querySelector(".nm-in").value.trim();
+    p.cantidad=Math.max(0,Math.round(Number(row.querySelector(".ct-in").value)||0));
+  });
+}
+function pintarAjPremios(){
+  $("ajPremios").innerHTML=ajEdit.map((p,i)=>{ const ent=p.k?entregados(p.k):0;
+    return `<div class="pr-row"><input class="in em-in" value="${esc(p.emoji)}" maxlength="8" aria-label="Ícono">
+      <input class="in nm-in" value="${esc(p.nombre)}" placeholder="Nombre del premio" maxlength="30" aria-label="Premio">
+      <input class="in ct-in" type="number" min="0" max="9999" value="${p.cantidad}" aria-label="Cantidad">
+      <button type="button" class="ib" onclick="quitarPremio(${i})" title="${ent?"Ya tiene entregas: no se puede quitar":"Quitar premio"}" ${ent?"disabled":""}>✕</button>
+      ${ent?`<small>${plural(ent,"ya entregado","ya entregados")}</small>`:""}</div>`; }).join("");
+  $("ajAgregar").disabled=ajEdit.length>=MAX_PREMIOS;
+}
+function quitarPremio(i){ leerAjPremios(); ajEdit.splice(i,1); pintarAjPremios(); }
+function guardarAjustes(){
+  leerAjPremios();
+  const nombres=ajEdit.map(p=>p.nombre);
+  if(!ajEdit.length){ alert("Tiene que haber al menos un premio."); return; }
+  if(nombres.some(n=>!n)){ alert("Escribí el nombre de cada premio (o quitá la fila vacía)."); return; }
+  if(new Set(nombres.map(fold)).size!==nombres.length){ alert("Hay dos premios con el mismo nombre."); return; }
+  for(const p of ajEdit){ const ent=p.k?entregados(p.k):0; if(p.cantidad<ent){ alert(`${p.nombre}: ya se entregaron ${ent}, la cantidad no puede ser menor.`); return; } }
+  const usados=new Set(aj.premios.map(p=>p.k));
+  ajEdit.forEach(p=>{ if(!p.k){ let k=slug(p.nombre); while(usados.has(k)) k+="-"+Math.random().toString(36).slice(2,4); usados.add(k); p.k=k; } });
+  aj=limpiarAj({titulo:$("ajTit").value, fecha:$("ajFecha").value, lugar:$("ajLugar").value, premios:ajEdit});
+  local.sonido=$("ajSonido").checked; local.prueba=$("ajPrueba").checked; guardarPrefs();
+  guardarAj(); render(); cerrar("ajModal"); toast("Ajustes guardados");
+}
+async function borrarTodo(){
+  if(!entregas.length){ toast("No hay entregas"); return; }
+  if(!confirm(`¿Borrar las ${entregas.length} entregas para empezar una actividad nueva?\n\nSe borran de TODAS las computadoras. Las fotos que ya están en Google Drive se quedan ahí.`)) return;
+  if(!confirm("¿Seguro? Esto no se puede deshacer. (Si no descargaste el Excel, tocá Cancelar.)")) return;
+  entregas=[]; await IDB.vaciar("cola"); pendientes.clear(); guardar(); render(); cerrar("ajModal"); toast("Listo: inventario completo otra vez");
+}
+
+// ============================================================
+//  EXCEL (diseño DJI)
+// ============================================================
+async function exportExcel(){
+  if(!window.ExcelJS){ alert("No se pudo cargar el Excel. Revisá el internet."); return; }
+  const DARK="FF44546A", WHITE="FFFFFFFF", INK="FF4A4F59", GRIDBG="FFF7F8FA";
+  const thin={style:"thin",color:{argb:"FFB9C0CC"}}, border={top:thin,left:thin,bottom:thin,right:thin};
+  const band=c=>{ c.fill={type:"pattern",pattern:"solid",fgColor:{argb:DARK}}; c.font={name:"Calibri",size:12,bold:true,color:{argb:WHITE}}; };
+  const font={name:"Calibri",size:11,color:{argb:INK}};
+  const wb=new ExcelJS.Workbook();
+  function hoja(nombre, titulo, derecha, heads, widths, filas, centro){
+    const ws=wb.addWorksheet(nombre,{views:[{showGridLines:false,state:"frozen",ySplit:5}]});
+    ws.columns=[{width:3},...widths.map(w=>({width:w})),{width:3}];
+    const B=2, K=B+heads.length-1, mitad=B+Math.max(1,Math.floor(heads.length/2));
+    ws.mergeCells(1,B,3,K); for(let r=1;r<=3;r++) for(let c=B;c<=K;c++) band(ws.getCell(r,c));
+    try{ const img=wb.addImage({base64:window.DJI_LOGO_B64,extension:"png"}); ws.addImage(img,{tl:{col:K-1.2,row:0.25},ext:{width:95,height:52},editAs:"oneCell"}); }catch(e){}
+    ws.mergeCells(4,B,4,mitad-1); const t=ws.getCell(4,B); t.value=titulo; band(t); t.alignment={vertical:"middle",indent:1};
+    ws.mergeCells(4,mitad,4,K); const tr=ws.getCell(4,mitad); tr.value=derecha; band(tr); tr.alignment={vertical:"middle",horizontal:"right",indent:1};
+    ws.getRow(4).height=20;
+    heads.forEach((h,i)=>{ const c=ws.getCell(5,B+i); c.value=h; band(c); c.border=border; c.alignment={vertical:"middle",horizontal:"center",wrapText:true}; });
+    ws.getRow(5).height=28;
+    let r=6;
+    filas.forEach(f=>{ f.forEach((v,i)=>{ const c=ws.getCell(r,B+i); c.value=v; c.font=font; c.border=border; c.fill={type:"pattern",pattern:"solid",fgColor:{argb:GRIDBG}}; c.alignment={vertical:"top",horizontal:centro.includes(i)?"center":"left",indent:centro.includes(i)?0:1}; }); r++; });
+    return {ws,B,K,r};
+  }
+  const hoy=fechaCorta(new Date().toISOString());
+  const L=entregas.slice().sort((a,b)=>a.n-b.n);
+  const h1=hoja("Entregas", `${aj.titulo} · Entregas · Exportado: ${hoy}`, plural(validas().length,"premio entregado","premios entregados"),
+    ["N.º","Fecha","Hora","Premio","Cliente","Teléfono","Entregó","Foto","Google Drive","Estado"], [8,12,8,16,26,12,13,9,34,12],
+    L.map(e=>[numTxt(e.n),fechaCorta(e.fecha),horaDe(e.fecha),nombrePremio(e),e.nombre,telBonito(e.telefono),e.registro,e.foto?"Sí":"No",e.drive?{text:"Abrir foto",hyperlink:e.drive.url}:"",e.anulada?"Anulada":"Entregado"]),
+    [0,1,2,5,7,9]);
+  if(!L.length){ const c=h1.ws.getCell(6,h1.B); c.value="Todavía no hay entregas"; c.font=font; }
+  const total=aj.premios.reduce((s,p)=>s+p.cantidad,0), ent=aj.premios.reduce((s,p)=>s+entregados(p.k),0);
+  const h2=hoja("Inventario", `${aj.titulo} · Inventario · ${hoy}`, `Quedan ${totalQuedan()} de ${total}`,
+    ["Premio","Cantidad","Entregados","Quedan"], [24,12,12,12],
+    aj.premios.map(p=>[`${p.emoji} ${p.nombre}`,p.cantidad,entregados(p.k),quedan(p)]), [1,2,3]);
+  [["TOTAL",total,ent,totalQuedan()]].forEach(f=>{ f.forEach((v,i)=>{ const c=h2.ws.getCell(h2.r,h2.B+i); c.value=v; band(c); c.border=border; c.alignment={horizontal:i?"center":"left",indent:i?0:1}; }); });
+  const buf=await wb.xlsx.writeBuffer();
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
+  a.download="Ruleta Gira y Gana "+hoy.replace(/\//g,"-")+".xlsx";
+  document.body.appendChild(a); a.click(); a.remove();
+  toast("Excel descargado");
+}
+
+// ============================================================
+//  PANTALLA PARA EL CLIENTE
+// ============================================================
+function pantallaCliente(){
+  document.body.classList.add("kiosco");
+  const el=document.documentElement;
+  try{ const p=(el.requestFullscreen||el.webkitRequestFullscreen||function(){}).call(el); if(p && p.catch) p.catch(()=>{}); }catch(e){}
+  setTimeout(()=>scrollTo(0,0),50);
+}
+function salirPantalla(){
+  document.body.classList.remove("kiosco");
+  try{ if(document.fullscreenElement || document.webkitFullscreenElement) (document.exitFullscreen||document.webkitExitFullscreen).call(document); }catch(e){}
+}
+["fullscreenchange","webkitfullscreenchange"].forEach(ev=>document.addEventListener(ev,()=>{ if(!(document.fullscreenElement||document.webkitFullscreenElement)) document.body.classList.remove("kiosco"); }));
+
+// ---------- eventos ----------
+$("btnGirar").addEventListener("click", girar);
+$("btnPantalla").addEventListener("click", pantallaCliente);
+$("btnSalir").addEventListener("click", salirPantalla);
+$("btnExcel").addEventListener("click", exportExcel);
+$("btnAjustes").addEventListener("click", abrirAjustes);
+$("ajGuardar").addEventListener("click", guardarAjustes);
+$("ajAgregar").addEventListener("click", ()=>{ leerAjPremios(); if(ajEdit.length<MAX_PREMIOS){ ajEdit.push({k:"", nombre:"", emoji:"🎁", cantidad:1}); pintarAjPremios(); const r=document.querySelectorAll("#ajPremios .nm-in"); r[r.length-1].focus(); } });
+$("ajBorrar").addEventListener("click", borrarTodo);
+$("rListo").addEventListener("click", cerrarPremio);
+$("rAnular").addEventListener("click", anularActual);
+$("rCam").addEventListener("click", ()=>$("fCam").click());
+$("rArch").addEventListener("click", ()=>$("fArch").click());
+["fCam","fArch"].forEach(id=>$(id).addEventListener("change",e=>{ const f=e.target.files[0]; e.target.value=""; elegirFoto(f); }));
+$("q").addEventListener("input", e=>{ query=e.target.value; renderLista(); });
+["ajModal","verModal"].forEach(id=>$(id).addEventListener("click",e=>{ if(e.target.id===id) cerrar(id); }));
+document.addEventListener("keydown", e=>{
+  const abierto=document.querySelector(".modal-ov.show");
+  if(e.key==="Escape"){ if(abierto){ if(abierto.id==="resModal") cerrarPremio(); else cerrar(abierto.id); } else if(document.body.classList.contains("kiosco")) salirPantalla(); return; }
+  if((e.key===" "||e.key==="Enter") && !abierto && !/INPUT|TEXTAREA|SELECT|BUTTON/.test((document.activeElement||{}).tagName||"")){ e.preventDefault(); girar(); }
+});
+addEventListener("storage", e=>{ if(e.key===LS_CLIENTES) cargarVendedores(); if(e.key===LS_ONLINE){ try{ const o=JSON.parse(e.newValue||"null"); if(o && o.drive){ usarDrive(o.drive); renderDrive(); procesarCola(); } }catch(x){} } });
+
+// ---------- inicio ----------
+(async()=>{
+  await cargar();
+  render();
+  await conectarNube();
+  procesarCola();
+})();
+</script>
+</body>
+</html>

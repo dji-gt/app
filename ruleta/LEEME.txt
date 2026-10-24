@@ -1,0 +1,47 @@
+========================================================
+  GIRÁ Y GANÁ  —  Ruleta de premios con inventario
+========================================================
+
+CÓMO ABRIRLA
+------------
+En línea: https://dji-gt.github.io/app/#ruleta  (botón "Ruleta" del menú)
+
+JUGAR
+-----
+- Tocá GIRAR (o la tecla espacio). La rueda gira y se detiene en el premio.
+- El premio sale AL AZAR según lo que QUEDA en el inventario: nunca sale algo
+  agotado y, al terminar, todo cuadra (ej. 15 gorras, 16 bolsos, 15 loncheras,
+  5 mochilas = 51 giros).
+- Cada giro se descuenta APENAS se gira (aunque cierren la ventana).
+- "📺 Pantalla para el cliente": muestra solo la ruleta en pantalla completa.
+  Para salir: botón "✕ Salir" o la tecla Esc.
+
+FOTO DE LA ENTREGA (respaldo)
+-----------------------------
+- Al salir el premio se abre una ventana: nombre y teléfono del cliente
+  (opcionales), quién lo entregó y "📷 Tomar foto" o "🖼️ Elegir foto".
+- Si no se toma en ese momento, se agrega después desde la lista de Entregas.
+- La foto queda en la nube de la tienda (se ve en todas las computadoras) y
+  se sube a Google Drive, con el mismo Drive que se conectó en Online:
+      DJI Online / Ruleta Girá y Ganá / 2026-10-25 Entregas /
+          001 - Gorra - Juan Pérez - 10h32.jpg
+  Si Drive no está conectado o no hay internet, la foto espera en esa
+  computadora y se sube sola después.
+
+SI ALGO SALIÓ MAL
+-----------------
+- "↩️ Anular este giro" (en la ventana del premio o desde la lista): el premio
+  vuelve al inventario. Usalo solo si el premio NO se entregó.
+
+AJUSTES (⚙️)
+------------
+- Premios: nombre, ícono y cantidad (se pueden agregar hasta 8).
+- Textos del afiche: título, fecha y lugar.
+- 🧪 Modo prueba (solo en esa computadora): gira pero no descuenta ni guarda.
+- Nueva actividad: borra todas las entregas (antes descargá el Excel).
+
+EXCEL
+-----
+"⬇️ Excel": hoja "Entregas" (N.º, fecha, hora, premio, cliente, teléfono,
+quién entregó, foto, enlace de Drive) y hoja "Inventario" (cantidad,
+entregados y lo que queda).
