@@ -306,9 +306,9 @@
 <canvas id="confeti"></canvas>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261024a"></script>
+<script src="../nube.js?v=20261024b"></script>
 <script src="../recepcion/lib/exceljs.min.js"></script>
-<script src="../recepcion/catalog.js?v=20261024a"></script>
+<script src="../recepcion/catalog.js?v=20261024b"></script>
 <script>
 /* ============================================================
    Girá y Ganá — ruleta de premios con inventario.
@@ -336,7 +336,8 @@ const FRASES = ["¡Ganaste!","¡Lo lograste!","¡Felicidades!","¡Vuelo ganador!
 const CARPETA_DRIVE = "Ruleta Girá y Ganá";
 const MAX_PREMIOS = 8;
 
-let aj = {titulo:"GIRÁ Y GANÁ", fecha:"25 Y 26 DE ABRIL", lugar:"LINCOLN PLAZA", premios:PREMIOS_INICIALES.map(p=>Object.assign({},p))};
+const AJ_REV = 1;   // 1: el lugar pasa de LINCOLN PLAZA a OAKLAND PLACE (una sola vez; después se cambia en Ajustes)
+let aj = {titulo:"GIRÁ Y GANÁ", fecha:"25 Y 26 DE ABRIL", lugar:"OAKLAND PLACE", premios:PREMIOS_INICIALES.map(p=>Object.assign({},p)), rev:AJ_REV};
 let local = {sonido:true, prueba:false};
 let entregas = [];
 let vendedores = VENDEDORES_INICIALES.slice();
@@ -377,7 +378,9 @@ function limpiarAj(a){
     return {k, nombre, emoji:S(p.emoji).slice(0,8)||"🎁", cantidad:Math.max(0,Math.min(9999,Math.round(Number(p.cantidad)||0)))};
   }).filter(Boolean).slice(0,MAX_PREMIOS) : [];
   if(!premios.length) premios=PREMIOS_INICIALES.map(p=>Object.assign({},p));
-  return {titulo:S(a.titulo).slice(0,40)||"GIRÁ Y GANÁ", fecha:S(a.fecha).slice(0,40), lugar:S(a.lugar).slice(0,40), premios};
+  let lugar=S(a.lugar).slice(0,40);
+  if((Number(a.rev)||0)<1 && fold(lugar)==="lincoln plaza") lugar="OAKLAND PLACE";
+  return {titulo:S(a.titulo).slice(0,40)||"GIRÁ Y GANÁ", fecha:S(a.fecha).slice(0,40), lugar, premios, rev:AJ_REV};
 }
 const RX_FOTO = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
 function limpiarEntrega(e){
@@ -425,7 +428,7 @@ const IDB = (()=>{
   };
 })();
 async function cargar(){
-  try{ const a=JSON.parse(localStorage.getItem(LS_AJ)||"null"); if(a) aj=limpiarAj(a); }catch(e){}
+  try{ const a=JSON.parse(localStorage.getItem(LS_AJ)||"null"); if(a){ aj=limpiarAj(a); if((Number(a.rev)||0)<AJ_REV) localStorage.setItem(LS_AJ,JSON.stringify(aj)); } }catch(e){}
   try{ const l=JSON.parse(localStorage.getItem(LS_LOCAL)||"null"); if(l) local={sonido:l.sonido!==false, prueba:!!l.prueba}; }catch(e){}
   try{ const o=JSON.parse(localStorage.getItem(LS_ONLINE)||"null"); if(o && o.drive) usarDrive(o.drive); }catch(e){}
   cargarVendedores();
@@ -455,7 +458,7 @@ function subirEntregas(){
   if(nubeEnt===null){ entSinSubir=true; return; }
   Nube.guardarColeccion("ruleta", mapaDe(entregas), nubeEnt);
 }
-const ajNube = () => ({titulo:aj.titulo, fecha:aj.fecha, lugar:aj.lugar, premios:aj.premios});
+const ajNube = () => ({titulo:aj.titulo, fecha:aj.fecha, lugar:aj.lugar, premios:aj.premios, rev:aj.rev});
 function subirAj(){
   if(!window.Nube || !Nube.conectado()) return;
   if(nubeAj===null){ ajSinSubir=true; return; }
@@ -475,6 +478,8 @@ async function conectarNube(){
     nubeAj=m;
     if(ajSinSubir){ ajSinSubir=false; Nube.guardarMapa("ajustes","ruleta", ajNube(), m); return; }
     const nuevo=limpiarAj(m);
+    // lo guardado con una versión anterior se actualiza también en la nube (ej. el lugar)
+    if((Number(m.rev)||0)<AJ_REV){ aj=nuevo; try{ localStorage.setItem(LS_AJ,JSON.stringify(aj)); }catch(e){} Nube.guardarMapa("ajustes","ruleta", ajNube(), m); render(); return; }
     if(Nube.estable(nuevo)===Nube.estable(aj)) return;
     aj=nuevo; try{ localStorage.setItem(LS_AJ,JSON.stringify(aj)); }catch(e){}
     render();
@@ -905,7 +910,7 @@ function guardarAjustes(){
   for(const p of ajEdit){ const ent=p.k?entregados(p.k):0; if(p.cantidad<ent){ alert(`${p.nombre}: ya se entregaron ${ent}, la cantidad no puede ser menor.`); return; } }
   const usados=new Set(aj.premios.map(p=>p.k));
   ajEdit.forEach(p=>{ if(!p.k){ let k=slug(p.nombre); while(usados.has(k)) k+="-"+Math.random().toString(36).slice(2,4); usados.add(k); p.k=k; } });
-  aj=limpiarAj({titulo:$("ajTit").value, fecha:$("ajFecha").value, lugar:$("ajLugar").value, premios:ajEdit});
+  aj=limpiarAj({titulo:$("ajTit").value, fecha:$("ajFecha").value, lugar:$("ajLugar").value, premios:ajEdit, rev:AJ_REV});
   local.sonido=$("ajSonido").checked; local.prueba=$("ajPrueba").checked; guardarPrefs();
   guardarAj(); render(); cerrar("ajModal"); toast("Ajustes guardados");
 }
