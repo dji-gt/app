@@ -317,9 +317,9 @@
 <canvas id="confeti"></canvas>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261024d"></script>
+<script src="../nube.js?v=20261024e"></script>
 <script src="../recepcion/lib/exceljs.min.js"></script>
-<script src="../recepcion/catalog.js?v=20261024d"></script>
+<script src="../recepcion/catalog.js?v=20261024e"></script>
 <script>
 /* ============================================================
    Girá y Ganá — ruleta de premios con inventario.
@@ -347,8 +347,10 @@ const FRASES = ["¡Ganaste!","¡Lo lograste!","¡Felicidades!","¡Vuelo ganador!
 const CARPETA_DRIVE = "Ruleta Girá y Ganá";
 const MAX_PREMIOS = 8;
 
-const AJ_REV = 1;   // 1: el lugar pasa de LINCOLN PLAZA a OAKLAND PLACE (una sola vez; después se cambia en Ajustes)
-let aj = {titulo:"GIRÁ Y GANÁ", fecha:"25 Y 26 DE ABRIL", lugar:"OAKLAND PLACE", premios:PREMIOS_INICIALES.map(p=>Object.assign({},p)), rev:AJ_REV};
+// cambios hechos una sola vez a lo ya guardado (después se cambia en Ajustes):
+// 1: el lugar pasa de LINCOLN PLAZA a OAKLAND PLACE · 2: la fecha pasa de 25 Y 26 DE ABRIL a 24 Y 25 DE OCTUBRE
+const AJ_REV = 2;
+let aj = {titulo:"GIRÁ Y GANÁ", fecha:"24 Y 25 DE OCTUBRE", lugar:"OAKLAND PLACE", premios:PREMIOS_INICIALES.map(p=>Object.assign({},p)), rev:AJ_REV};
 let local = {sonido:true, prueba:false};
 let entregas = [];
 let vendedores = VENDEDORES_INICIALES.slice();
@@ -389,9 +391,11 @@ function limpiarAj(a){
     return {k, nombre, emoji:S(p.emoji).slice(0,8)||"🎁", cantidad:Math.max(0,Math.min(9999,Math.round(Number(p.cantidad)||0)))};
   }).filter(Boolean).slice(0,MAX_PREMIOS) : [];
   if(!premios.length) premios=PREMIOS_INICIALES.map(p=>Object.assign({},p));
-  let lugar=S(a.lugar).slice(0,40);
-  if((Number(a.rev)||0)<1 && fold(lugar)==="lincoln plaza") lugar="OAKLAND PLACE";
-  return {titulo:S(a.titulo).slice(0,40)||"GIRÁ Y GANÁ", fecha:S(a.fecha).slice(0,40), lugar, premios, rev:AJ_REV};
+  let lugar=S(a.lugar).slice(0,40), fecha=S(a.fecha).slice(0,40);
+  const rev=Number(a.rev)||0;
+  if(rev<1 && fold(lugar)==="lincoln plaza") lugar="OAKLAND PLACE";
+  if(rev<2 && fold(fecha)==="25 y 26 de abril") fecha="24 Y 25 DE OCTUBRE";
+  return {titulo:S(a.titulo).slice(0,40)||"GIRÁ Y GANÁ", fecha, lugar, premios, rev:AJ_REV};
 }
 const RX_FOTO = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
 function limpiarEntrega(e){
