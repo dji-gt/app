@@ -146,10 +146,6 @@
   .prs button[aria-pressed="true"]{border-color:var(--cyan-d);background:#e6f6fd;color:#075985}
   .prs button[aria-pressed="true"] small{color:#0369a1}
   .prs button:disabled{opacity:.45;cursor:default}
-  .prnota{font-size:12.5px;color:var(--muted);margin-top:6px}
-  .prnota b{color:#b45309}
-  .gana .cambio{display:inline-block;margin-top:8px;background:rgba(95,212,255,.16);border:1px solid rgba(95,212,255,.35);color:#bfeaff;border-radius:999px;padding:3px 12px;font-weight:700;font-size:12.5px}
-  .en-c{font-size:12px;color:#b45309;font-weight:700}
   .fotobox{display:flex;gap:12px;align-items:center;margin-top:4px}
   .fotoprev{width:92px;height:92px;border-radius:12px;background:var(--line-2);display:flex;align-items:center;justify-content:center;font-size:30px;overflow:hidden;flex:none;border:2px dashed #d5dae2}
   .fotoprev img{width:100%;height:100%;object-fit:cover;display:block}
@@ -242,7 +238,6 @@
         </div>
         <span class="fl">Premio que se entregó <i>(si le dieron otro, cambialo aquí)</i></span>
         <div class="prs" id="rPrem"></div>
-        <div class="prnota" id="rPremNota"></div>
         <span class="fl">¿Quién lo entregó?</span>
         <div class="seg" id="rReg"></div>
         <span class="fl">Foto de la entrega</span>
@@ -317,9 +312,9 @@
 <canvas id="confeti"></canvas>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261024e"></script>
+<script src="../nube.js?v=20261025a"></script>
 <script src="../recepcion/lib/exceljs.min.js"></script>
-<script src="../recepcion/catalog.js?v=20261024e"></script>
+<script src="../recepcion/catalog.js?v=20261025a"></script>
 <script>
 /* ============================================================
    Girá y Ganá — ruleta de premios con inventario.
@@ -409,8 +404,6 @@ function limpiarEntrega(e){
     foto:(RX_FOTO.test(foto) && foto.length<900000) ? foto : ""
   };
   if(e.drive && typeof e.drive==="object" && S(e.drive.url)) o.drive={url:S(e.drive.url), id:S(e.drive.id)};
-  // si se entregó otro premio del que salió, queda anotado lo que salió en la ruleta
-  if(S(e.premioRuleta) && S(e.premioRuleta)!==o.premio){ o.premioRuleta=S(e.premioRuleta); o.premioRuletaNombre=S(e.premioRuletaNombre)||S(e.premioRuleta); }
   if(e.actualizado) o.actualizado=S(e.actualizado);
   return o.premio ? o : null;
 }
@@ -698,15 +691,11 @@ function pintarFoto(src){
   const b=$("rFoto");
   b.className="fotoprev"+(src?" has":""); b.innerHTML=src?`<img src="${src}" alt="Foto de la entrega">`:"📷";
 }
-let premioSel=null;   // premio elegido en la ventana (puede ser otro del que salió)
-const premioRuletaDe = e => e.premioRuleta || e.premio;
+let premioSel=null;   // premio elegido en la ventana (se puede cambiar por el que se entregó)
 function pintarGana(e, p, frase){
   const k=e?premioSel:p.k, q=premioDe(k)||{nombre:e?nombrePremio(e):p.nombre, emoji:e?emojiPremio(e):p.emoji};
-  const salio=e?premioRuletaDe(e):p.k, otro=e && k!==salio;
-  const nomSalio=e ? ((premioDe(salio)||{}).nombre || e.premioRuletaNombre || e.premioNombre) : "";
   $("resGana").innerHTML=`<div class="em">${esc(q.emoji)}</div><div class="fr">${esc(e?e.frase:frase)}</div>
     <div class="pr">Se lleva:<b>${esc(q.nombre)}</b></div>
-    ${otro?`<div class="cambio">🔄 En la ruleta salió: ${esc(nomSalio)}</div>`:""}
     ${e?`<div class="num">Entrega ${numTxt(e.n)} · ${esc(fechaBonita(e.fecha))}</div>`:`<div class="aviso">🧪 Modo prueba: no se descontó del inventario</div>`}`;
 }
 function pintarPremios(e){
@@ -715,8 +704,6 @@ function pintarPremios(e){
     const sel=p.k===premioSel;
     return `<button type="button" aria-pressed="${sel}" ${disp<=0&&!sel?"disabled":""} onclick="elegirPremioEntregado(${jsq(p.k)})" title="${disp<=0?"Agotado":"Quedan "+disp}">${esc(p.emoji)} ${esc(p.nombre)} <small>${disp<=0?"agotado":"quedan "+disp}</small></button>`;
   }).join("");
-  const salio=premioRuletaDe(e), nomSalio=(premioDe(salio)||{}).nombre || e.premioRuletaNombre || e.premioNombre;
-  $("rPremNota").innerHTML = premioSel!==salio ? `Se va a guardar que se entregó <b>${esc((premioDe(premioSel)||{}).nombre||"")}</b> (en la ruleta salió ${esc(nomSalio)}). El inventario se ajusta solo.` : "";
 }
 function elegirPremioEntregado(k){
   const e=entregas.find(x=>x.id===resId); if(!e) return;
@@ -765,9 +752,6 @@ async function cerrarPremio(){
     const np=premioDe(premioSel);
     if(np && np.k!==e.premio){
       if(quedan(np)<=0){ alert(`Ya no quedan ${np.nombre} en el inventario: no se puede cambiar a ese premio.`); return; }
-      const salio=premioRuletaDe(e), nomSalio=e.premioRuletaNombre || (e.premioRuleta ? "" : e.premioNombre) || (premioDe(salio)||{}).nombre || salio;
-      if(np.k===salio){ delete e.premioRuleta; delete e.premioRuletaNombre; }
-      else { e.premioRuleta=salio; e.premioRuletaNombre=nomSalio; }
       e.premio=np.k; e.premioNombre=np.nombre; e.emoji=np.emoji; cambio=true;
     }
     if(fotoNueva){ e.foto=fotoNueva.thumb; delete e.drive; cambio=true; await IDB.put("cola",{k:e.id, t:Date.now(), blob:fotoNueva.full}); pendientes.add(e.id); }
@@ -908,7 +892,7 @@ function renderLista(){
   const qs=fold(query).split(" ").filter(Boolean);
   const L=entregas.filter(e=>{
     if(!qs.length) return true;
-    const k=fold([nombrePremio(e),e.nombre,e.registro,numTxt(e.n),String(e.n),e.premioRuleta?"cambiado "+e.premioRuletaNombre:""].join(" "))+" "+soloDigitos(e.telefono);
+    const k=fold([nombrePremio(e),e.nombre,e.registro,numTxt(e.n),String(e.n)].join(" "))+" "+soloDigitos(e.telefono);
     return qs.every(q=>k.includes(q));
   }).sort((a,b)=>b.n-a.n||b.fecha.localeCompare(a.fecha));
   const ent=validas().length;
@@ -919,7 +903,6 @@ function renderLista(){
       <button class="en-f" onclick="verFoto(${jsq(e.id)})" title="${e.foto?"Ver foto":"Agregar foto"}">${e.foto?`<img src="${e.foto}" alt="">`:esc(emojiPremio(e))}</button>
       <div class="en-b">
         <div class="en-p"><span>${numTxt(e.n)}</span>${esc(emojiPremio(e))} ${esc(nombrePremio(e))}</div>
-        ${e.premioRuleta?`<div class="en-c">🔄 Cambiado · en la ruleta salió ${esc((premioDe(e.premioRuleta)||{}).nombre||e.premioRuletaNombre)}</div>`:""}
         <div class="en-s">${esc(e.nombre||"Cliente sin nombre")}${e.telefono?" · "+esc(telBonito(e.telefono)):""}${e.registro?" · entregó "+esc(e.registro):""} · ${esc(fechaBonita(e.fecha))}</div>
         ${estadoFoto(e)}
       </div>
@@ -1003,9 +986,9 @@ async function exportExcel(){
   const hoy=fechaCorta(new Date().toISOString());
   const L=entregas.slice().sort((a,b)=>a.n-b.n);
   const h1=hoja("Entregas", `${aj.titulo} · Entregas · Exportado: ${hoy}`, plural(validas().length,"premio entregado","premios entregados"),
-    ["N.º","Fecha","Hora","Premio entregado","Salió en la ruleta","Cliente","Teléfono","Entregó","Foto","Google Drive"], [8,12,8,18,18,26,12,13,9,34],
-    L.map(e=>[numTxt(e.n),fechaCorta(e.fecha),horaDe(e.fecha),nombrePremio(e),e.premioRuleta?((premioDe(e.premioRuleta)||{}).nombre||e.premioRuletaNombre):"(el mismo)",e.nombre,telBonito(e.telefono),e.registro,e.foto?"Sí":"No",e.drive?{text:"Abrir foto",hyperlink:e.drive.url}:""]),
-    [0,1,2,6,8]);
+    ["N.º","Fecha","Hora","Premio","Cliente","Teléfono","Entregó","Foto","Google Drive"], [8,12,8,18,26,12,13,9,34],
+    L.map(e=>[numTxt(e.n),fechaCorta(e.fecha),horaDe(e.fecha),nombrePremio(e),e.nombre,telBonito(e.telefono),e.registro,e.foto?"Sí":"No",e.drive?{text:"Abrir foto",hyperlink:e.drive.url}:""]),
+    [0,1,2,5,7]);
   if(!L.length){ const c=h1.ws.getCell(6,h1.B); c.value="Todavía no hay entregas"; c.font=font; }
   const total=aj.premios.reduce((s,p)=>s+p.cantidad,0), ent=aj.premios.reduce((s,p)=>s+entregados(p.k),0);
   const h2=hoja("Inventario", `${aj.titulo} · Inventario · ${hoy}`, `Quedan ${totalQuedan()} de ${total}`,
