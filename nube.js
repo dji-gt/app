@@ -10,6 +10,37 @@
 (function(){
   "use strict";
 
+  // ---------- 0) link de pruebas:  https://dji-gt.github.io/app-pruebas/ ----------
+  // Comparte el navegador con la app real (mismo dominio), así que todo lo que
+  // guarda (localStorage e IndexedDB) va aparte con el prefijo "pruebas:".
+  // Así nunca ve ni cambia los datos de la tienda ni su clave de la nube.
+  if(/^\/app-pruebas(\/|$)/.test(location.pathname)){
+    const P="pruebas:";
+    try{
+      const ls=window.localStorage, S=Storage.prototype, get=S.getItem, set=S.setItem, del=S.removeItem;
+      S.getItem=function(k){ return get.call(this, this===ls ? P+k : k); };
+      S.setItem=function(k,v){ return set.call(this, this===ls ? P+k : k, v); };
+      S.removeItem=function(k){ return del.call(this, this===ls ? P+k : k); };
+      // avisos entre pestañas: solo los de pruebas, y con la llave sin prefijo
+      const llave=Object.getOwnPropertyDescriptor(StorageEvent.prototype,"key").get;
+      Object.defineProperty(StorageEvent.prototype,"key",{configurable:true,enumerable:true,
+        get(){ const k=llave.call(this); return k && k.startsWith(P) ? k.slice(P.length) : k; }});
+      addEventListener("storage",e=>{ const k=llave.call(e); if(k!==null && !k.startsWith(P)) e.stopImmediatePropagation(); },true);
+    }catch(e){}
+    try{
+      const I=IDBFactory.prototype, abrir=I.open, borrar=I.deleteDatabase;
+      I.open=function(n,...r){ return abrir.call(this, P+n, ...r); };
+      I.deleteDatabase=function(n){ return borrar.call(this, P+n); };
+    }catch(e){}
+    if(window===window.top) addEventListener("DOMContentLoaded",()=>{
+      const b=document.createElement("div");
+      b.textContent="PRUEBAS";
+      b.title="Versión de pruebas: sus datos van aparte de la app de la tienda";
+      b.style.cssText="position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:2147483647;background:#f59e0b;color:#111;font:800 11px/1 -apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;letter-spacing:.12em;padding:4px 12px;border-radius:0 0 8px 8px;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.25)";
+      document.body.appendChild(b);
+    });
+  }
+
   const CONFIG = {
     apiKey: "AIzaSyC47tINwbIwWxZ098G7z_o36w1lVZimv6U",
     authDomain: "dji-gt-app.firebaseapp.com",
