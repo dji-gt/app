@@ -10,11 +10,11 @@
 (function(){
   "use strict";
 
-  // ---------- 0) link de pruebas:  https://dji-gt.github.io/app-pruebas/ ----------
+  // ---------- 0) link de pruebas "Chat Dji":  https://dji-gt.github.io/chat-dji/ ----------
   // Comparte el navegador con la app real (mismo dominio), así que todo lo que
   // guarda (localStorage e IndexedDB) va aparte con el prefijo "pruebas:".
   // Así nunca ve ni cambia los datos de la tienda ni su clave de la nube.
-  if(/^\/app-pruebas(\/|$)/.test(location.pathname)){
+  if(/^\/chat-dji(\/|$)/i.test(location.pathname)){
     const P="pruebas:";
     try{
       const ls=window.localStorage, S=Storage.prototype, get=S.getItem, set=S.setItem, del=S.removeItem;
