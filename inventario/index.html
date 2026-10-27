@@ -81,7 +81,12 @@
   .est.sobra{background:var(--warn-bg);color:#8a5b12}
   .vacio{grid-column:1/-1;background:var(--card);border:1.5px dashed var(--line);border-radius:var(--r);padding:40px 22px;text-align:center;color:var(--muted)}
   .vacio b{color:var(--ink);display:block;font-size:16px;margin-bottom:5px}
+  .vacio strong{color:var(--ink-2)}
   .pie{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .pegar{display:flex;gap:8px;max-width:640px;margin:16px auto 6px}
+  .pegar input{flex:1;min-width:0;padding:12px 13px;border:2px solid var(--line);border-radius:12px;font-size:14.5px;outline:none;background:#fafbfc}
+  .pegar input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+  .avisonube{margin:12px auto 0;max-width:640px;font-size:13px;color:#8a5b12;background:var(--warn-bg);border:1px solid var(--warn-br);border-radius:10px;padding:9px 12px;font-weight:600}
 
   .btn{border:none;border-radius:10px;padding:11px 16px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
   .btn.primary{background:var(--accent);color:#fff}.btn.primary:hover{background:var(--accent-d)}
@@ -144,6 +149,7 @@
   <div class="info" id="info"></div>
   <div class="lista" id="lista"></div>
   <div class="pie">
+    <button class="btn ghost sm" id="btnPegar">🔗 Cargar con link</button>
     <button class="btn ghost sm" id="btnReiniciar">↺ Borrar el conteo</button>
   </div>
 </div>
@@ -165,9 +171,9 @@
 <input type="file" id="archivo" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261027a"></script>
+<script src="../nube.js?v=20261027b"></script>
 <script src="../recepcion/lib/exceljs.min.js"></script>
-<script src="../recepcion/catalog.js?v=20261027a"></script>
+<script src="../recepcion/catalog.js?v=20261027b"></script>
 <script>
 /* ============================================================
    Inventario — lo que dice el sistema (BCE · Oakland Mall) contra
@@ -254,6 +260,8 @@ async function conectarNube(){
   if(!window.Nube){ corteListo=true; aplicarCargaPendiente(); return; }
   Nube.pintar($("nubeEstado"));
   if(!Nube.conectado() || !await Nube.iniciar()){ corteListo=true; aplicarCargaPendiente(); return; }
+  // si la nube tarda (o falla), el link de carga se aplica igual a los pocos segundos
+  setTimeout(()=>{ if(!corteListo){ corteListo=true; aplicarCargaPendiente(); } }, 6000);
   Nube.escucharMapa("inventario","corte",(m,existe)=>{
     nubeCorte=m;
     if(corteSinSubir){ corteSinSubir=false; Nube.guardarMapa("inventario","corte", corteNube(), m); }
@@ -278,14 +286,26 @@ async function conectarNube(){
 //  CARGAR EL INVENTARIO DEL SISTEMA
 // ============================================================
 // link: …#cargar=AAAA-MM-DD,CÓDIGO.CANTIDAD,CÓDIGO.CANTIDAD,…  (el nombre sale del catálogo)
-function leerCargaDelLink(){
-  const m=location.hash.match(/(?:^#|&)cargar=([^&]*)/); if(!m) return;
-  try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){}
-  const partes=decodeURIComponent(m[1]).split(",").map(S).filter(Boolean);
+function parsearCarga(txt){
+  txt=S(txt); const m=txt.match(/cargar=([^&\s]*)/);
+  let datos=m?m[1]:txt; try{ datos=decodeURIComponent(datos); }catch(e){}
+  const partes=datos.split(",").map(S).filter(Boolean);
   let fecha=hoyISO();
   if(/^\d{4}-\d{2}-\d{2}$/.test(partes[0]||"")) fecha=partes.shift();
-  const items=partes.map(p=>{ const [c,n,...d]=p.split("."); return {c:S(c).toUpperCase(), n:Number(n), d:d.join(".")}; }).filter(x=>x.c && Number.isFinite(x.n));
-  if(items.length) cargaPendiente={fecha, tienda:TIENDA, items, origen:"link"};
+  const items=partes.map(p=>{ const [c,n,...d]=p.split("."); return {c:S(c).toUpperCase(), n:Number(n), d:d.join(".")}; }).filter(x=>/^[A-Z0-9-]{3,20}$/.test(x.c) && Number.isFinite(x.n));
+  return items.length ? {fecha, tienda:TIENDA, items} : null;
+}
+function leerCargaDelLink(){
+  if(!/(?:^#|&)cargar=/.test(location.hash)) return;
+  const c=parsearCarga(location.hash);
+  try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){}
+  if(c) cargaPendiente=c;
+}
+// el link también se puede pegar (si se abrió en otro navegador, por ejemplo dentro de otra app)
+function cargarPegado(txt){
+  const c=parsearCarga(txt);
+  if(!c){ alert("Ese texto no es un link de carga del inventario. Copiá el link completo (empieza con https://dji-gt.github.io/app/#inventario&cargar=…)."); return; }
+  cargarCorte(c);
 }
 function aplicarCargaPendiente(){
   const c=cargaPendiente; cargaPendiente=null; if(!c) return;
@@ -412,7 +432,14 @@ function pintarResumen(){
 }
 function render(){
   pintarResumen();
-  if(!corte){ $("lista").innerHTML=`<div class="vacio"><b>Todavía no hay inventario cargado</b>Abrí el link de carga que te pasaron, o tocá <b>⬆️ Cargar Excel</b> con el inventario del sistema (código, producto y cantidad).</div>`; return; }
+  if(!corte){
+    const sinNube = !(window.Nube && Nube.conectado());
+    $("lista").innerHTML=`<div class="vacio"><b>Todavía no hay inventario cargado</b>Copiá el <strong>link de carga</strong> que te pasaron y pegalo aquí:
+      <div class="pegar"><input id="pegarTxt" placeholder="Pegá aquí el link de carga…" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter') cargarPegado(this.value)"><button class="btn primary" onclick="cargarPegado(document.getElementById('pegarTxt').value)">Cargar</button></div>
+      o tocá <strong>⬆️ Cargar Excel</strong> con el inventario del sistema (código, producto y cantidad).
+      ${sinNube?`<div class="avisonube">💻 Esta computadora no está conectada a la nube de la tienda: lo que cargues aquí solo se va a ver en esta computadora.</div>`:""}</div>`;
+    return;
+  }
   const L=filtrados();
   if(!L.length){ $("lista").innerHTML=`<div class="vacio"><b>No hay productos aquí</b><button class="btn ghost sm" style="margin-top:10px" onclick="setFiltro('todos');query='';$('q').value='';render()">Ver todos</button></div>`; return; }
   $("lista").innerHTML=L.map(it=>{
@@ -563,6 +590,7 @@ $("imgCopiar").addEventListener("click", copiarImagen);
 $("imgBajar").addEventListener("click", bajarImagen);
 $("imgCompartir").addEventListener("click", compartirImagen);
 $("imgModal").addEventListener("click", e=>{ if(e.target.id==="imgModal") cerrar("imgModal"); });
+$("btnPegar").addEventListener("click", ()=>{ const t=prompt("Pegá aquí el link de carga del inventario:"); if(t) cargarPegado(t); });
 $("btnReiniciar").addEventListener("click", ()=>{ const n=Object.keys(conteo).length; if(!n){ toast("Todavía no hay nada contado"); return; } if(!confirm(`¿Borrar el conteo de ${plural(n,"producto","productos")} y empezar de nuevo?\n\nEl inventario del sistema se queda.`)) return; conteo={}; guardarLocal(); subirConteo(); render(); toast("Conteo borrado"); });
 document.addEventListener("keydown", e=>{ if(e.key==="Escape") cerrar("imgModal"); });
 addEventListener("hashchange", ()=>{ leerCargaDelLink(); if(corteListo) aplicarCargaPendiente(); });
