@@ -149,6 +149,7 @@
   <div class="info" id="info"></div>
   <div class="lista" id="lista"></div>
   <div class="pie">
+    <button class="btn ghost sm" id="btnAgregar">➕ Agregar producto</button>
     <button class="btn ghost sm" id="btnPegar">🔗 Cargar con link</button>
     <button class="btn ghost sm" id="btnReiniciar">↺ Borrar el conteo</button>
   </div>
@@ -171,9 +172,9 @@
 <input type="file" id="archivo" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261027b"></script>
+<script src="../nube.js?v=20261027c"></script>
 <script src="../recepcion/lib/exceljs.min.js"></script>
-<script src="../recepcion/catalog.js?v=20261027b"></script>
+<script src="../recepcion/catalog.js?v=20261027c"></script>
 <script>
 /* ============================================================
    Inventario — lo que dice el sistema (BCE · Oakland Mall) contra
@@ -317,6 +318,8 @@ function cargarCorte(nuevo){
   if(!nuevo){ alert("No encontré productos para cargar."); return false; }
   const igual = corte && corte.fecha===nuevo.fecha && Nube.estable(corte.items.map(x=>[x.c,x.n]))===Nube.estable(nuevo.items.map(x=>[x.c,x.n]));
   if(igual){ toast("✔ Ese inventario ya está cargado"); return false; }
+  // mismo día: se actualiza el que ya estaba y lo que ya contaron se queda
+  if(corte && corte.fecha===nuevo.fecha) return actualizarCorte(nuevo);
   const uni=nuevo.items.reduce((s,x)=>s+x.n,0), hay=Object.keys(conteo).length;
   if(!confirm(`¿Cargar el inventario del sistema del ${ymdCorto(nuevo.fecha)}?\n\n${plural(nuevo.items.length,"producto","productos")} · ${fmt(uni)} unidades (${TIENDA}).`+(corte?`\n\nReemplaza al que estaba cargado (${ymdCorto(corte.fecha)}).`:"")+(hay?`\nEl conteo que ya llevaban (${plural(hay,"producto","productos")}) se borra para empezar de nuevo.`:""))) return false;
   nuevo.cargado=new Date().toISOString();
@@ -324,6 +327,43 @@ function cargarCorte(nuevo){
   guardarLocal(); subirCorte(); subirConteo(); render();
   toast(`✔ Inventario cargado: ${plural(nuevo.items.length,"producto","productos")}`);
   return true;
+}
+function actualizarCorte(nuevo){
+  const antes=new Map(corte.items.map(x=>[x.c,x])), quedan=new Set(nuevo.items.map(x=>x.c));
+  const entran=nuevo.items.filter(x=>!antes.has(x.c)), cambian=nuevo.items.filter(x=>antes.has(x.c) && antes.get(x.c).n!==x.n), salen=corte.items.filter(x=>!quedan.has(x.c));
+  const lista=(L,f)=>L.slice(0,8).map(f).join("\n")+(L.length>8?`\n… y ${L.length-8} más`:"");
+  const partes=[];
+  if(entran.length) partes.push(`Se ${entran.length===1?"agrega":"agregan"} ${plural(entran.length,"producto","productos")}:\n`+lista(entran,x=>`• ${x.c} ${nombreDe(x)} (${fmt(x.n)})`));
+  if(cambian.length) partes.push(`Cambia lo del sistema en ${plural(cambian.length,"producto","productos")}:\n`+lista(cambian,x=>`• ${x.c} ${nombreDe(x)} (${fmt(antes.get(x.c).n)} → ${fmt(x.n)})`));
+  if(salen.length) partes.push(`Se ${salen.length===1?"quita":"quitan"} ${plural(salen.length,"producto","productos")}:\n`+lista(salen,x=>`• ${x.c} ${nombreDe(x)}`));
+  if(!confirm(`¿Actualizar el inventario del sistema del ${ymdCorto(nuevo.fecha)}?\n\n`+partes.join("\n\n")+`\n\nLo que ya contaron se mantiene.`)) return false;
+  nuevo.cargado=new Date().toISOString();
+  corte=nuevo;
+  guardarLocal(); subirCorte(); render();
+  toast(`✔ Inventario actualizado: ${plural(nuevo.items.length,"producto","productos")}`);
+  return true;
+}
+// agregar (o corregir) un producto a mano, sin tocar lo contado
+function agregarProducto(){
+  const t=S(prompt("Código del producto (por ejemplo D00045) o escaneá el código de barras:",""));
+  if(!t) return;
+  const dig=t.replace(/\D/g,""); let c=t.toUpperCase();
+  if(!catalogo[c] && dig.length>=8 && porEan[dig]) c=porEan[dig];
+  if(!/^[A-Z0-9-]{3,20}$/.test(c)){ alert("Ese código no es válido. Escribí el código del producto, por ejemplo D00045."); return; }
+  const ya=corte && corte.items.find(x=>x.c===c);
+  let d=ya ? ya.d : (catalogo[c]||{}).descripcion||"";
+  if(!ya && !d){ d=S(prompt(`El código ${c} no está en el catálogo de Recepción.\n¿Cómo se llama el producto?`,"")); if(!d) return; }
+  const nom=ya ? nombreDe(ya) : d;
+  const r=prompt(`${c} · ${nom}\n\n¿Cuántos hay en el sistema (${TIENDA})?`, ya?String(ya.n):"");
+  if(r==null) return;
+  const n=Number(S(r).replace(/,/g,""));
+  if(S(r)==="" || !Number.isFinite(n) || n<0 || n>99999){ alert("Escribí la cantidad del sistema (un número)."); return; }
+  const items=corte ? corte.items.map(x=>x.c===c ? Object.assign({}, x, {n:Math.round(n)}) : x) : [];
+  if(!ya) items.push({c, d, n:Math.round(n)});
+  corte=limpiarCorte(Object.assign({fecha:hoyISO(), tienda:TIENDA, cargado:new Date().toISOString()}, corte||{}, {items}));
+  guardarLocal(); subirCorte();
+  query=""; $("q").value=""; filtro="todos"; render(); brillar(c);
+  toast(ya ? `✔ ${c}: sistema ${fmt(n)}` : `✔ Agregado: ${nom} (${fmt(n)})`);
 }
 // Excel: busca las columnas de código, producto y cantidad (y si trae "Lugar", toma solo BCE)
 async function cargarExcel(file){
@@ -590,6 +630,7 @@ $("imgCopiar").addEventListener("click", copiarImagen);
 $("imgBajar").addEventListener("click", bajarImagen);
 $("imgCompartir").addEventListener("click", compartirImagen);
 $("imgModal").addEventListener("click", e=>{ if(e.target.id==="imgModal") cerrar("imgModal"); });
+$("btnAgregar").addEventListener("click", agregarProducto);
 $("btnPegar").addEventListener("click", ()=>{ const t=prompt("Pegá aquí el link de carga del inventario:"); if(t) cargarPegado(t); });
 $("btnReiniciar").addEventListener("click", ()=>{ const n=Object.keys(conteo).length; if(!n){ toast("Todavía no hay nada contado"); return; } if(!confirm(`¿Borrar el conteo de ${plural(n,"producto","productos")} y empezar de nuevo?\n\nEl inventario del sistema se queda.`)) return; conteo={}; guardarLocal(); subirConteo(); render(); toast("Conteo borrado"); });
 document.addEventListener("keydown", e=>{ if(e.key==="Escape") cerrar("imgModal"); });
