@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mis ventas · DJI</title>
+<style>
+  :root{
+    --bg:#f3f4f7; --card:#ffffff; --ink:#14171c; --ink-2:#3b424d; --muted:#8b93a1;
+    --line:#e9ebef; --line-2:#f1f3f6;
+    --black:#111318; --black-2:#1b1e26; --navy:#44546a;
+    --accent:#2563eb; --accent-d:#1d4ed8; --accent-bg:#eef3fe;
+    --ok:#0e9f6e; --ok-bg:#e7f7f0; --ok-br:#bfe9d7;
+    --warn:#b7791f; --warn-bg:#fdf6e6; --warn-br:#f0e0b8;
+    --err:#e02424; --err-bg:#fdecec; --err-br:#f6c9c9;
+    --shadow-sm:0 1px 2px rgba(16,24,40,.06);
+    --shadow:0 1px 3px rgba(16,24,40,.06),0 10px 26px rgba(16,24,40,.05);
+    --shadow-lg:0 18px 44px rgba(16,24,40,.13);
+    --r:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  [hidden]{display:none!important}
+  input,button{font-family:inherit}
+
+  .appbar{background:var(--black);color:#fff;padding:0 22px;display:flex;align-items:center;gap:12px;height:66px;position:sticky;top:0;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.16)}
+  .appbar b{font-size:17px;font-weight:750}
+  .appbar .sub{font-size:13px;color:rgba(255,255,255,.6);font-weight:600}
+  .ab-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .ab-btn{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 13px;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+  .ab-btn:hover{background:rgba(255,255,255,.18)}
+  .appbar .logo{height:26px;opacity:.95;margin-left:4px}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:18px 20px 40px}
+  .mesbar{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:14px}
+  .mesbar b{font-size:16px;font-weight:800;min-width:170px;text-align:center}
+  .mesbar button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:18px;font-weight:800;color:var(--ink-2);cursor:pointer}
+  .mesbar button:disabled{opacity:.35;cursor:default}
+
+  /* ===== Resumen del mes ===== */
+  .hero{background:linear-gradient(135deg,#1b1e26,#2b3445);color:#fff;border-radius:20px;padding:20px 22px;box-shadow:var(--shadow-lg);margin-bottom:14px}
+  .h-row{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
+  .h-l{font-size:12px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.6)}
+  .h-n{font-size:34px;font-weight:850;letter-spacing:-.8px;line-height:1.1;margin-top:4px}
+  .h-n small{font-size:15px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:0}
+  .h-s{font-size:13px;color:rgba(255,255,255,.6);font-weight:600;margin-top:3px}
+  .h-p{margin-left:auto;text-align:right}
+  .h-p b{display:block;font-size:40px;font-weight:900;letter-spacing:-1px;line-height:1}
+  .h-p span{font-size:12px;font-weight:700;color:rgba(255,255,255,.6)}
+  .barra{position:relative;height:14px;border-radius:10px;background:rgba(255,255,255,.12);margin:30px 0 30px}
+  .barra i{position:absolute;left:0;top:0;bottom:0;border-radius:10px;background:linear-gradient(90deg,#3b82f6,#60a5fa);transition:width .4s}
+  .barra i.ok{background:linear-gradient(90deg,#10b981,#34d399)}
+  .barra i.bono{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+  .marca{position:absolute;top:-4px;bottom:-4px;width:2px;background:rgba(255,255,255,.55)}
+  .marca span{position:absolute;top:22px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:rgba(255,255,255,.7);white-space:nowrap}
+  .marca.arriba span{top:auto;bottom:22px;color:#fcd34d}
+  .h-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .h-stats > div{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:11px 13px;min-width:0}
+  .h-stats span{display:block;font-size:11.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:rgba(255,255,255,.55)}
+  .h-stats b{display:block;font-size:21px;font-weight:850;letter-spacing:-.4px;margin-top:3px;overflow-wrap:anywhere}
+  .h-stats small{display:block;font-size:12px;color:rgba(255,255,255,.6);font-weight:600;margin-top:1px}
+  .h-stats .bien b{color:#6ee7b7} .h-stats .mal b{color:#fca5a5} .h-stats .medio b{color:#fcd34d}
+
+  .grid2{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start;margin-bottom:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px 18px}
+  .card + .card{margin-top:14px}
+  .grid2 .card + .card{margin-top:0}
+  .card-h{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .card-h b{font-size:16px;font-weight:800}
+  .card-h .der{margin-left:auto}
+  .nota{font-size:12.5px;color:var(--muted);font-weight:600;margin-top:10px}
+  .nota b{color:var(--ink-2)}
+  .aviso{font-size:13px;color:#8a5b12;background:var(--warn-bg);border:1px solid var(--warn-br);border-radius:10px;padding:9px 12px;font-weight:600;margin-top:10px}
+
+  /* ===== Registrar el día ===== */
+  .fecha{display:flex;align-items:center;gap:6px;margin-left:auto}
+  .fecha input{border:2px solid var(--line);border-radius:10px;padding:7px 9px;font-size:14px;font-weight:700;color:var(--ink);background:#fff;outline:none}
+  .fecha input:focus{border-color:var(--accent)}
+  .fecha button{width:34px;height:36px;border-radius:9px;border:none;background:var(--line-2);font-weight:800;font-size:16px;color:var(--ink-2);cursor:pointer}
+  .fsub{font-size:13px;color:var(--muted);font-weight:700;margin:-4px 0 10px}
+  .cats{display:grid;grid-template-columns:1fr;gap:8px}
+  .cat{display:grid;grid-template-columns:46px 1fr auto;gap:11px;align-items:center;border:1px solid var(--line);border-radius:13px;padding:8px 10px}
+  .cat img{width:46px;height:46px;border-radius:10px;object-fit:contain;background:#fff;border:1px solid var(--line-2)}
+  .cat-n{font-weight:800;font-size:14.5px;line-height:1.2}
+  .cat-m{font-size:12px;color:var(--muted);font-weight:700;margin-top:2px}
+  .cat-m.ok{color:#0b7a53}
+  .cnt{display:inline-flex;align-items:center;border:2px solid var(--line);border-radius:11px;overflow:hidden;background:#fff}
+  .cnt button{width:38px;height:38px;border:none;background:var(--line-2);font-size:20px;font-weight:800;color:var(--ink-2);cursor:pointer}
+  .cnt button:hover{background:#e3e7ee}
+  .cnt input{width:52px;height:38px;border:none;text-align:center;font-size:18px;font-weight:800;outline:none;-moz-appearance:textfield}
+  .cnt input::-webkit-outer-spin-button,.cnt input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .cnt:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .campo{display:block;margin-top:12px}
+  .campo > span{display:block;font-size:13px;font-weight:800;color:var(--ink-2);margin-bottom:5px}
+  .campo > span small{color:var(--muted);font-weight:700}
+  .money{display:flex;align-items:center;border:2px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+  .money i{font-style:normal;font-weight:800;color:var(--muted);padding:0 4px 0 13px;font-size:16px}
+  .money input{flex:1;min-width:0;width:100%;border:none;outline:none;padding:11px 12px 11px 2px;font-size:18px;font-weight:800;background:transparent}
+  .money:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .eq{display:block;font-size:12.5px;color:var(--muted);font-weight:700;margin-top:4px;min-height:18px}
+  .pp{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:end}
+  .pp .money input{font-size:16px}
+  .pp-l{font-size:11.5px;color:var(--muted);font-weight:800;margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px}
+  .fpie{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+  .fpie .est{font-size:13px;font-weight:700;color:var(--muted)}
+  .fpie .est.ok{color:#0b7a53}
+  .fpie .btn{margin-left:auto}
+
+  /* ===== Comisión ===== */
+  .com-tot{background:var(--ok-bg);border:1px solid var(--ok-br);border-radius:14px;padding:12px 14px}
+  .com-tot.cero{background:var(--line-2);border-color:var(--line)}
+  .com-tot span{display:block;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+  .com-tot b{display:block;font-size:30px;font-weight:900;letter-spacing:-.6px;line-height:1.15;color:#0b7a53}
+  .com-tot.cero b{color:var(--ink-2)}
+  .com-tot small{display:block;font-size:12.5px;font-weight:700;color:var(--ink-2)}
+  .esc{display:grid;gap:8px;margin-top:12px}
+  .es{display:grid;grid-template-columns:62px 1fr;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:9px 11px}
+  .es .p{font-size:17px;font-weight:900;text-align:center;border-radius:10px;padding:6px 0;background:var(--line-2);color:var(--ink-2)}
+  .es.logrado{border-color:var(--ok-br);background:#f6fcf9}
+  .es.logrado .p{background:var(--ok);color:#fff}
+  .es-t{font-size:14px;font-weight:800}
+  .es-t em{font-style:normal;color:#0b7a53}
+  .es-d{font-size:12.5px;color:var(--muted);font-weight:700;margin-top:1px}
+  .ppbox{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;gap:10px;align-items:center}
+  .ppbox .ic{font-size:22px}
+  .ppbox b{font-weight:800}
+  .ppbox div{font-size:13px;color:var(--ink-2);font-weight:600}
+
+  /* ===== Semanas ===== */
+  .tabla{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table.sem{width:100%;border-collapse:separate;border-spacing:0;font-size:14px;min-width:560px}
+  table.sem th,table.sem td{padding:9px 8px;text-align:center;border-bottom:1px solid var(--line-2);white-space:nowrap}
+  table.sem thead th{font-size:12px;font-weight:800;letter-spacing:.3px;color:var(--navy);text-transform:uppercase;background:#f7f8fa}
+  table.sem thead th small{display:block;font-size:11px;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:700}
+  table.sem thead th.ahora{background:#fde9b0;color:#7a4e00}
+  table.sem tbody th{text-align:left;font-weight:800;color:var(--ink-2)}
+  table.sem tr > :first-child{position:sticky;left:0;background:#fff;z-index:1;box-shadow:1px 0 0 var(--line-2)}
+  table.sem thead tr > :first-child{background:#f7f8fa}
+  table.sem td.meta{background:#f7f8fa;color:var(--ink-2);font-weight:800}
+  table.sem td{font-weight:800}
+  table.sem td small{display:block;font-size:11.5px;font-weight:700;opacity:.85}
+  table.sem td.bien{color:#0b7a53} table.sem td.mal{color:#c81e1e} table.sem td.nada{color:#c3c8d0;font-weight:700}
+  table.sem tr.tot td{font-size:15px}
+
+  /* ===== Días ===== */
+  .dias{display:grid;gap:6px}
+  .dia{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;padding:9px 12px;cursor:pointer;background:#fff;text-align:left;font:inherit;color:inherit;width:100%}
+  .dia:hover{border-color:#c9d6f5;background:#fafcff}
+  .dia.sel{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .dia .f{font-weight:800;min-width:92px;text-transform:capitalize}
+  .dia .q{font-weight:850}
+  .dia .q small{color:var(--muted);font-weight:700}
+  .dia .u{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+  .tag{font-size:12px;font-weight:800;background:var(--line-2);color:var(--ink-2);border-radius:20px;padding:3px 9px;white-space:nowrap}
+  .tag.pp{background:var(--accent-bg);color:var(--accent-d)}
+  .dia.rep{cursor:default;background:#f7f8fa}
+  .vacio{background:var(--card);border:1.5px dashed var(--line);border-radius:var(--r);padding:34px 22px;text-align:center;color:var(--muted);margin-bottom:14px}
+  .vacio b{color:var(--ink);display:block;font-size:16px;margin-bottom:5px}
+  .vacio strong{color:var(--ink-2)}
+  .pegar{display:flex;gap:8px;max-width:640px;margin:14px auto 6px}
+  .pegar input{flex:1;min-width:0;padding:12px 13px;border:2px solid var(--line);border-radius:12px;font-size:14.5px;outline:none;background:#fafbfc}
+  .pegar input:focus{border-color:var(--accent);background:#fff}
+
+  .btn{border:none;border-radius:10px;padding:11px 16px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+  .btn.primary{background:var(--accent);color:#fff}.btn.primary:hover{background:var(--accent-d)}
+  .btn.ghost{background:var(--line-2);color:var(--ink-2)}.btn.ghost:hover{background:#e7eaef}
+  .btn.danger{background:var(--err-bg);color:#b71c1c}
+  .btn.sm{padding:8px 12px;font-size:13px;border-radius:9px}
+
+  .modal-ov{position:fixed;inset:0;background:rgba(17,19,24,.6);backdrop-filter:blur(3px);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:4vh 16px;overflow:auto}
+  .modal-ov.show{display:flex}
+  .modal{background:var(--card);border-radius:18px;box-shadow:var(--shadow-lg);width:100%;max-width:620px;display:flex;flex-direction:column;overflow:hidden}
+  .modal-h{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--line)}
+  .modal-h b{font-size:17px}
+  .modal-x{border:none;background:var(--line-2);width:34px;height:34px;border-radius:9px;cursor:pointer;font-weight:700;color:var(--ink-2)}
+  .modal-b{padding:16px 20px}
+  .modal-b h4{margin:14px 0 8px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--navy)}
+  .modal-b h4:first-child{margin-top:0}
+  .fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .fg label{display:block;font-size:12.5px;font-weight:800;color:var(--ink-2)}
+  .fg input{display:block;width:100%;margin-top:4px;padding:10px 11px;border:2px solid var(--line);border-radius:10px;font-size:15px;font-weight:700;outline:none;background:#fff}
+  .fg input:focus{border-color:var(--accent)}
+  .macts{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;padding:14px 20px;border-top:1px solid var(--line);background:#fafbfc}
+  .macts .izq{margin-right:auto}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--black);color:#fff;padding:11px 16px;border-radius:11px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:300;box-shadow:var(--shadow-lg);max-width:calc(100% - 32px)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:900px){ .grid2{grid-template-columns:minmax(0,1fr)} .h-stats{grid-template-columns:repeat(2,1fr)} }
+  @media(max-width:720px){
+    .appbar{padding:0 14px;height:60px}
+    .appbar .sub, .ab-btn span{display:none}
+    .ab-btn{padding:9px}
+    .wrap{padding:12px 12px 40px}
+    .hero{padding:16px;border-radius:18px}
+    .h-n{font-size:27px}
+    .h-p b{font-size:32px}
+    .h-stats b{font-size:18px}
+    .card{padding:14px}
+    .modal-ov{padding:0}
+    .modal{max-width:100%;min-height:100vh;border-radius:0}
+    .fg{grid-template-columns:1fr 1fr}
+    .dia .u{margin-left:0}
+  }
+  @media(max-width:380px){ .h-stats{gap:8px} .h-stats > div{padding:9px 10px} .h-stats b{font-size:16.5px} .cnt button{width:34px} .cnt input{width:44px} }
+</style>
+</head>
+<body>
+<div class="appbar">
+  <b>📈 Mis ventas</b><span class="sub" id="sub"></span>
+  <div class="ab-right">
+    <span id="nubeEstado"></span>
+    <button class="ab-btn" id="btnReporte" title="Poner el avance que dice el reporte de ventas">📊<span>Reporte</span></button>
+    <button class="ab-btn" id="btnMetas" title="Metas y comisión">⚙️<span>Metas</span></button>
+    <img src="../recepcion/logo.png" class="logo" alt="DJI">
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="mesbar"><button id="mesAnt" title="Mes anterior">‹</button><b id="mesTxt"></b><button id="mesSig" title="Mes siguiente">›</button></div>
+  <div id="resumen"></div>
+  <div class="grid2">
+    <section class="card" id="formCard">
+      <div class="card-h"><b>📝 Lo que vendiste</b>
+        <span class="fecha"><button type="button" id="fAnt" title="Día anterior">‹</button><input type="date" id="fFecha"><button type="button" id="fSig" title="Día siguiente">›</button></span>
+      </div>
+      <div class="fsub" id="fSub"></div>
+      <div class="cats" id="fCats"></div>
+      <label class="campo"><span>Total vendido en el día <small>· en quetzales, con IVA</small></span>
+        <div class="money"><i>Q</i><input id="fQ" inputmode="decimal" autocomplete="off" placeholder="0.00"></div>
+        <small class="eq" id="fQeq"></small>
+      </label>
+      <div class="campo"><span>🛡️ Protection Plus</span>
+        <div class="pp">
+          <div><div class="pp-l">Cuántos</div><span class="cnt"><button type="button" data-d="-1" data-k="ppn" aria-label="Uno menos">−</button><input type="number" inputmode="numeric" min="0" id="fPPn" placeholder="0" aria-label="Protection Plus vendidos"><button type="button" data-d="1" data-k="ppn" aria-label="Uno más">+</button></span></div>
+          <div><div class="pp-l">Monto (Q con IVA)</div><div class="money"><i>Q</i><input id="fPP" inputmode="decimal" autocomplete="off" placeholder="0.00"></div></div>
+        </div>
+        <small class="eq" id="fPPeq"></small>
+      </div>
+      <div id="fAviso"></div>
+      <div class="fpie"><span class="est" id="fEstado"></span><button class="btn ghost sm" id="fBorrar" type="button">🗑️ Borrar este día</button></div>
+    </section>
+    <section class="card" id="comCard"></section>
+  </div>
+  <section class="card" id="semCard"></section>
+  <section class="card" id="diasCard"></section>
+</div>
+
+<!-- ===== Ventana: metas y comisión ===== -->
+<div class="modal-ov" id="metasModal">
+  <div class="modal">
+    <div class="modal-h"><b>⚙️ Metas y comisión</b><button class="modal-x" onclick="cerrar('metasModal')" title="Cerrar">✕</button></div>
+    <div class="modal-b">
+      <h4>Meta de <span id="mMes"></span></h4>
+      <div class="fg">
+        <label>Meta del mes ($)<input id="m_meta" inputmode="decimal"></label>
+        <label>Protection Plus (% meta)<input id="m_pp" inputmode="decimal"></label>
+      </div>
+      <h4>Unidades por semana</h4>
+      <div class="fg" id="mCats"></div>
+      <h4>Comisión</h4>
+      <div class="fg">
+        <label>Al 100% te pagan (Q)<input id="m_base" inputmode="decimal"></label>
+        <label>Empezás a comisionar al (%)<input id="m_desde" inputmode="decimal"></label>
+        <label>Bono (Q)<input id="m_bono" inputmode="decimal"></label>
+        <label>El bono es al (%)<input id="m_bonoEn" inputmode="decimal"></label>
+        <label>Protection Plus (% sin IVA)<input id="m_ppc" inputmode="decimal"></label>
+      </div>
+      <h4>Cambio e IVA</h4>
+      <div class="fg">
+        <label>Tipo de cambio (Q por $)<input id="m_tc" inputmode="decimal"></label>
+        <label>IVA (%)<input id="m_iva" inputmode="decimal"></label>
+        <label>Tu nombre<input id="m_nombre" autocomplete="off"></label>
+      </div>
+      <div class="nota">La meta se mide en dólares sin IVA, como el reporte. Lo que ponés en quetzales con IVA se pasa a dólares así: Q ÷ (1 + IVA) ÷ tipo de cambio.</div>
+    </div>
+    <div class="macts"><button class="btn ghost" onclick="cerrar('metasModal')">Cancelar</button><button class="btn primary" id="mGuardar">Guardar</button></div>
+  </div>
+</div>
+
+<!-- ===== Ventana: avance según el reporte ===== -->
+<div class="modal-ov" id="repModal">
+  <div class="modal">
+    <div class="modal-h"><b>📊 Avance según el reporte</b><button class="modal-x" onclick="cerrar('repModal')" title="Cerrar">✕</button></div>
+    <div class="modal-b">
+      <div class="fg">
+        <label>Avance del mes ($)<input id="r_usd" inputmode="decimal"></label>
+        <label>Ventas hasta el día<input id="r_hasta" type="date"></label>
+      </div>
+      <h4>Ventas por semana ($) · si las tenés</h4>
+      <div class="fg">
+        <label>Semana 1<input id="r_s1" inputmode="decimal"></label>
+        <label>Semana 2<input id="r_s2" inputmode="decimal"></label>
+        <label>Semana 3<input id="r_s3" inputmode="decimal"></label>
+        <label>Semana 4<input id="r_s4" inputmode="decimal"></label>
+      </div>
+      <div class="nota">El dinero de los días hasta esa fecha se toma del reporte (lo que pusiste en esos días ya no se suma, para no contarlo dos veces). Las unidades y Protection Plus de esos días sí se quedan.</div>
+    </div>
+    <div class="macts"><button class="btn danger izq" id="rQuitar">Quitar el reporte</button><button class="btn ghost" onclick="cerrar('repModal')">Cancelar</button><button class="btn primary" id="rGuardar">Guardar</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../nube.js?v=20261029a"></script>
+<script>
+/* ============================================================
+   Mis ventas — avance contra la meta del mes, unidades por semana
+   y cuánto se comisiona.
+   - La meta se mide en dólares sin IVA (como el reporte de ventas);
+     lo vendido se escribe en quetzales con IVA y se pasa a dólares.
+   - Metas y comisión se cargan con un link (#cargar=…) o en ⚙️ Metas:
+     NO van en el código de la página (que es pública).
+   ============================================================ */
+"use strict";
+
+const LS_V = "ventas_dji_v1";     // {aj, dias}
+const CATS = [
+  {k:"dr", n:"Drones",          uno:"dron",          img:"../recepcion/img/mini5pro.jpg"},
+  {k:"ca", n:"Cámaras",         uno:"cámara",        img:"../recepcion/img/action6.jpg"},
+  {k:"es", n:"Estabilizadores", uno:"estabilizador", img:"../recepcion/img/om8.jpg"},
+  {k:"ac", n:"Accesorios",      uno:"accesorio",     img:"../recepcion/img/micmini2.jpg"}
+];
+// reglas por defecto (lo personal —meta, cuánto pagan— se pone en ⚙️ Metas o con el link)
+const DEF = {nombre:"", tc:7.8, iva:12, base:0, bono:0, desde:85, bonoEn:110, ppc:5};
+
+let aj = {};     // DEF + "meta:AAAA-MM": {meta, dr, ca, es, ac, pp} + "rep:AAAA-MM": {hasta, usd, sem:[s1..s4]}
+let dias = {};   // "AAAA-MM-DD": {q, pp, ppn, u:{dr,ca,es,ac}, t}
+let mes, fFecha;
+
+const $ = id => document.getElementById(id);
+const S = v => String(v ?? "").trim();
+const N0 = v => { const n=Number(v); return Number.isFinite(n) ? n : 0; };
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+const dos = n => String(n).padStart(2,"0");
+function hoyISO(){ const d=new Date(); return d.getFullYear()+"-"+dos(d.getMonth()+1)+"-"+dos(d.getDate()); }
+const mesDe = ymd => ymd.slice(0,7);
+const diaDe = ymd => Number(ymd.slice(8,10));
+const diasDelMes = m => new Date(Number(m.slice(0,4)), Number(m.slice(5,7)), 0).getDate();
+function sumarDias(ymd, n){ const d=new Date(ymd+"T12:00:00"); d.setDate(d.getDate()+n); return d.getFullYear()+"-"+dos(d.getMonth()+1)+"-"+dos(d.getDate()); }
+function sumarMes(m, n){ const d=new Date(Number(m.slice(0,4)), Number(m.slice(5,7))-1+n, 1); return d.getFullYear()+"-"+dos(d.getMonth()+1); }
+const ymdCorto = ymd => ymd ? ymd.slice(8,10)+"/"+ymd.slice(5,7)+"/"+ymd.slice(0,4) : "";
+const mayus = t => t.charAt(0).toUpperCase()+t.slice(1);
+const nombreMes = m => new Date(Number(m.slice(0,4)), Number(m.slice(5,7))-1, 1).toLocaleDateString("es-GT",{month:"long", year:"numeric"});
+const diaLargo = ymd => new Date(ymd+"T12:00:00").toLocaleDateString("es-GT",{weekday:"long", day:"numeric", month:"long"});
+const diaCorto = ymd => new Date(ymd+"T12:00:00").toLocaleDateString("es-GT",{weekday:"short", day:"numeric"}).replace(".","");
+const fmtN = (v,dec=0) => Number(v||0).toLocaleString("es-GT",{minimumFractionDigits:dec, maximumFractionDigits:dec});
+const usd = (v,dec=2) => "$"+fmtN(v,dec);
+const qq = (v,dec=2) => "Q"+fmtN(v,dec);
+const pct = p => fmtN(p,1)+"%";
+const dinero = s => { const n=Number(S(s).replace(/[Q$\s,]/g,"")); return Number.isFinite(n) && n>=0 ? n : null; };
+const estable = (window.Nube && Nube.estable) || (v=>JSON.stringify(v));
+let tToast;
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tToast); tToast=setTimeout(()=>t.classList.remove("show"),2800); }
+function abrir(id){ $(id).classList.add("show"); }
+function cerrar(id){ $(id).classList.remove("show"); }
+
+// ---------- reglas ----------
+const cfg = k => (aj[k]!==undefined ? aj[k] : DEF[k]);
+const factorIva = () => 1 + cfg("iva")/100;
+const aUSD = q => q / factorIva() / (cfg("tc") || 1);              // Q con IVA -> $ sin IVA
+const aQconIva = d => d * factorIva() * cfg("tc");                 // $ sin IVA -> Q con IVA
+// la meta del mes (si el mes no tiene, la del último mes que tenga)
+function metaDe(m){
+  if(aj["meta:"+m]) return aj["meta:"+m];
+  const k=Object.keys(aj).filter(k=>/^meta:/.test(k) && k.slice(5)<m).sort().pop();
+  return k ? aj[k] : null;
+}
+// lo que paga la meta: nada antes del 85 %, proporcional hasta el 100 %, y el bono al 110 %
+function comision(p){
+  const b=cfg("base"), bo=cfg("bono");
+  if(p < cfg("desde")) return 0;
+  if(p >= cfg("bonoEn")) return b + bo;
+  if(p >= 100) return b;
+  return b * p / 100;
+}
+const SEMANAS = N => [[1,7],[8,14],[15,21],[22,N]];
+const semanaDe = d => d<=7 ? 0 : d<=14 ? 1 : d<=21 ? 2 : 3;
+
+function calcular(m){
+  const N=diasDelMes(m), hoy=hoyISO(), mHoy=mesDe(hoy), meta=metaDe(m), rep=aj["rep:"+m]||null;
+  const sem=SEMANAS(N).map(([a,b],i)=>({i, a, b, usd:0, hayUSD:false, u:{dr:0,ca:0,es:0,ac:0}, hayU:false, ppn:0}));
+  let usdMes=0, ppQ=0, ultimo=0;
+  for(const f in dias){
+    if(mesDe(f)!==m) continue;
+    const d=dias[f], w=sem[semanaDe(diaDe(f))];
+    CATS.forEach(c=>{ w.u[c.k]+=N0(d.u && d.u[c.k]); }); w.ppn+=N0(d.ppn); w.hayU=true;
+    ppQ+=N0(d.pp);
+    ultimo=Math.max(ultimo, diaDe(f));
+    if(rep && f<=rep.hasta) continue;            // ese dinero ya va en el reporte
+    const v=aUSD(N0(d.q)); w.usd+=v; usdMes+=v; if(d.q) w.hayUSD=true;
+  }
+  if(rep){
+    const hd=diaDe(rep.hasta), hw=semanaDe(hd);
+    let antes=0;
+    for(let i=0;i<hw;i++){ if(rep.sem[i]!=null){ sem[i].usd+=rep.sem[i]; sem[i].hayUSD=true; antes+=rep.sem[i]; } }
+    sem[hw].usd+=rep.usd-antes; sem[hw].hayUSD=true;
+    usdMes+=rep.usd; ultimo=Math.max(ultimo, hd);
+  }
+  // días que ya pasaron / que quedan
+  const futuro = m>mHoy, pasado = m<mHoy, dHoy = m===mHoy ? diaDe(hoy) : (pasado ? N+1 : 0);
+  if(m===mHoy) ultimo=Math.min(ultimo, dHoy);
+  const quedan = pasado ? 0 : futuro ? N : N - Math.max(ultimo, dHoy-1);
+  sem.forEach(w=>{ w.estado = pasado || (m===mHoy && w.b<dHoy) ? "pasada" : (m===mHoy && w.a<=dHoy) ? "actual" : "futura"; });
+  const r = {N, meta, rep, sem, usdMes, ppQ, ultimo, quedan, futuro, pasado};
+  if(meta && meta.meta>0){
+    r.p = usdMes/meta.meta*100;
+    r.pendUSD = Math.max(meta.meta-usdMes,0) * factorIva();          // como el reporte: lo que falta, con IVA
+    r.pendQ = r.pendUSD * cfg("tc");
+    r.diaUSD = quedan>0 ? r.pendUSD/quedan : null;
+    r.diaQ = r.diaUSD!=null ? r.diaUSD*cfg("tc") : null;
+    r.proy = pasado ? r.p : (ultimo>0 ? usdMes/ultimo*N/meta.meta*100 : null);
+    r.escalones = [cfg("desde"), 100].concat(cfg("bono")>0 ? [cfg("bonoEn")] : []).map(t=>{
+      const faltaUSD=Math.max(t/100*meta.meta-usdMes,0);
+      return {t, paga:comision(t), faltaUSD, faltaQ:aQconIva(faltaUSD), logrado:r.p>=t};
+    });
+  }
+  r.ppCom = ppQ / factorIva() * cfg("ppc")/100;
+  return r;
+}
+
+// ---------- datos ----------
+function limpiarDia(v){
+  if(!v || typeof v!=="object") return null;
+  const u={}; CATS.forEach(c=>{ const n=Math.max(0,Math.round(N0(v.u && v.u[c.k]))); if(n) u[c.k]=Math.min(n,9999); });
+  const d={q:Math.max(0,N0(v.q)), pp:Math.max(0,N0(v.pp)), ppn:Math.min(9999,Math.max(0,Math.round(N0(v.ppn)))), u};
+  return (d.q || d.pp || d.ppn || Object.keys(u).length) ? d : null;
+}
+function limpiarDias(m){
+  const out={};
+  for(const k in (m||{})) if(/^\d{4}-\d{2}-\d{2}$/.test(k)){ const d=limpiarDia(m[k]); if(d) out[k]=d; }
+  return out;
+}
+// en la nube cada dato del día va en su propio campo ("2026-10-29:dr"): dos computadoras pueden poner cosas distintas del mismo día a la vez
+function aplanar(ds){
+  const out={};
+  for(const f in ds){ const d=ds[f]; ["q","pp","ppn"].forEach(c=>{ if(d[c]) out[f+":"+c]=d[c]; }); CATS.forEach(c=>{ if(d.u[c.k]) out[f+":"+c.k]=d.u[c.k]; }); }
+  return out;
+}
+function limpiarPlano(m){
+  const out={};
+  for(const k in (m||{})){
+    const x=k.match(/^(\d{4}-\d{2}-\d{2}):(q|pp|ppn|dr|ca|es|ac)$/); if(!x) continue;
+    let n=Math.max(0,N0(m[k])); if(x[2]!=="q" && x[2]!=="pp") n=Math.min(9999,Math.round(n));
+    if(n>0) out[k]=n;
+  }
+  return out;
+}
+function desaplanar(m){
+  const ds={};
+  for(const k in m){ const [f,c]=k.split(":"); const d=ds[f]||(ds[f]={q:0, pp:0, ppn:0, u:{}}); if(c==="q"||c==="pp"||c==="ppn") d[c]=m[k]; else d.u[c]=m[k]; }
+  return limpiarDias(ds);
+}
+function limpiarAj(m){
+  const out={}, num=v=>Math.max(0,N0(v));
+  for(const k in (m||{})){
+    const v=m[k];
+    if(k==="nombre"){ if(S(v)) out[k]=S(v).slice(0,40); }
+    else if(k in DEF){ if(v!==null && v!=="" && Number.isFinite(Number(v))) out[k]=num(v); }
+    else if(/^meta:\d{4}-\d{2}$/.test(k) && v && typeof v==="object"){ out[k]={meta:num(v.meta), pp:num(v.pp)}; CATS.forEach(c=>{ out[k][c.k]=Math.round(num(v[c.k])); }); }
+    else if(/^rep:\d{4}-\d{2}$/.test(k) && v && typeof v==="object" && /^\d{4}-\d{2}-\d{2}$/.test(S(v.hasta)) && S(v.hasta).slice(0,7)===k.slice(4)){
+      const sem=[0,1,2,3].map(i=>{ const s=Array.isArray(v.sem)?v.sem[i]:null; return s===null || s===undefined || s==="" || !Number.isFinite(Number(s)) ? null : num(s); });
+      out[k]={hasta:S(v.hasta), usd:num(v.usd), sem};
+    }
+  }
+  return out;
+}
+function cargarLocal(){
+  try{ const d=JSON.parse(localStorage.getItem(LS_V)||"null"); if(d){ aj=limpiarAj(d.aj); dias=limpiarDias(d.dias); } }catch(e){}
+}
+function guardarLocal(){ try{ localStorage.setItem(LS_V, JSON.stringify({aj, dias})); }catch(e){} }
+
+// ---------- nube: ventas/ajustes y ventas/dias (un campo por día) ----------
+const DOCS = {
+  ajustes:{get:()=>aj,   set:v=>{ aj=v; },   limpiar:limpiarAj},
+  dias:   {get:()=>aplanar(dias), set:v=>{ dias=desaplanar(v); }, limpiar:limpiarPlano}
+};
+const nubeEst = {ajustes:{m:null, tocados:new Set()}, dias:{m:null, tocados:new Set()}};
+let listo=false, cargaPendiente=null;
+const porSubir = new Set();   // datos del día ("2026-10-29:q") que se están escribiendo (se suben al ratito)
+function subir(doc, campos){
+  if(!window.Nube || !Nube.conectado()) return;
+  const st=nubeEst[doc];
+  if(st.m===null){ (campos||[]).forEach(k=>st.tocados.add(k)); return; }   // se sube cuando llegue la nube
+  Nube.guardarMapa("ventas", doc, DOCS[doc].get(), st.m);
+}
+function alLlegar(doc, m){
+  const st=nubeEst[doc], D=DOCS[doc], primero=st.m===null, local=D.get();
+  st.m=m;
+  const nuevo=D.limpiar(m);
+  if(doc==="dias") porSubir.forEach(f=>{ if(local[f]===undefined) delete nuevo[f]; else nuevo[f]=local[f]; });
+  if(primero){
+    // lo que se tocó aquí antes de que llegara la nube (y, la primera vez en este equipo, lo que solo estaba aquí)
+    const llave="ventas_unido_"+doc, unido=(()=>{ try{ return localStorage.getItem(llave)===Nube.clave(); }catch(e){ return true; } })();
+    const keys=new Set(st.tocados); st.tocados.clear();
+    if(!unido) Object.keys(local).forEach(k=>{ if(!(k in nuevo)) keys.add(k); });
+    try{ localStorage.setItem(llave, Nube.clave()); }catch(e){}
+    if(keys.size){
+      keys.forEach(k=>{ if(local[k]===undefined) delete nuevo[k]; else nuevo[k]=local[k]; });
+      D.set(nuevo); guardarLocal(); Nube.guardarMapa("ventas", doc, nuevo, m); render(formEnUso()); return;
+    }
+  }
+  if(estable(nuevo)===estable(local)) return;
+  D.set(nuevo); guardarLocal(); render(formEnUso());
+}
+const formEnUso = () => !!(document.activeElement && $("formCard").contains(document.activeElement) && document.activeElement.tagName==="INPUT");
+function ponerListo(){
+  if(listo) return; listo=true;
+  const c=cargaPendiente; cargaPendiente=null;
+  if(c) setTimeout(()=>aplicarCarga(c), 50);
+}
+async function conectarNube(){
+  if(!window.Nube){ ponerListo(); return; }
+  Nube.pintar($("nubeEstado"));
+  if(!Nube.conectado() || !await Nube.iniciar()){ ponerListo(); return; }
+  setTimeout(ponerListo, 6000);
+  const ver=()=>{ if(nubeEst.ajustes.m!==null && nubeEst.dias.m!==null) ponerListo(); };
+  Nube.escucharMapa("ventas","ajustes",m=>{ alLlegar("ajustes", m); ver(); });
+  Nube.escucharMapa("ventas","dias",m=>{ alLlegar("dias", m); ver(); });
+}
+
+// ============================================================
+//  LINK DE CARGA:  …#ventas&cargar=meta:…,dr:…,…,hasta:AAAA-MM-DD,avance:…,s1:…
+// ============================================================
+const CLAVES_LINK = {tc:"tc", iva:"iva", base:"base", bono:"bono", desde:"desde", bonoen:"bonoEn", ppc:"ppc"};
+function parsearCarga(txt){
+  const m=S(txt).match(/cargar=([^&\s]*)/); let d=m?m[1]:S(txt);
+  try{ d=decodeURIComponent(d); }catch(e){}
+  const o={};
+  d.split(",").forEach(p=>{ const i=p.indexOf(":"); if(i>0) o[S(p.slice(0,i)).toLowerCase()]=S(p.slice(i+1)); });
+  return (o.meta || o.avance || o.base) ? o : null;
+}
+function leerCargaDelLink(){
+  if(!/(?:^#|&)cargar=/.test(location.hash)) return;
+  const c=parsearCarga(location.hash);
+  try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){}
+  if(c) cargaPendiente=c;
+}
+function cargarPegado(txt){
+  const c=parsearCarga(txt);
+  if(!c){ alert("Ese texto no es un link de tus metas. Copiá el link completo (empieza con https://dji-gt.github.io/app/#ventas&cargar=…)."); return; }
+  aplicarCarga(c);
+}
+function aplicarCarga(o){
+  const n=k=>{ const v=dinero(o[k]); return o[k]!==undefined && o[k]!=="" ? v : null; };
+  const nuevo=Object.assign({}, aj), lineas=[];
+  if(o.nombre) nuevo.nombre=o.nombre;
+  for(const a in CLAVES_LINK){ const v=n(a); if(v!=null) nuevo[CLAVES_LINK[a]]=v; }
+  const hasta=/^\d{4}-\d{2}-\d{2}$/.test(o.hasta||"") ? o.hasta : null;
+  const m=/^\d{4}-\d{2}$/.test(o.mes||"") ? o.mes : (hasta ? mesDe(hasta) : mesDe(hoyISO()));
+  if(n("meta")!=null){
+    const mt={meta:n("meta"), pp:n("pp")||0}; CATS.forEach(c=>{ mt[c.k]=n(c.k)||0; });
+    nuevo["meta:"+m]=mt;
+    lineas.push(`Meta de ${nombreMes(m)}: ${usd(mt.meta)}`, `Por semana: ${CATS.map(c=>mt[c.k]+" "+c.n.toLowerCase()).join(" · ")} · Protection Plus ${fmtN(mt.pp)}%`);
+  }
+  const base=nuevo.base!==undefined?nuevo.base:DEF.base, bono=nuevo.bono!==undefined?nuevo.bono:DEF.bono;
+  if(base) lineas.push(`Comisión: ${qq(base,0)} al 100% (desde el ${fmtN(nuevo.desde??DEF.desde)}%)${bono?` · +${qq(bono,0)} al ${fmtN(nuevo.bonoEn??DEF.bonoEn)}%`:""} · Protection Plus ${fmtN(nuevo.ppc??DEF.ppc,1)}% sin IVA`);
+  if(hasta && n("avance")!=null){
+    const viejo=aj["rep:"+mesDe(hasta)];
+    if(viejo && viejo.hasta>hasta) lineas.push(`(El avance del reporte se queda en el que ya tenés, del ${ymdCorto(viejo.hasta)}.)`);
+    else { nuevo["rep:"+mesDe(hasta)]={hasta, usd:n("avance"), sem:[n("s1"),n("s2"),n("s3"),n("s4")]}; lineas.push(`Avance según el reporte, hasta el ${ymdCorto(hasta)}: ${usd(n("avance"))}`); }
+  }
+  const limpio=limpiarAj(nuevo);
+  if(estable(limpio)===estable(aj)){ toast("✔ Tus metas ya están cargadas"); mes=m; render(); return; }
+  if(!confirm("¿Cargar tus metas?\n\n"+lineas.join("\n"))) return;
+  const cambiados=Object.keys(limpio).filter(k=>estable(limpio[k])!==estable(aj[k]));
+  aj=limpio; guardarLocal(); subir("ajustes", cambiados);
+  mes=m; if(mesDe(fFecha)!==mes) fFecha=fechaParaMes(mes);
+  render(); toast("✔ Metas cargadas");
+}
+
+// ============================================================
+//  LO QUE VENDISTE (se guarda solo)
+// ============================================================
+const vacioDia = () => ({q:0, pp:0, ppn:0, u:{}});
+const diaActual = () => dias[fFecha] ? JSON.parse(JSON.stringify(dias[fFecha])) : vacioDia();
+function fechaParaMes(m){ const h=hoyISO(); return mesDe(h)===m ? h : (m<mesDe(h) ? m+"-"+dos(diasDelMes(m)) : m+"-01"); }
+let tGuardar=null;
+function subirPendientes(){
+  clearTimeout(tGuardar); tGuardar=null;
+  if(!porSubir.size) return;
+  const L=[...porSubir]; porSubir.clear(); subir("dias", L);
+  $("fEstado").textContent = dias[fFecha] ? "✔ Guardado" : ""; $("fEstado").className="est ok";
+}
+// lento = mientras se escribe un monto: se sube al ratito (o al salir del campo)
+function guardarDia(d, lento){
+  const f=fFecha, plano=()=>aplanar(dias[f] ? {[f]:dias[f]} : {}), antes=plano();
+  const limpio=limpiarDia(d);
+  if(limpio) dias[f]=limpio; else delete dias[f];
+  guardarLocal();
+  const ahora=plano();
+  new Set([...Object.keys(antes), ...Object.keys(ahora)]).forEach(k=>{ if(antes[k]!==ahora[k]) porSubir.add(k); });
+  if(lento){ clearTimeout(tGuardar); $("fEstado").textContent="…"; $("fEstado").className="est"; tGuardar=setTimeout(subirPendientes, 700); } else subirPendientes();
+  render(true);
+}
+function cambiarUnidad(k, delta, valor){
+  const d=diaActual();
+  if(k==="ppn") d.ppn = Math.max(0, valor!=null ? valor : N0(d.ppn)+delta);
+  else d.u[k] = Math.max(0, valor!=null ? valor : N0(d.u[k])+delta);
+  guardarDia(d);
+}
+function pintarForm(){
+  const d=dias[fFecha]||vacioDia(), hoy=hoyISO(), r=calcular(mesDe(fFecha)), meta=metaDe(mesDe(fFecha)), w=r.sem[semanaDe(diaDe(fFecha))];
+  $("fFecha").value=fFecha;
+  $("fSub").textContent=(fFecha===hoy?"Hoy · ":fFecha===sumarDias(hoy,-1)?"Ayer · ":"")+mayus(diaLargo(fFecha))+` · semana ${w.i+1} (${w.a}–${w.b})`;
+  $("fCats").innerHTML=CATS.map(c=>{
+    const n=N0(d.u[c.k]), lleva=w.u[c.k], mt=meta?meta[c.k]:0;
+    return `<div class="cat"><img src="${c.img}" alt="" loading="lazy">
+      <div><div class="cat-n">${c.n}</div><div class="cat-m${mt&&lleva>=mt?" ok":""}">Esta semana: <b>${lleva}</b>${mt?` de ${mt}`:""}${mt&&lleva>=mt?" ✓":""}</div></div>
+      <span class="cnt"><button type="button" data-d="-1" data-k="${c.k}" aria-label="Uno menos">−</button><input type="number" inputmode="numeric" min="0" data-k="${c.k}" placeholder="0" value="${n||""}" aria-label="${c.n}"><button type="button" data-d="1" data-k="${c.k}" aria-label="Uno más">+</button></span>
+    </div>`;
+  }).join("");
+  $("fEstado").textContent = dias[fFecha] ? "✔ Guardado" : ""; $("fEstado").className="est ok";
+  $("fSig").disabled = fFecha>=hoy;
+  actualizarForm(r);
+}
+// pone los valores sin redibujar (no se pierde lo que se está escribiendo)
+function actualizarForm(r){
+  const d=dias[fFecha]||vacioDia(), w=r.sem[semanaDe(diaDe(fFecha))], meta=metaDe(mesDe(fFecha)), foco=document.activeElement;
+  document.querySelectorAll("#fCats .cat").forEach((el,i)=>{
+    const c=CATS[i], lleva=w.u[c.k], mt=meta?meta[c.k]:0, inp=el.querySelector("input"), m=el.querySelector(".cat-m");
+    m.className="cat-m"+(mt&&lleva>=mt?" ok":""); m.innerHTML=`Esta semana: <b>${lleva}</b>${mt?` de ${mt}`:""}${mt&&lleva>=mt?" ✓":""}`;
+    if(foco!==inp) inp.value=N0(d.u[c.k])||"";
+  });
+  if(foco!==$("fQ")) $("fQ").value = d.q ? fmtN(d.q,2) : "";
+  if(foco!==$("fPP")) $("fPP").value = d.pp ? fmtN(d.pp,2) : "";
+  if(foco!==$("fPPn")) $("fPPn").value = d.ppn || "";
+  pintarEquivalentes();
+  const rep=aj["rep:"+mesDe(fFecha)];
+  $("fAviso").innerHTML = rep && fFecha<=rep.hasta ? `<div class="aviso">📊 El dinero hasta el ${ymdCorto(rep.hasta)} ya va en el reporte (${usd(rep.usd)}): de este día solo se suman las unidades y Protection Plus.</div>` : "";
+  $("fBorrar").hidden=!dias[fFecha];
+}
+function pintarEquivalentes(){
+  const q=dinero($("fQ").value)||0, pp=dinero($("fPP").value)||0;
+  $("fQeq").textContent = q ? `= ${usd(aUSD(q))} sin IVA para la meta` : "";
+  $("fPPeq").textContent = pp ? `Comisión de Protection Plus: ${qq(pp/factorIva()*cfg("ppc")/100)} (${fmtN(cfg("ppc"),1)}% sin IVA)` : "";
+}
+function irAFecha(f){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(f||"")) return;
+  subirPendientes();
+  if(f>hoyISO()) f=hoyISO();
+  fFecha=f;
+  if(mesDe(f)!==mes) mes=mesDe(f);
+  render();
+}
+
+// ============================================================
+//  PANTALLA
+// ============================================================
+function pintarResumen(r){
+  const meta=r.meta;
+  if(!meta || !(meta.meta>0)){
+    const sinNube=!(window.Nube && Nube.conectado());
+    return `<div class="vacio"><b>Todavía no tenés tu meta de ${esc(nombreMes(mes))}</b>Pegá aquí el <strong>link de tus metas</strong>:
+      <div class="pegar"><input id="pegarTxt" placeholder="Pegá aquí el link…" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter') cargarPegado(this.value)"><button class="btn primary" onclick="cargarPegado(document.getElementById('pegarTxt').value)">Cargar</button></div>
+      o tocá <strong>⚙️ Metas</strong> y escribilas.
+      ${sinNube?`<div class="aviso">💻 Esta computadora no está conectada a la nube de la tienda: lo que pongas aquí solo se va a ver aquí.</div>`:""}</div>`;
+  }
+  const escala=120, ancho=Math.min(r.p,escala)/escala*100;
+  const clase = r.p>=cfg("bonoEn") ? "bono" : r.p>=100 ? "ok" : "";
+  const marcas=[cfg("desde"),100].concat(cfg("bono")>0 ? [cfg("bonoEn")] : []).filter(t=>t<escala).map(t=>`<span class="marca${t===cfg("bonoEn")&&t!==100?" arriba":""}" style="left:${t/escala*100}%"><span>${fmtN(t)}%${t===cfg("bonoEn")&&t!==100?" · bono":""}</span></span>`).join("");
+  const tono = p => p==null ? "" : p>=100 ? "bien" : p>=cfg("desde") ? "medio" : "mal";
+  const comProy = r.proy!=null ? comision(r.proy) : comision(r.p);
+  const rangoQuedan = r.quedan>0 ? (r.quedan===1 ? `1 día (el ${r.N})` : `${r.quedan} días (${r.N-r.quedan+1}–${r.N})`) : "";
+  return `<section class="hero">
+    <div class="h-row">
+      <div><div class="h-l">Avance de ${esc(nombreMes(mes))}${cfg("nombre")?" · "+esc(cfg("nombre")):""}</div>
+        <div class="h-n">${usd(r.usdMes)} <small>de ${usd(meta.meta)}</small></div>
+        <div class="h-s">≈ ${qq(aQconIva(r.usdMes))} con IVA${r.rep?` · reporte al ${ymdCorto(r.rep.hasta)}`:""}</div></div>
+      <div class="h-p"><b>${pct(r.p)}</b><span>de la meta</span></div>
+    </div>
+    <div class="barra"><i class="${clase}" style="width:${ancho}%"></i>${marcas}</div>
+    <div class="h-stats">
+      <div><span>Pendiente</span><b>${usd(r.pendUSD)}</b><small>${qq(r.pendQ)} · con IVA</small></div>
+      <div><span>Meta del día</span>${r.diaQ!=null?`<b>${qq(r.diaQ)}</b><small>${usd(r.diaUSD)} · ${rangoQuedan}</small>`:`<b>—</b><small>${r.futuro?"el mes no ha empezado":"se terminó el mes"}</small>`}</div>
+      <div class="${tono(r.proy)}"><span>Proyección</span>${r.proy!=null?`<b>${pct(r.proy)}</b><small>${r.pasado?"así cerró el mes":`al ritmo de ${r.ultimo} ${r.ultimo===1?"día":"días"}`}</small>`:`<b>—</b><small>sin ventas todavía</small>`}</div>
+      <div class="${comProy+r.ppCom>0?"bien":""}"><span>Comisión</span><b>${qq(comProy+r.ppCom)}</b><small>${r.pasado?"del mes":"si cerrás como vas"}</small></div>
+    </div>
+  </section>`;
+}
+function pintarComision(r){
+  const meta=r.meta, h=`<div class="card-h"><b>💵 Tu comisión de ${esc(nombreMes(mes))}</b></div>`;
+  const ppTxt=`<div class="ppbox"><span class="ic">🛡️</span><div>Protection Plus: <b>${qq(r.ppQ)}</b> vendido → <b>${qq(r.ppCom)}</b> de comisión (${fmtN(cfg("ppc"),1)}% sin IVA). <span style="color:var(--muted)">Se paga aunque no llegués a la meta.</span></div></div>`;
+  if(!meta || !(meta.meta>0) || !cfg("base")) return h+`<div class="nota">Poné tu meta y cuánto te pagan en <b>⚙️ Metas</b> para ver tu comisión.</div>`+ppTxt;
+  const pBase = r.proy!=null ? r.proy : r.p, comMeta=comision(pBase), total=comMeta+r.ppCom;
+  const porDia = v => r.quedan>0 ? ` · ≈ ${qq(v/r.quedan,0)} por día` : "";
+  return h+`<div class="com-tot${total>0?"":" cero"}"><span>${r.pasado?"Comisión del mes":"Si cerrás como vas ("+pct(pBase)+")"}</span><b>${qq(total)}</b>
+      <small>Meta ${qq(comMeta)} + Protection Plus ${qq(r.ppCom)}${!r.pasado && r.proy!=null?` · si el mes cerrara hoy (${pct(r.p)}): ${qq(comision(r.p)+r.ppCom)}`:""}</small></div>
+    <div class="esc">${r.escalones.map(e=>`<div class="es${e.logrado?" logrado":""}"><div class="p">${fmtN(e.t)}%</div>
+      <div><div class="es-t">Te pagan ${qq(e.paga,0)}${e.t===cfg("bonoEn")&&cfg("bono")?` <em>(incluye bono ${qq(cfg("bono"),0)})</em>`:""}${e.logrado?" · ✓ logrado":""}</div>
+      <div class="es-d">${e.logrado?"Ya llegaste 🎉":`Te faltan ${qq(e.faltaQ,0)} con IVA (${usd(e.faltaUSD,0)})${porDia(e.faltaQ)}`}</div></div></div>`).join("")}</div>
+    <div class="nota">Antes del ${fmtN(cfg("desde"))}% no se comisiona por la meta; del ${fmtN(cfg("desde"))}% al 100% es proporcional (90% = ${qq(comision(90),0)}).</div>`+ppTxt;
+}
+function pintarSemanas(r){
+  const meta=r.meta, mSem=meta&&meta.meta>0 ? meta.meta/4 : 0;
+  const celda=(w, v, mt, txt, sub)=>{
+    if(w.estado==="futura" && !v) return `<td class="nada">—</td>`;
+    const cl = mt ? (v>=mt ? "bien" : (w.estado==="pasada" ? "mal" : "")) : "";
+    return `<td class="${cl}">${txt}${sub?`<small>${sub}</small>`:""}</td>`;
+  };
+  const filaU=c=>`<tr><th>${c.n}</th><td class="meta">${meta?meta[c.k]:"—"}</td>${r.sem.map(w=>w.hayU ? celda(w, w.u[c.k], meta?meta[c.k]:0, w.u[c.k]) : `<td class="nada">—</td>`).join("")}</tr>`;
+  const filaPP=`<tr><th>Protection Plus</th><td class="meta">${meta&&meta.pp?fmtN(meta.pp)+"%":"—"}</td>${r.sem.map(w=>{
+      if(!w.hayU) return `<td class="nada">—</td>`;
+      const p=w.u.dr ? w.ppn/w.u.dr*100 : null;
+      return celda(w, p??0, meta&&meta.pp&&p!=null?meta.pp:0, w.ppn, p!=null?fmtN(p)+"% de drones":"");
+    }).join("")}</tr>`;
+  const filaV=`<tr class="tot"><th>Ventas</th><td class="meta">${mSem?usd(mSem):"—"}</td>${r.sem.map(w=>w.hayUSD ? celda(w, w.usd, mSem, usd(w.usd), mSem?fmtN(w.usd/mSem*100)+"%":"") : `<td class="nada">—</td>`).join("")}</tr>`;
+  return `<div class="card-h"><b>📊 Por semana</b><span class="nota der" style="margin:0">Las unidades son las que vos ponés cada día</span></div>
+    <div class="tabla"><table class="sem"><thead><tr><th></th><th>Metas</th>${r.sem.map(w=>`<th class="${w.estado==="actual"?"ahora":""}">Semana ${w.i+1}<small>${w.a}–${w.b}</small></th>`).join("")}</tr></thead>
+    <tbody>${filaV}${CATS.map(filaU).join("")}${filaPP}</tbody></table></div>`;
+}
+function pintarDias(r){
+  const L=Object.keys(dias).filter(f=>mesDe(f)===mes).sort().reverse();
+  const filas=L.map(f=>{
+    const d=dias[f], enRep=r.rep && f<=r.rep.hasta;
+    const tags=CATS.filter(c=>d.u[c.k]).map(c=>`<span class="tag">${d.u[c.k]} ${d.u[c.k]===1?c.uno:c.n.toLowerCase()}</span>`).join("")+(d.ppn||d.pp?`<span class="tag pp">🛡️ ${d.ppn||0} PP${d.pp?" · "+qq(d.pp,0):""}</span>`:"");
+    return `<button type="button" class="dia${f===fFecha?" sel":""}" onclick="irAFecha('${f}');document.getElementById('formCard').scrollIntoView({behavior:'smooth',block:'start'})">
+      <span class="f">${esc(diaCorto(f))}</span><span class="q">${d.q?qq(d.q):"—"}${d.q?` <small>${enRep?"(ya en el reporte)":usd(aUSD(d.q))}</small>`:""}</span><span class="u">${tags}</span></button>`;
+  });
+  if(r.rep){
+    const sem=r.rep.sem.map((s,i)=>s!=null?`S${i+1} ${usd(s,0)}`:"").filter(Boolean).join(" · ");
+    filas.push(`<div class="dia rep"><span class="f">📊 Reporte</span><span class="q">${usd(r.rep.usd)} <small>hasta el ${ymdCorto(r.rep.hasta)}${sem?" · "+sem:""}</small></span><span class="u"><button class="btn ghost sm" onclick="abrirReporte()">Cambiar</button></span></div>`);
+  }
+  return `<div class="card-h"><b>🗓️ Días de ${esc(nombreMes(mes))}</b></div>`+(filas.length?`<div class="dias">${filas.join("")}</div>`:`<div class="nota">Todavía no hay ventas en este mes.</div>`);
+}
+function render(soloDatos){
+  const r=calcular(mes), mHoy=mesDe(hoyISO());
+  $("mesTxt").textContent=mayus(nombreMes(mes));
+  $("mesSig").disabled = mes>=mHoy;
+  $("sub").textContent=(cfg("nombre")?cfg("nombre")+" · ":"")+"BCE · Oakland Mall";
+  $("resumen").innerHTML=pintarResumen(r);
+  $("comCard").innerHTML=pintarComision(r);
+  $("semCard").innerHTML=pintarSemanas(r);
+  $("diasCard").innerHTML=pintarDias(r);
+  if(soloDatos) actualizarForm(calcular(mesDe(fFecha)));
+  else pintarForm();
+}
+
+// ---------- ventanas ----------
+function abrirMetas(){
+  const mt=metaDe(mes)||{};
+  $("mMes").textContent=nombreMes(mes);
+  $("mCats").innerHTML=CATS.map(c=>`<label>${c.n}<input id="m_${c.k}" inputmode="numeric" value="${mt[c.k]??""}"></label>`).join("");
+  $("m_meta").value=mt.meta??""; $("m_pp").value=mt.pp??"";
+  ["base","desde","bono","bonoEn","ppc","tc","iva"].forEach(k=>{ $("m_"+k).value=cfg(k); });
+  $("m_nombre").value=cfg("nombre");
+  abrir("metasModal");
+}
+function guardarMetas(){
+  const v=id=>dinero($(id).value);
+  if(v("m_meta")==null){ alert("Escribí la meta del mes (en dólares)."); return; }
+  if(!(v("m_tc")>0)){ alert("El tipo de cambio tiene que ser mayor que 0."); return; }
+  const nuevo=Object.assign({}, aj);
+  const mt={meta:v("m_meta"), pp:v("m_pp")||0}; CATS.forEach(c=>{ mt[c.k]=Math.round(v("m_"+c.k)||0); });
+  nuevo["meta:"+mes]=mt;
+  ["base","desde","bono","bonoEn","ppc","tc","iva"].forEach(k=>{ const x=v("m_"+k); if(x!=null) nuevo[k]=x; });
+  nuevo.nombre=S($("m_nombre").value);
+  const limpio=limpiarAj(nuevo), cambiados=new Set([...Object.keys(limpio), ...Object.keys(aj)].filter(k=>estable(limpio[k])!==estable(aj[k])));
+  aj=limpio; guardarLocal(); subir("ajustes",[...cambiados]); cerrar("metasModal"); render(); toast("✔ Metas guardadas");
+}
+function abrirReporte(){
+  const rep=aj["rep:"+mes], h=hoyISO();
+  $("r_usd").value=rep?rep.usd:"";
+  $("r_hasta").value=rep?rep.hasta:(mesDe(h)===mes ? sumarDias(h,-1) : mes+"-"+dos(diasDelMes(mes)));
+  if(mesDe($("r_hasta").value)!==mes) $("r_hasta").value=mes+"-01";
+  $("r_hasta").min=mes+"-01"; $("r_hasta").max=mes+"-"+dos(diasDelMes(mes));
+  [0,1,2,3].forEach(i=>{ $("r_s"+(i+1)).value = rep && rep.sem[i]!=null ? rep.sem[i] : ""; });
+  $("rQuitar").hidden=!rep;
+  abrir("repModal");
+}
+function guardarReporte(){
+  const u=dinero($("r_usd").value), hasta=$("r_hasta").value;
+  if(u==null || !S($("r_usd").value)){ alert("Escribí el avance del mes que dice el reporte (en dólares)."); return; }
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(hasta) || mesDe(hasta)!==mes){ alert(`La fecha tiene que ser de ${nombreMes(mes)}.`); return; }
+  const sem=[1,2,3,4].map(i=>{ const t=S($("r_s"+i).value); return t ? dinero(t) : null; });
+  const hw=semanaDe(diaDe(hasta)), antes=sem.slice(0,hw).reduce((s,x)=>s+(x||0),0);
+  if(antes>u+0.005 && !confirm(`Las semanas anteriores suman ${usd(antes)}, más que el avance del mes (${usd(u)}).\n\n¿Guardar así?`)) return;
+  const k="rep:"+mes; aj=limpiarAj(Object.assign({}, aj, {[k]:{hasta, usd:u, sem}}));
+  guardarLocal(); subir("ajustes",[k]); cerrar("repModal"); render(); toast("✔ Avance del reporte guardado");
+}
+function quitarReporte(){
+  if(!confirm("¿Quitar el avance del reporte de este mes?\n\nSe vuelve a sumar solo lo que pusiste cada día.")) return;
+  const k="rep:"+mes; delete aj[k]; guardarLocal(); subir("ajustes",[k]); cerrar("repModal"); render(); toast("Reporte quitado");
+}
+
+// ---------- eventos ----------
+$("fCats").addEventListener("click", e=>{ const b=e.target.closest("button[data-k]"); if(b) cambiarUnidad(b.dataset.k, Number(b.dataset.d)); });
+$("formCard").querySelector(".pp").addEventListener("click", e=>{ const b=e.target.closest("button[data-k]"); if(b) cambiarUnidad("ppn", Number(b.dataset.d)); });
+$("fCats").addEventListener("change", e=>{ const i=e.target.closest("input[data-k]"); if(i) cambiarUnidad(i.dataset.k, 0, i.value===""?0:Math.round(N0(i.value))); });
+$("fPPn").addEventListener("change", e=>cambiarUnidad("ppn", 0, e.target.value===""?0:Math.round(N0(e.target.value))));
+["fQ","fPP"].forEach(id=>{
+  $(id).addEventListener("input", ()=>{ pintarEquivalentes(); const d=diaActual(); d.q=dinero($("fQ").value)||0; d.pp=dinero($("fPP").value)||0; guardarDia(d, true); });
+  $(id).addEventListener("blur", ()=>{ subirPendientes(); const v=dinero($(id).value); $(id).value = v ? fmtN(v,2) : ""; });
+  $(id).addEventListener("keydown", e=>{ if(e.key==="Enter") e.target.blur(); });
+});
+$("fFecha").addEventListener("change", e=>irAFecha(e.target.value));
+$("fAnt").addEventListener("click", ()=>irAFecha(sumarDias(fFecha,-1)));
+$("fSig").addEventListener("click", ()=>irAFecha(sumarDias(fFecha,1)));
+$("fBorrar").addEventListener("click", ()=>{ if(!confirm(`¿Borrar lo que pusiste el ${diaLargo(fFecha)}?`)) return; guardarDia(vacioDia()); pintarForm(); toast("Día borrado"); });
+$("mesAnt").addEventListener("click", ()=>{ mes=sumarMes(mes,-1); fFecha=fechaParaMes(mes); render(); });
+$("mesSig").addEventListener("click", ()=>{ if(mes>=mesDe(hoyISO())) return; mes=sumarMes(mes,1); fFecha=fechaParaMes(mes); render(); });
+$("btnMetas").addEventListener("click", abrirMetas);
+$("mGuardar").addEventListener("click", guardarMetas);
+$("btnReporte").addEventListener("click", abrirReporte);
+$("rGuardar").addEventListener("click", guardarReporte);
+$("rQuitar").addEventListener("click", quitarReporte);
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") document.querySelectorAll(".modal-ov.show").forEach(m=>m.classList.remove("show")); });
+// el link también puede llegar estando ya abierto el apartado
+window.addEventListener("hashchange", ()=>{ leerCargaDelLink(); if(listo) ponerListoDeNuevo(); });
+function ponerListoDeNuevo(){ const c=cargaPendiente; cargaPendiente=null; if(c) aplicarCarga(c); }
+// a medianoche (o al volver a la pestaña otro día) "hoy" cambia
+let diaVisto=hoyISO();
+window.addEventListener("pagehide", subirPendientes);
+document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="hidden") subirPendientes(); if(document.visibilityState==="visible" && hoyISO()!==diaVisto){ const antes=diaVisto; diaVisto=hoyISO(); if(fFecha===antes){ fFecha=diaVisto; mes=mesDe(diaVisto); } render(); } });
+
+// ---------- inicio ----------
+cargarLocal();
+mes=mesDe(hoyISO()); fFecha=hoyISO();
+leerCargaDelLink();
+render();
+conectarNube();
+</script>
+</body>
+</html>

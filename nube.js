@@ -110,23 +110,42 @@
 
   /* Documento "mapa": cada campo guarda un valor (en JSON).
      escucharMapa(col, id, cb(mapa, existe, meta))  ·  guardarMapa(col, id, ahora, antes) */
+  // Lo que este equipo acaba de escribir, hasta que la nube lo confirme: a veces llega
+  // antes una foto vieja del servidor y, si justo se tocaba otra vez (+1 rápido), se perdía.
+  const VUELO_MS = 4000;
+  const enVuelo = {};   // "col/doc" -> {campo: {v: texto JSON (null = borrado), t}}
   function escucharMapa(colName, id, cb){
-    return col(colName).doc(id).onSnapshot({includeMetadataChanges:true}, snap=>{
-      marcarServidor(snap.metadata);
-      const d=snap.data()||{}, out={};
+    const ruta=colName+"/"+id; let ultima=null, reloj=null;
+    const procesar=()=>{
+      const snap=ultima, d=Object.assign({}, snap.data()||{}), ev=enVuelo[ruta], ya=Date.now();
+      let quedan=false;
+      if(ev) for(const k in ev){
+        const e=ev[k], llego = e.v===null ? !tiene(d,k) : d[k]===e.v;
+        if((llego && !snap.metadata.hasPendingWrites) || ya-e.t>VUELO_MS){ delete ev[k]; continue; }
+        if(e.v===null) delete d[k]; else d[k]=e.v;
+        quedan=true;
+      }
+      // si no se confirma, a los pocos segundos se muestra lo que diga la nube
+      if(quedan && !reloj) reloj=setTimeout(()=>{ reloj=null; procesar(); }, VUELO_MS+100);
+      const out={};
       for(const k in d){ try{ out[k]=JSON.parse(d[k]); }catch(e){} }
       cb(out, snap.exists, snap.metadata);
+    };
+    return col(colName).doc(id).onSnapshot({includeMetadataChanges:true}, snap=>{
+      marcarServidor(snap.metadata);
+      ultima=snap; procesar();
     }, falla);
   }
   function guardarMapa(colName, id, ahora, antes){
     if(!base) return Promise.resolve(false);
-    const campos=[], datos={};
+    const campos=[], datos={}, ev=enVuelo[colName+"/"+id]||(enVuelo[colName+"/"+id]={}), t=Date.now();
     new Set([...Object.keys(ahora||{}), ...Object.keys(antes||{})]).forEach(k=>{
       const a = tiene(ahora,k) && ahora[k]!==undefined ? estable(ahora[k]) : undefined;
       const b = tiene(antes,k) && antes[k]!==undefined ? estable(antes[k]) : undefined;
       if(a===b) return;
       campos.push(new firebase.firestore.FieldPath(k));
       datos[k] = a===undefined ? firebase.firestore.FieldValue.delete() : JSON.stringify(ahora[k]);
+      ev[k] = {v: a===undefined ? null : datos[k], t};
     });
     if(!campos.length) return Promise.resolve(false);
     return seguir(col(colName).doc(id).set(datos,{mergeFields:campos})).catch(()=>false);
