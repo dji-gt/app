@@ -33,6 +33,14 @@
   .appbar .logo{height:26px;opacity:.95;margin-left:4px}
 
   .wrap{max-width:1180px;margin:0 auto;padding:18px 20px 40px}
+  .asbar{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:8px 13px;font-size:13.5px;font-weight:800;color:var(--ink-2);cursor:pointer;display:inline-flex;align-items:center;gap:6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .chip[aria-pressed="true"]{background:var(--black);border-color:var(--black);color:#fff}
+  .chip.edit{background:var(--accent-bg);border-color:#cfdcfb;color:var(--accent-d)}
+  .asrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:8px}
+  .asrow.act{border-color:var(--accent);background:#fafcff}
+  .asrow input{border:2px solid var(--line);border-radius:9px;padding:8px 10px;font-size:15px;font-weight:800;outline:none;min-width:0}
+  .asrow input:focus{border-color:var(--accent)}
   .mesbar{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:14px}
   .mesbar b{font-size:16px;font-weight:800;min-width:170px;text-align:center}
   .mesbar button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:18px;font-weight:800;color:var(--ink-2);cursor:pointer}
@@ -61,6 +69,9 @@
   .h-stats b{display:block;font-size:21px;font-weight:850;letter-spacing:-.4px;margin-top:3px;overflow-wrap:anywhere}
   .h-stats small{display:block;font-size:12px;color:rgba(255,255,255,.6);font-weight:600;margin-top:1px}
   .h-stats .bien b{color:#6ee7b7} .h-stats .mal b{color:#fca5a5} .h-stats .medio b{color:#fcd34d}
+  .desg{margin-top:6px;display:grid;gap:3px;font-size:12.5px;color:rgba(255,255,255,.75);font-weight:700}
+  .desg div{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .desg b{display:inline;font-size:14px;margin:0;color:#fff!important;letter-spacing:0;white-space:nowrap;overflow-wrap:normal}
 
   .grid2{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start;margin-bottom:14px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px 18px}
@@ -108,6 +119,13 @@
   .fpie .btn{margin-left:auto}
 
   /* ===== Comisión ===== */
+  .com2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+  .cbox{border:1px solid var(--line);border-radius:14px;padding:12px 13px;background:#fafbfc;min-width:0}
+  .cbox span{display:block;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+  .cbox b{display:block;font-size:25px;font-weight:900;letter-spacing:-.5px;line-height:1.2;color:var(--ink-2);margin-top:2px}
+  .cbox small{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-top:2px}
+  .cbox.ok{background:var(--ok-bg);border-color:var(--ok-br)} .cbox.ok b{color:#0b7a53}
+  .cbox.prot{background:var(--accent-bg);border-color:#cfdcfb} .cbox.prot b{color:var(--accent-d)}
   .com-tot{background:var(--ok-bg);border:1px solid var(--ok-br);border-radius:14px;padding:12px 14px}
   .com-tot.cero{background:var(--line-2);border-color:var(--line)}
   .com-tot span{display:block;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
@@ -187,7 +205,13 @@
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--black);color:#fff;padding:11px 16px;border-radius:11px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:300;box-shadow:var(--shadow-lg);max-width:calc(100% - 32px)}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-  @media(max-width:900px){ .grid2{grid-template-columns:minmax(0,1fr)} .h-stats{grid-template-columns:repeat(2,1fr)} }
+  @media(max-width:900px){
+    .grid2{grid-template-columns:minmax(0,1fr)} .h-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+    /* la comisión ocupa todo el ancho: lo de la meta y lo de las protecciones, lado a lado */
+    .h-stats .com{grid-column:1/-1}
+    .h-stats .com .desg{grid-template-columns:1fr 1fr;gap:8px}
+    .h-stats .com .desg div{flex-direction:column;align-items:flex-start;gap:0;background:rgba(255,255,255,.06);border-radius:10px;padding:6px 9px}
+  }
   @media(max-width:720px){
     .appbar{padding:0 14px;height:60px}
     .appbar .sub, .ab-btn span{display:none}
@@ -202,7 +226,9 @@
     .modal{max-width:100%;min-height:100vh;border-radius:0}
     .fg{grid-template-columns:1fr 1fr}
     .dia .u{margin-left:0}
+    .cbox b{font-size:21px}
   }
+  @media(max-width:360px){ .com2{grid-template-columns:1fr} }
   @media(max-width:380px){ .h-stats{gap:8px} .h-stats > div{padding:9px 10px} .h-stats b{font-size:16.5px} .cnt button{width:34px} .cnt input{width:44px} }
 </style>
 </head>
@@ -218,6 +244,7 @@
 </div>
 
 <div class="wrap">
+  <div class="asbar" id="asbar"></div>
   <div class="mesbar"><button id="mesAnt" title="Mes anterior">‹</button><b id="mesTxt"></b><button id="mesSig" title="Mes siguiente">›</button></div>
   <div id="resumen"></div>
   <div class="grid2">
@@ -250,7 +277,7 @@
 <!-- ===== Ventana: metas y comisión ===== -->
 <div class="modal-ov" id="metasModal">
   <div class="modal">
-    <div class="modal-h"><b>⚙️ Metas y comisión</b><button class="modal-x" onclick="cerrar('metasModal')" title="Cerrar">✕</button></div>
+    <div class="modal-h"><b>⚙️ Metas y comisión · <span id="mNombre"></span></b><button class="modal-x" onclick="cerrar('metasModal')" title="Cerrar">✕</button></div>
     <div class="modal-b">
       <h4>Meta de <span id="mMes"></span></h4>
       <div class="fg">
@@ -271,11 +298,24 @@
       <div class="fg">
         <label>Tipo de cambio (Q por $)<input id="m_tc" inputmode="decimal"></label>
         <label>IVA (%)<input id="m_iva" inputmode="decimal"></label>
-        <label>Tu nombre<input id="m_nombre" autocomplete="off"></label>
       </div>
       <div class="nota">La meta se mide en dólares sin IVA, como el reporte. Lo que ponés en quetzales con IVA se pasa a dólares así: Q ÷ (1 + IVA) ÷ tipo de cambio.</div>
     </div>
     <div class="macts"><button class="btn ghost" onclick="cerrar('metasModal')">Cancelar</button><button class="btn primary" id="mGuardar">Guardar</button></div>
+  </div>
+</div>
+
+<!-- ===== Ventana: asesores ===== -->
+<div class="modal-ov" id="asModal">
+  <div class="modal">
+    <div class="modal-h"><b>👥 Asesores</b><button class="modal-x" onclick="cerrar('asModal')" title="Cerrar">✕</button></div>
+    <div class="modal-b">
+      <div id="asLista"></div>
+      <h4>Agregar asesor</h4>
+      <div class="pegar" style="margin:0;max-width:none"><input id="asNuevo" placeholder="Nombre del asesor nuevo" maxlength="40" autocomplete="off" onkeydown="if(event.key==='Enter') agregarAsesor()"><button class="btn primary" id="asAgregar">➕ Agregar</button></div>
+      <div class="nota">Cada asesor tiene sus propias metas, ventas y comisión. Al nuevo se le ponen las mismas metas y comisión de <b id="asCopia"></b>; se cambian en ⚙️ Metas. Para cambiar un nombre, escribilo encima.</div>
+    </div>
+    <div class="macts"><button class="btn primary" onclick="cerrar('asModal')">Listo</button></div>
   </div>
 </div>
 
@@ -303,7 +343,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261029a"></script>
+<script src="../nube.js?v=20261029b"></script>
 <script>
 /* ============================================================
    Mis ventas — avance contra la meta del mes, unidades por semana
@@ -315,7 +355,8 @@
    ============================================================ */
 "use strict";
 
-const LS_V = "ventas_dji_v1";     // {aj, dias}
+const LS_V = "ventas_dji_v1";     // {aj, dias} del primer asesor (los demás: LS_V+"_"+id)
+const LS_AS = "ventas_dji_asesores", LS_ACT = "ventas_dji_asesor";
 const CATS = [
   {k:"dr", n:"Drones",          uno:"dron",          img:"../recepcion/img/mini5pro.jpg"},
   {k:"ca", n:"Cámaras",         uno:"cámara",        img:"../recepcion/img/action6.jpg"},
@@ -328,6 +369,11 @@ const DEF = {nombre:"", tc:7.8, iva:12, base:0, bono:0, desde:85, bonoEn:110, pp
 let aj = {};     // DEF + "meta:AAAA-MM": {meta, dr, ca, es, ac, pp} + "rep:AAAA-MM": {hasta, usd, sem:[s1..s4]}
 let dias = {};   // "AAAA-MM-DD": {q, pp, ppn, u:{dr,ca,es,ac}, t}
 let mes, fFecha;
+// asesores: cada uno con sus metas y sus ventas. "p" es el primero (el de siempre: ventas/ajustes y ventas/dias)
+let asMap = {};      // id -> {n: nombre, o: orden, b: borrado}
+let actual = "p";
+const docDe = (id, tipo) => id==="p" ? tipo : tipo+"-"+id;
+const lsDe = id => id==="p" ? LS_V : LS_V+"_"+id;
 
 const $ = id => document.getElementById(id);
 const S = v => String(v ?? "").trim();
@@ -351,6 +397,7 @@ const qq = (v,dec=2) => "Q"+fmtN(v,dec);
 const pct = p => fmtN(p,1)+"%";
 const dinero = s => { const n=Number(S(s).replace(/[Q$\s,]/g,"")); return Number.isFinite(n) && n>=0 ? n : null; };
 const estable = (window.Nube && Nube.estable) || (v=>JSON.stringify(v));
+const fold = t => S(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ");
 let tToast;
 function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tToast); tToast=setTimeout(()=>t.classList.remove("show"),2800); }
 function abrir(id){ $(id).classList.add("show"); }
@@ -403,7 +450,8 @@ function calcular(m){
   if(m===mHoy) ultimo=Math.min(ultimo, dHoy);
   const quedan = pasado ? 0 : futuro ? N : N - Math.max(ultimo, dHoy-1);
   sem.forEach(w=>{ w.estado = pasado || (m===mHoy && w.b<dHoy) ? "pasada" : (m===mHoy && w.a<=dHoy) ? "actual" : "futura"; });
-  const r = {N, meta, rep, sem, usdMes, ppQ, ultimo, quedan, futuro, pasado};
+  const ppN = sem.reduce((s,w)=>s+w.ppn,0);
+  const r = {N, meta, rep, sem, usdMes, ppQ, ppN, ultimo, quedan, futuro, pasado};
   if(meta && meta.meta>0){
     r.p = usdMes/meta.meta*100;
     r.pendUSD = Math.max(meta.meta-usdMes,0) * factorIva();          // como el reporte: lo que falta, con IVA
@@ -466,24 +514,46 @@ function limpiarAj(m){
   }
   return out;
 }
-function cargarLocal(){
-  try{ const d=JSON.parse(localStorage.getItem(LS_V)||"null"); if(d){ aj=limpiarAj(d.aj); dias=limpiarDias(d.dias); } }catch(e){}
+function limpiarAsesores(m){
+  const out={};
+  for(const id in (m||{})){
+    const v=m[id]; if(!/^[a-z0-9]{1,24}$/.test(id) || !v || typeof v!=="object") continue;
+    const n=S(v.n).slice(0,40); if(!n) continue;
+    out[id]={n, o:N0(v.o)}; if(v.b) out[id].b=true;
+  }
+  return out;
 }
-function guardarLocal(){ try{ localStorage.setItem(LS_V, JSON.stringify({aj, dias})); }catch(e){} }
+function lista(){
+  const L=Object.keys(asMap).filter(id=>!asMap[id].b).map(id=>({id, n:asMap[id].n, o:asMap[id].o}));
+  if(!asMap.p) L.push({id:"p", n:(actual==="p" && aj.nombre) || SIN_NOMBRE, o:0});
+  return L.sort((a,b)=>a.o-b.o || a.n.localeCompare(b.n,"es"));
+}
+const asesor = id => lista().find(a=>a.id===id);
+const SIN_NOMBRE = "Asesor 1";
+const pSinNombre = () => !aj.nombre && (!asMap.p || asMap.p.n===SIN_NOMBRE);
+const nombreActual = () => (asesor(actual)||{}).n || "";
+function cargarLocal(){
+  aj={}; dias={};
+  try{ const d=JSON.parse(localStorage.getItem(lsDe(actual))||"null"); if(d){ aj=limpiarAj(d.aj); dias=limpiarDias(d.dias); } }catch(e){}
+}
+function guardarLocal(){ try{ localStorage.setItem(lsDe(actual), JSON.stringify({aj, dias})); }catch(e){} }
+function guardarAsLocal(){ try{ localStorage.setItem(LS_AS, JSON.stringify(asMap)); }catch(e){} }
 
-// ---------- nube: ventas/ajustes y ventas/dias (un campo por día) ----------
+// ---------- nube: ventas/asesores, y de cada asesor ventas/ajustes(-id) y ventas/dias(-id) ----------
 const DOCS = {
-  ajustes:{get:()=>aj,   set:v=>{ aj=v; },   limpiar:limpiarAj},
-  dias:   {get:()=>aplanar(dias), set:v=>{ dias=desaplanar(v); }, limpiar:limpiarPlano}
+  asesores:{doc:()=>"asesores",             get:()=>asMap, set:v=>{ asMap=v; }, limpiar:limpiarAsesores, guardar:()=>guardarAsLocal()},
+  ajustes: {doc:()=>docDe(actual,"ajustes"), get:()=>aj,    set:v=>{ aj=v; },    limpiar:limpiarAj,       guardar:()=>guardarLocal()},
+  dias:    {doc:()=>docDe(actual,"dias"),    get:()=>aplanar(dias), set:v=>{ dias=desaplanar(v); }, limpiar:limpiarPlano, guardar:()=>guardarLocal()}
 };
-const nubeEst = {ajustes:{m:null, tocados:new Set()}, dias:{m:null, tocados:new Set()}};
+const estVacio = () => ({m:null, tocados:new Set()});
+const nubeEst = {asesores:estVacio(), ajustes:estVacio(), dias:estVacio()};
 let listo=false, cargaPendiente=null;
 const porSubir = new Set();   // datos del día ("2026-10-29:q") que se están escribiendo (se suben al ratito)
 function subir(doc, campos){
   if(!window.Nube || !Nube.conectado()) return;
   const st=nubeEst[doc];
   if(st.m===null){ (campos||[]).forEach(k=>st.tocados.add(k)); return; }   // se sube cuando llegue la nube
-  Nube.guardarMapa("ventas", doc, DOCS[doc].get(), st.m);
+  Nube.guardarMapa("ventas", DOCS[doc].doc(), DOCS[doc].get(), st.m);
 }
 function alLlegar(doc, m){
   const st=nubeEst[doc], D=DOCS[doc], primero=st.m===null, local=D.get();
@@ -492,17 +562,17 @@ function alLlegar(doc, m){
   if(doc==="dias") porSubir.forEach(f=>{ if(local[f]===undefined) delete nuevo[f]; else nuevo[f]=local[f]; });
   if(primero){
     // lo que se tocó aquí antes de que llegara la nube (y, la primera vez en este equipo, lo que solo estaba aquí)
-    const llave="ventas_unido_"+doc, unido=(()=>{ try{ return localStorage.getItem(llave)===Nube.clave(); }catch(e){ return true; } })();
+    const llave="ventas_unido_"+D.doc(), unido=(()=>{ try{ return localStorage.getItem(llave)===Nube.clave(); }catch(e){ return true; } })();
     const keys=new Set(st.tocados); st.tocados.clear();
     if(!unido) Object.keys(local).forEach(k=>{ if(!(k in nuevo)) keys.add(k); });
     try{ localStorage.setItem(llave, Nube.clave()); }catch(e){}
     if(keys.size){
       keys.forEach(k=>{ if(local[k]===undefined) delete nuevo[k]; else nuevo[k]=local[k]; });
-      D.set(nuevo); guardarLocal(); Nube.guardarMapa("ventas", doc, nuevo, m); render(formEnUso()); return;
+      D.set(nuevo); D.guardar(); Nube.guardarMapa("ventas", D.doc(), nuevo, m); render(formEnUso()); return;
     }
   }
   if(estable(nuevo)===estable(local)) return;
-  D.set(nuevo); guardarLocal(); render(formEnUso());
+  D.set(nuevo); D.guardar(); render(formEnUso());
 }
 const formEnUso = () => !!(document.activeElement && $("formCard").contains(document.activeElement) && document.activeElement.tagName==="INPUT");
 function ponerListo(){
@@ -510,14 +580,106 @@ function ponerListo(){
   const c=cargaPendiente; cargaPendiente=null;
   if(c) setTimeout(()=>aplicarCarga(c), 50);
 }
+let nubeLista=false, quitarEsc=[], tListo=null;
+const verListo = () => { if(nubeEst.asesores.m!==null && nubeEst.ajustes.m!==null && nubeEst.dias.m!==null) ponerListo(); };
 async function conectarNube(){
   if(!window.Nube){ ponerListo(); return; }
   Nube.pintar($("nubeEstado"));
   if(!Nube.conectado() || !await Nube.iniciar()){ ponerListo(); return; }
-  setTimeout(ponerListo, 6000);
-  const ver=()=>{ if(nubeEst.ajustes.m!==null && nubeEst.dias.m!==null) ponerListo(); };
-  Nube.escucharMapa("ventas","ajustes",m=>{ alLlegar("ajustes", m); ver(); });
-  Nube.escucharMapa("ventas","dias",m=>{ alLlegar("dias", m); ver(); });
+  nubeLista=true;
+  Nube.escucharMapa("ventas","asesores",m=>{ alLlegar("asesores", m); revisarAsesores(); verListo(); });
+  escucharAsesor();
+}
+// los datos del asesor que se está viendo
+function escucharAsesor(){
+  quitarEsc.forEach(f=>{ try{ f(); }catch(e){} }); quitarEsc=[];
+  listo=false; clearTimeout(tListo);
+  if(!nubeLista){ ponerListo(); return; }
+  tListo=setTimeout(ponerListo, 6000);
+  const id=actual;
+  quitarEsc.push(Nube.escucharMapa("ventas", docDe(id,"ajustes"), m=>{ if(id!==actual) return; alLlegar("ajustes", m); revisarAsesores(); verListo(); }));
+  quitarEsc.push(Nube.escucharMapa("ventas", docDe(id,"dias"), m=>{ if(id!==actual) return; alLlegar("dias", m); verListo(); }));
+}
+// lo que se tocó aquí y todavía no llegó la nube: se sube antes de cambiar de asesor
+function subirTocados(doc){
+  const st=nubeEst[doc]; if(st.m!==null || !st.tocados.size || !nubeLista) return;
+  const L=DOCS[doc].get(), ahora={}, antes={};
+  st.tocados.forEach(k=>{ if(L[k]!==undefined) ahora[k]=L[k]; else antes[k]=0; });
+  Nube.guardarMapa("ventas", DOCS[doc].doc(), ahora, antes);
+}
+function revisarAsesores(){
+  // el primer asesor (el de siempre) queda en la lista con su nombre (cuando ya tiene uno)
+  if(!asMap.p && actual==="p" && aj.nombre && (!nubeLista || (nubeEst.asesores.m!==null && nubeEst.ajustes.m!==null))){
+    asMap=Object.assign({}, asMap, {p:{n:aj.nombre, o:0}}); guardarAsLocal(); subir("asesores",["p"]);
+  }
+  // si borraron en otra computadora al que se estaba viendo
+  if(!asesor(actual)){ const L=lista(); if(L.length) cambiarAsesor(L[0].id); }
+}
+function cambiarAsesor(id){
+  if(id===actual || !asesor(id)) return;
+  subirPendientes(); subirTocados("ajustes"); subirTocados("dias");
+  actual=id; try{ localStorage.setItem(LS_ACT, id); }catch(e){}
+  cargarLocal();
+  nubeEst.ajustes=estVacio(); nubeEst.dias=estVacio(); porSubir.clear();
+  fFecha=fechaParaMes(mes);
+  escucharAsesor();
+  render();
+}
+
+// ============================================================
+//  ASESORES: agregar, cambiar el nombre, eliminar
+// ============================================================
+function pintarAsbar(){
+  $("asbar").innerHTML=lista().map(a=>`<button class="chip" aria-pressed="${a.id===actual}" onclick="cambiarAsesor('${a.id}')">👤 ${esc(a.n)}</button>`).join("")+
+    `<button class="chip edit" onclick="abrirAsesores()">👥 Asesores</button>`;
+}
+function abrirAsesores(){ pintarListaAs(); $("asNuevo").value=""; abrir("asModal"); }
+function pintarListaAs(){
+  $("asCopia").textContent=nombreActual();
+  $("asLista").innerHTML=lista().map(a=>`<div class="asrow${a.id===actual?" act":""}"><span>👤</span>
+    <input value="${esc(a.n)}" maxlength="40" aria-label="Nombre del asesor" onchange="renombrar('${a.id}', this.value)" onkeydown="if(event.key==='Enter') this.blur()">
+    <button class="btn ghost sm" onclick="cambiarAsesor('${a.id}');cerrar('asModal')">Ver</button>
+    <button class="btn danger sm" title="Eliminar asesor" onclick="borrarAsesor('${a.id}')">🗑️</button></div>`).join("");
+}
+const nombreRepetido = (n, menos) => lista().some(x=>x.id!==menos && fold(x.n)===fold(n));
+function renombrar(id, n){
+  n=S(n).slice(0,40); const a=asesor(id); if(!a) return;
+  if(!n){ alert("Escribí el nombre del asesor."); pintarListaAs(); return; }
+  if(nombreRepetido(n, id)){ alert(`Ya hay un asesor que se llama ${n}.`); pintarListaAs(); return; }
+  if(n===a.n) return;
+  asMap=Object.assign({}, asMap, {[id]:{n, o:a.o}}); guardarAsLocal(); subir("asesores",[id]);
+  render(); pintarListaAs(); toast(`✔ Nombre cambiado: ${n}`);
+}
+// nuevo asesor (con las mismas reglas y metas del que se está viendo, si copiar)
+function crearAsesor(n, copiar){
+  const id="a"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  const add={[id]:{n, o:Math.max(0,...lista().map(a=>a.o))+1}};
+  if(!asMap.p){ const p=asesor("p"); if(p) add.p={n:p.n, o:p.o}; }
+  asMap=Object.assign({}, asMap, add); guardarAsLocal(); subir("asesores", Object.keys(add));
+  const base={};
+  if(copiar) for(const k in aj) if((k in DEF && k!=="nombre") || /^meta:/.test(k)) base[k]=aj[k];
+  try{ localStorage.setItem(lsDe(id), JSON.stringify({aj:base, dias:{}})); }catch(e){}
+  if(nubeLista && Object.keys(base).length) Nube.guardarMapa("ventas", docDe(id,"ajustes"), base, {});
+  return id;
+}
+function agregarAsesor(){
+  const n=S($("asNuevo").value).slice(0,40);
+  if(!n){ alert("Escribí el nombre del asesor nuevo."); return; }
+  if(nombreRepetido(n)){ alert(`Ya hay un asesor que se llama ${n}.`); return; }
+  const id=crearAsesor(n, true);
+  cerrar("asModal"); cambiarAsesor(id); toast(`✔ Asesor agregado: ${n}`);
+}
+function borrarAsesor(id){
+  const L=lista(), a=asesor(id); if(!a) return;
+  if(L.length<=1){ alert("Tiene que quedar al menos un asesor."); return; }
+  if(!confirm(`¿Eliminar a ${a.n}?\n\nSe borran sus metas, sus ventas y su comisión en todas las computadoras. No se puede deshacer.`)) return;
+  if(id===actual) cambiarAsesor(L.find(x=>x.id!==id).id);
+  const nuevo=Object.assign({}, asMap);
+  if(id==="p") nuevo.p={n:a.n, o:a.o, b:true}; else delete nuevo[id];
+  asMap=nuevo; guardarAsLocal(); subir("asesores",[id]);
+  try{ localStorage.removeItem(lsDe(id)); }catch(e){}
+  if(nubeLista) Nube.guardarColeccion("ventas", {}, {[docDe(id,"ajustes")]:1, [docDe(id,"dias")]:1});
+  pintarListaAs(); render(); toast(`${a.n} ya no está en la lista`);
 }
 
 // ============================================================
@@ -543,6 +705,19 @@ function cargarPegado(txt){
   aplicarCarga(c);
 }
 function aplicarCarga(o){
+  // el link trae el nombre del asesor: se carga a ese (si no existe, se agrega)
+  if(o.nombre){
+    const a=lista().find(x=>fold(x.n)===fold(o.nombre));
+    if(a && a.id!==actual){ cargaPendiente=o; cambiarAsesor(a.id); return; }
+    if(!a){
+      // el primer asesor todavía sin nombre ni metas: el link es de él
+      if(actual==="p" && pSinNombre() && !Object.keys(aj).some(k=>/^meta:/.test(k))){ asMap=Object.assign({}, asMap, {p:{n:S(o.nombre).slice(0,40), o:(asMap.p||{}).o||0}}); guardarAsLocal(); subir("asesores",["p"]); }
+      else {
+        if(!confirm(`¿Agregar al asesor ${o.nombre} con las metas del link?`)) return;
+        const id=crearAsesor(S(o.nombre).slice(0,40), false); cargaPendiente=o; cambiarAsesor(id); return;
+      }
+    }
+  }
   const n=k=>{ const v=dinero(o[k]); return o[k]!==undefined && o[k]!=="" ? v : null; };
   const nuevo=Object.assign({}, aj), lineas=[];
   if(o.nombre) nuevo.nombre=o.nombre;
@@ -563,7 +738,7 @@ function aplicarCarga(o){
   }
   const limpio=limpiarAj(nuevo);
   if(estable(limpio)===estable(aj)){ toast("✔ Tus metas ya están cargadas"); mes=m; render(); return; }
-  if(!confirm("¿Cargar tus metas?\n\n"+lineas.join("\n"))) return;
+  if(!confirm(`¿Cargar las metas de ${nombreActual()}?\n\n`+lineas.join("\n"))) return;
   const cambiados=Object.keys(limpio).filter(k=>estable(limpio[k])!==estable(aj[k]));
   aj=limpio; guardarLocal(); subir("ajustes", cambiados);
   mes=m; if(mesDe(fFecha)!==mes) fFecha=fechaParaMes(mes);
@@ -661,11 +836,11 @@ function pintarResumen(r){
   const clase = r.p>=cfg("bonoEn") ? "bono" : r.p>=100 ? "ok" : "";
   const marcas=[cfg("desde"),100].concat(cfg("bono")>0 ? [cfg("bonoEn")] : []).filter(t=>t<escala).map(t=>`<span class="marca${t===cfg("bonoEn")&&t!==100?" arriba":""}" style="left:${t/escala*100}%"><span>${fmtN(t)}%${t===cfg("bonoEn")&&t!==100?" · bono":""}</span></span>`).join("");
   const tono = p => p==null ? "" : p>=100 ? "bien" : p>=cfg("desde") ? "medio" : "mal";
-  const comProy = r.proy!=null ? comision(r.proy) : comision(r.p);
+  const comAct = comision(r.p), total = comAct + r.ppCom;
   const rangoQuedan = r.quedan>0 ? (r.quedan===1 ? `1 día (el ${r.N})` : `${r.quedan} días (${r.N-r.quedan+1}–${r.N})`) : "";
   return `<section class="hero">
     <div class="h-row">
-      <div><div class="h-l">Avance de ${esc(nombreMes(mes))}${cfg("nombre")?" · "+esc(cfg("nombre")):""}</div>
+      <div><div class="h-l">Avance de ${esc(nombreMes(mes))}${nombreActual()?" · "+esc(nombreActual()):""}</div>
         <div class="h-n">${usd(r.usdMes)} <small>de ${usd(meta.meta)}</small></div>
         <div class="h-s">≈ ${qq(aQconIva(r.usdMes))} con IVA${r.rep?` · reporte al ${ymdCorto(r.rep.hasta)}`:""}</div></div>
       <div class="h-p"><b>${pct(r.p)}</b><span>de la meta</span></div>
@@ -674,23 +849,26 @@ function pintarResumen(r){
     <div class="h-stats">
       <div><span>Pendiente</span><b>${usd(r.pendUSD)}</b><small>${qq(r.pendQ)} · con IVA</small></div>
       <div><span>Meta del día</span>${r.diaQ!=null?`<b>${qq(r.diaQ)}</b><small>${usd(r.diaUSD)} · ${rangoQuedan}</small>`:`<b>—</b><small>${r.futuro?"el mes no ha empezado":"se terminó el mes"}</small>`}</div>
-      <div class="${tono(r.proy)}"><span>Proyección</span>${r.proy!=null?`<b>${pct(r.proy)}</b><small>${r.pasado?"así cerró el mes":`al ritmo de ${r.ultimo} ${r.ultimo===1?"día":"días"}`}</small>`:`<b>—</b><small>sin ventas todavía</small>`}</div>
-      <div class="${comProy+r.ppCom>0?"bien":""}"><span>Comisión</span><b>${qq(comProy+r.ppCom)}</b><small>${r.pasado?"del mes":"si cerrás como vas"}</small></div>
+      <div class="${tono(r.proy)}"><span>Proyección</span>${r.proy!=null?`<b>${pct(r.proy)}</b><small>${r.pasado?"así cerró el mes":`al ritmo de ${r.ultimo} ${r.ultimo===1?"día":"días"}`}${!r.pasado && cfg("base")?` · meta ≈ ${qq(comision(r.proy),0)}`:""}</small>`:`<b>—</b><small>sin ventas todavía</small>`}</div>
+      <div class="com ${total>0?"bien":""}"><span>Comisión${r.pasado?" del mes":""}</span><b>${qq(total)}</b>
+        <div class="desg"><div>🎯 Por la meta <b>${qq(comAct)}</b></div><div>🛡️ Por protecciones <b>${qq(r.ppCom)}</b></div></div></div>
     </div>
   </section>`;
 }
 function pintarComision(r){
-  const meta=r.meta, h=`<div class="card-h"><b>💵 Tu comisión de ${esc(nombreMes(mes))}</b></div>`;
-  const ppTxt=`<div class="ppbox"><span class="ic">🛡️</span><div>Protection Plus: <b>${qq(r.ppQ)}</b> vendido → <b>${qq(r.ppCom)}</b> de comisión (${fmtN(cfg("ppc"),1)}% sin IVA). <span style="color:var(--muted)">Se paga aunque no llegués a la meta.</span></div></div>`;
-  if(!meta || !(meta.meta>0) || !cfg("base")) return h+`<div class="nota">Poné tu meta y cuánto te pagan en <b>⚙️ Metas</b> para ver tu comisión.</div>`+ppTxt;
-  const pBase = r.proy!=null ? r.proy : r.p, comMeta=comision(pBase), total=comMeta+r.ppCom;
+  const meta=r.meta, h=`<div class="card-h"><b>💵 Comisión de ${esc(nombreActual())} · ${esc(nombreMes(mes))}</b></div>`;
+  const ppBox=`<div class="cbox prot"><span>🛡️ Por protecciones</span><b>${qq(r.ppCom)}</b><small>${qq(r.ppQ)} de Protection Plus${r.ppN?` (${r.ppN})`:""} · ${fmtN(cfg("ppc"),1)}% sin IVA. Se paga aunque no llegués a la meta.</small></div>`;
+  if(!meta || !(meta.meta>0) || !cfg("base")) return h+`<div class="com2"><div class="cbox"><span>🎯 Por la meta</span><b>—</b><small>Poné la meta y cuánto te pagan en ⚙️ Metas.</small></div>${ppBox}</div>`;
+  const comAct=comision(r.p), total=comAct+r.ppCom;
   const porDia = v => r.quedan>0 ? ` · ≈ ${qq(v/r.quedan,0)} por día` : "";
-  return h+`<div class="com-tot${total>0?"":" cero"}"><span>${r.pasado?"Comisión del mes":"Si cerrás como vas ("+pct(pBase)+")"}</span><b>${qq(total)}</b>
-      <small>Meta ${qq(comMeta)} + Protection Plus ${qq(r.ppCom)}${!r.pasado && r.proy!=null?` · si el mes cerrara hoy (${pct(r.p)}): ${qq(comision(r.p)+r.ppCom)}`:""}</small></div>
+  const metaSub = comAct>0 ? `Llegaste al ${pct(r.p)} de la meta${r.p>=cfg("bonoEn")&&cfg("bono")?` (incluye bono ${qq(cfg("bono"),0)})`:""}` : `Vas en ${pct(r.p)}: se gana desde el ${fmtN(cfg("desde"))}%`;
+  return h+`<div class="com2"><div class="cbox${comAct>0?" ok":""}"><span>🎯 Por llegar a la meta</span><b>${qq(comAct)}</b><small>${metaSub}</small></div>${ppBox}</div>
+    <div class="com-tot${total>0?"":" cero"}"><span>Total ${r.pasado?"del mes":"ganado hasta hoy"}</span><b>${qq(total)}</b>
+      <small>Meta ${qq(comAct)} + protecciones ${qq(r.ppCom)}${!r.pasado && r.proy!=null?` · si cerrás como vas (${pct(r.proy)}), por la meta: ${qq(comision(r.proy))}`:""}</small></div>
     <div class="esc">${r.escalones.map(e=>`<div class="es${e.logrado?" logrado":""}"><div class="p">${fmtN(e.t)}%</div>
       <div><div class="es-t">Te pagan ${qq(e.paga,0)}${e.t===cfg("bonoEn")&&cfg("bono")?` <em>(incluye bono ${qq(cfg("bono"),0)})</em>`:""}${e.logrado?" · ✓ logrado":""}</div>
       <div class="es-d">${e.logrado?"Ya llegaste 🎉":`Te faltan ${qq(e.faltaQ,0)} con IVA (${usd(e.faltaUSD,0)})${porDia(e.faltaQ)}`}</div></div></div>`).join("")}</div>
-    <div class="nota">Antes del ${fmtN(cfg("desde"))}% no se comisiona por la meta; del ${fmtN(cfg("desde"))}% al 100% es proporcional (90% = ${qq(comision(90),0)}).</div>`+ppTxt;
+    <div class="nota">Antes del ${fmtN(cfg("desde"))}% no se comisiona por la meta; del ${fmtN(cfg("desde"))}% al 100% es proporcional (90% = ${qq(comision(90),0)}).</div>`;
 }
 function pintarSemanas(r){
   const meta=r.meta, mSem=meta&&meta.meta>0 ? meta.meta/4 : 0;
@@ -728,7 +906,8 @@ function render(soloDatos){
   const r=calcular(mes), mHoy=mesDe(hoyISO());
   $("mesTxt").textContent=mayus(nombreMes(mes));
   $("mesSig").disabled = mes>=mHoy;
-  $("sub").textContent=(cfg("nombre")?cfg("nombre")+" · ":"")+"BCE · Oakland Mall";
+  $("sub").textContent=(nombreActual()?nombreActual()+" · ":"")+"BCE · Oakland Mall";
+  pintarAsbar();
   $("resumen").innerHTML=pintarResumen(r);
   $("comCard").innerHTML=pintarComision(r);
   $("semCard").innerHTML=pintarSemanas(r);
@@ -744,7 +923,7 @@ function abrirMetas(){
   $("mCats").innerHTML=CATS.map(c=>`<label>${c.n}<input id="m_${c.k}" inputmode="numeric" value="${mt[c.k]??""}"></label>`).join("");
   $("m_meta").value=mt.meta??""; $("m_pp").value=mt.pp??"";
   ["base","desde","bono","bonoEn","ppc","tc","iva"].forEach(k=>{ $("m_"+k).value=cfg(k); });
-  $("m_nombre").value=cfg("nombre");
+  $("mNombre").textContent=nombreActual();
   abrir("metasModal");
 }
 function guardarMetas(){
@@ -755,7 +934,6 @@ function guardarMetas(){
   const mt={meta:v("m_meta"), pp:v("m_pp")||0}; CATS.forEach(c=>{ mt[c.k]=Math.round(v("m_"+c.k)||0); });
   nuevo["meta:"+mes]=mt;
   ["base","desde","bono","bonoEn","ppc","tc","iva"].forEach(k=>{ const x=v("m_"+k); if(x!=null) nuevo[k]=x; });
-  nuevo.nombre=S($("m_nombre").value);
   const limpio=limpiarAj(nuevo), cambiados=new Set([...Object.keys(limpio), ...Object.keys(aj)].filter(k=>estable(limpio[k])!==estable(aj[k])));
   aj=limpio; guardarLocal(); subir("ajustes",[...cambiados]); cerrar("metasModal"); render(); toast("✔ Metas guardadas");
 }
@@ -805,6 +983,7 @@ $("mGuardar").addEventListener("click", guardarMetas);
 $("btnReporte").addEventListener("click", abrirReporte);
 $("rGuardar").addEventListener("click", guardarReporte);
 $("rQuitar").addEventListener("click", quitarReporte);
+$("asAgregar").addEventListener("click", agregarAsesor);
 document.addEventListener("keydown", e=>{ if(e.key==="Escape") document.querySelectorAll(".modal-ov.show").forEach(m=>m.classList.remove("show")); });
 // el link también puede llegar estando ya abierto el apartado
 window.addEventListener("hashchange", ()=>{ leerCargaDelLink(); if(listo) ponerListoDeNuevo(); });
@@ -815,6 +994,9 @@ window.addEventListener("pagehide", subirPendientes);
 document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="hidden") subirPendientes(); if(document.visibilityState==="visible" && hoyISO()!==diaVisto){ const antes=diaVisto; diaVisto=hoyISO(); if(fFecha===antes){ fFecha=diaVisto; mes=mesDe(diaVisto); } render(); } });
 
 // ---------- inicio ----------
+try{ asMap=limpiarAsesores(JSON.parse(localStorage.getItem(LS_AS)||"{}")); }catch(e){ asMap={}; }
+try{ const a=localStorage.getItem(LS_ACT); if(a && asMap[a] && !asMap[a].b) actual=a; }catch(e){}
+if(!asesor(actual)) actual=(lista()[0]||{id:"p"}).id;
 cargarLocal();
 mes=mesDe(hoyISO()); fFecha=hoyISO();
 leerCargaDelLink();
