@@ -110,6 +110,7 @@
   .money input{flex:1;min-width:0;width:100%;border:none;outline:none;padding:11px 12px 11px 2px;font-size:18px;font-weight:800;background:transparent}
   .money:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
   .eq{display:block;font-size:12.5px;color:var(--muted);font-weight:700;margin-top:4px;min-height:18px}
+  .eq b{color:var(--ink-2)}
   .pp{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:end}
   .pp .money input{font-size:16px}
   .pp-l{font-size:11.5px;color:var(--muted);font-weight:800;margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px}
@@ -281,16 +282,16 @@
     <div class="modal-b">
       <h4>Meta de <span id="mMes"></span></h4>
       <div class="fg">
-        <label>Meta del mes ($)<input id="m_meta" inputmode="decimal"></label>
-        <label>Protection Plus (% meta)<input id="m_pp" inputmode="decimal"></label>
+        <label>Meta del mes ($ sin IVA)<input id="m_meta" inputmode="decimal"></label>
+        <label>Meta Protection Plus (% de los drones)<input id="m_pp" inputmode="decimal"></label>
       </div>
       <h4>Unidades por semana</h4>
       <div class="fg" id="mCats"></div>
       <h4>Comisión</h4>
       <div class="fg">
-        <label>Al 100% te pagan (Q)<input id="m_base" inputmode="decimal"></label>
+        <label>Al llegar al 100% te pagan (Q)<input id="m_base" inputmode="decimal"></label>
         <label>Empezás a comisionar al (%)<input id="m_desde" inputmode="decimal"></label>
-        <label>Bono (Q)<input id="m_bono" inputmode="decimal"></label>
+        <label>Bono adicional (Q)<input id="m_bono" inputmode="decimal"></label>
         <label>El bono es al (%)<input id="m_bonoEn" inputmode="decimal"></label>
         <label>Protection Plus (% sin IVA)<input id="m_ppc" inputmode="decimal"></label>
       </div>
@@ -343,7 +344,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261029b"></script>
+<script src="../nube.js?v=20261030a"></script>
 <script>
 /* ============================================================
    Mis ventas — avance contra la meta del mes, unidades por semana
@@ -406,7 +407,8 @@ function cerrar(id){ $(id).classList.remove("show"); }
 // ---------- reglas ----------
 const cfg = k => (aj[k]!==undefined ? aj[k] : DEF[k]);
 const factorIva = () => 1 + cfg("iva")/100;
-const aUSD = q => q / factorIva() / (cfg("tc") || 1);              // Q con IVA -> $ sin IVA
+const sinIva = q => q / factorIva();                                // quitarle el IVA
+const aUSD = q => sinIva(q) / (cfg("tc") || 1);                     // Q con IVA -> sin IVA -> $
 const aQconIva = d => d * factorIva() * cfg("tc");                 // $ sin IVA -> Q con IVA
 // la meta del mes (si el mes no tiene, la del último mes que tenga)
 function metaDe(m){
@@ -415,8 +417,9 @@ function metaDe(m){
   return k ? aj[k] : null;
 }
 // lo que paga la meta: nada antes del 85 %, proporcional hasta el 100 %, y el bono al 110 %
+const limpioPct = p => Math.round(p*1e6)/1e6;     // sin el ruido de los decimales (84.9999999 % es 85 %)
 function comision(p){
-  const b=cfg("base"), bo=cfg("bono");
+  const b=cfg("base"), bo=cfg("bono"); p=limpioPct(p);
   if(p < cfg("desde")) return 0;
   if(p >= cfg("bonoEn")) return b + bo;
   if(p >= 100) return b;
@@ -453,14 +456,14 @@ function calcular(m){
   const ppN = sem.reduce((s,w)=>s+w.ppn,0);
   const r = {N, meta, rep, sem, usdMes, ppQ, ppN, ultimo, quedan, futuro, pasado};
   if(meta && meta.meta>0){
-    r.p = usdMes/meta.meta*100;
-    r.pendUSD = Math.max(meta.meta-usdMes,0) * factorIva();          // como el reporte: lo que falta, con IVA
-    r.pendQ = r.pendUSD * cfg("tc");
-    r.diaUSD = quedan>0 ? r.pendUSD/quedan : null;
-    r.diaQ = r.diaUSD!=null ? r.diaUSD*cfg("tc") : null;
+    r.p = limpioPct(usdMes/meta.meta*100);
+    r.pendSin = Math.max(Math.round((meta.meta-usdMes)*100)/100,0);  // lo que falta, en dólares sin IVA
+    r.pendQ = aQconIva(r.pendSin);                                   // lo que hay que vender en quetzales con IVA
+    r.diaSin = quedan>0 ? r.pendSin/quedan : null;
+    r.diaQ = r.diaSin!=null ? aQconIva(r.diaSin) : null;
     r.proy = pasado ? r.p : (ultimo>0 ? usdMes/ultimo*N/meta.meta*100 : null);
     r.escalones = [cfg("desde"), 100].concat(cfg("bono")>0 ? [cfg("bonoEn")] : []).map(t=>{
-      const faltaUSD=Math.max(t/100*meta.meta-usdMes,0);
+      const faltaUSD=Math.max(Math.round((t/100*meta.meta-usdMes)*100)/100,0);
       return {t, paga:comision(t), faltaUSD, faltaQ:aQconIva(faltaUSD), logrado:r.p>=t};
     });
   }
@@ -808,8 +811,8 @@ function actualizarForm(r){
 }
 function pintarEquivalentes(){
   const q=dinero($("fQ").value)||0, pp=dinero($("fPP").value)||0;
-  $("fQeq").textContent = q ? `= ${usd(aUSD(q))} sin IVA para la meta` : "";
-  $("fPPeq").textContent = pp ? `Comisión de Protection Plus: ${qq(pp/factorIva()*cfg("ppc")/100)} (${fmtN(cfg("ppc"),1)}% sin IVA)` : "";
+  $("fQeq").innerHTML = q ? `${qq(q)} con IVA → sin IVA <b>${qq(sinIva(q))}</b> → en dólares <b>${usd(aUSD(q))}</b> para la meta` : "";
+  $("fPPeq").innerHTML = pp ? `${qq(pp)} con IVA → sin IVA ${qq(sinIva(pp))} × ${fmtN(cfg("ppc"),1)}% = <b>${qq(sinIva(pp)*cfg("ppc")/100)}</b> de comisión` : "";
 }
 function irAFecha(f){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(f||"")) return;
@@ -842,23 +845,25 @@ function pintarResumen(r){
     <div class="h-row">
       <div><div class="h-l">Avance de ${esc(nombreMes(mes))}${nombreActual()?" · "+esc(nombreActual()):""}</div>
         <div class="h-n">${usd(r.usdMes)} <small>de ${usd(meta.meta)}</small></div>
-        <div class="h-s">≈ ${qq(aQconIva(r.usdMes))} con IVA${r.rep?` · reporte al ${ymdCorto(r.rep.hasta)}`:""}</div></div>
+        <div class="h-s">en dólares sin IVA · en quetzales con IVA: ${qq(aQconIva(r.usdMes))}${r.rep?` · reporte al ${ymdCorto(r.rep.hasta)}`:""}</div></div>
       <div class="h-p"><b>${pct(r.p)}</b><span>de la meta</span></div>
     </div>
     <div class="barra"><i class="${clase}" style="width:${ancho}%"></i>${marcas}</div>
     <div class="h-stats">
-      <div><span>Pendiente</span><b>${usd(r.pendUSD)}</b><small>${qq(r.pendQ)} · con IVA</small></div>
-      <div><span>Meta del día</span>${r.diaQ!=null?`<b>${qq(r.diaQ)}</b><small>${usd(r.diaUSD)} · ${rangoQuedan}</small>`:`<b>—</b><small>${r.futuro?"el mes no ha empezado":"se terminó el mes"}</small>`}</div>
+      <div><span>Te falta</span><b>${usd(r.pendSin)}</b><small>sin IVA · en quetzales con IVA: ${qq(r.pendQ)}</small></div>
+      <div><span>Meta del día</span>${r.diaQ!=null?`<b>${qq(r.diaQ)}</b><small>con IVA · ${usd(r.diaSin)} sin IVA · ${rangoQuedan}</small>`:`<b>—</b><small>${r.futuro?"el mes no ha empezado":"se terminó el mes"}</small>`}</div>
       <div class="${tono(r.proy)}"><span>Proyección</span>${r.proy!=null?`<b>${pct(r.proy)}</b><small>${r.pasado?"así cerró el mes":`al ritmo de ${r.ultimo} ${r.ultimo===1?"día":"días"}`}${!r.pasado && cfg("base")?` · meta ≈ ${qq(comision(r.proy),0)}`:""}</small>`:`<b>—</b><small>sin ventas todavía</small>`}</div>
       <div class="com ${total>0?"bien":""}"><span>Comisión${r.pasado?" del mes":""}</span><b>${qq(total)}</b>
-        <div class="desg"><div>🎯 Por la meta <b>${qq(comAct)}</b></div><div>🛡️ Por protecciones <b>${qq(r.ppCom)}</b></div></div></div>
+        <div class="desg"><div>🎯 Por la meta <b>${cfg("base")?qq(comAct):"falta en ⚙️ Metas"}</b></div><div>🛡️ Por protecciones <b>${qq(r.ppCom)}</b></div></div></div>
     </div>
   </section>`;
 }
 function pintarComision(r){
   const meta=r.meta, h=`<div class="card-h"><b>💵 Comisión de ${esc(nombreActual())} · ${esc(nombreMes(mes))}</b></div>`;
-  const ppBox=`<div class="cbox prot"><span>🛡️ Por protecciones</span><b>${qq(r.ppCom)}</b><small>${qq(r.ppQ)} de Protection Plus${r.ppN?` (${r.ppN})`:""} · ${fmtN(cfg("ppc"),1)}% sin IVA. Se paga aunque no llegués a la meta.</small></div>`;
-  if(!meta || !(meta.meta>0) || !cfg("base")) return h+`<div class="com2"><div class="cbox"><span>🎯 Por la meta</span><b>—</b><small>Poné la meta y cuánto te pagan en ⚙️ Metas.</small></div>${ppBox}</div>`;
+  const ppBox=`<div class="cbox prot"><span>🛡️ Por protecciones</span><b>${qq(r.ppCom)}</b><small>${r.ppQ?`${qq(r.ppQ)} con IVA${r.ppN?` (${r.ppN})`:""} → sin IVA ${qq(sinIva(r.ppQ))} × ${fmtN(cfg("ppc"),1)}%`:`${fmtN(cfg("ppc"),1)}% de lo vendido sin IVA`}. Se paga aunque no llegués a la meta.</small></div>`;
+  const como=`<div class="nota">📐 Así se calcula: lo vendido en quetzales con IVA ÷ ${fmtN(factorIva(),2)} (se le quita el IVA) ÷ ${fmtN(cfg("tc"),2)} = dólares para la meta. Protection Plus: quetzales con IVA ÷ ${fmtN(factorIva(),2)} × ${fmtN(cfg("ppc"),1)}%.</div>`;
+  if(!meta || !(meta.meta>0)) return h+`<div class="com2"><div class="cbox"><span>🎯 Por la meta</span><b>—</b><small>Poné la meta en ⚙️ Metas.</small></div>${ppBox}</div>`+como;
+  if(!cfg("base")) return h+`<div class="com2"><div class="cbox"><span>🎯 Por la meta</span><b>—</b><small>⚠️ Falta poner cuánto te pagan al llegar al 100%: tocá ⚙️ Metas.</small></div>${ppBox}</div>`+como;
   const comAct=comision(r.p), total=comAct+r.ppCom;
   const porDia = v => r.quedan>0 ? ` · ≈ ${qq(v/r.quedan,0)} por día` : "";
   const metaSub = comAct>0 ? `Llegaste al ${pct(r.p)} de la meta${r.p>=cfg("bonoEn")&&cfg("bono")?` (incluye bono ${qq(cfg("bono"),0)})`:""}` : `Vas en ${pct(r.p)}: se gana desde el ${fmtN(cfg("desde"))}%`;
@@ -867,8 +872,8 @@ function pintarComision(r){
       <small>Meta ${qq(comAct)} + protecciones ${qq(r.ppCom)}${!r.pasado && r.proy!=null?` · si cerrás como vas (${pct(r.proy)}), por la meta: ${qq(comision(r.proy))}`:""}</small></div>
     <div class="esc">${r.escalones.map(e=>`<div class="es${e.logrado?" logrado":""}"><div class="p">${fmtN(e.t)}%</div>
       <div><div class="es-t">Te pagan ${qq(e.paga,0)}${e.t===cfg("bonoEn")&&cfg("bono")?` <em>(incluye bono ${qq(cfg("bono"),0)})</em>`:""}${e.logrado?" · ✓ logrado":""}</div>
-      <div class="es-d">${e.logrado?"Ya llegaste 🎉":`Te faltan ${qq(e.faltaQ,0)} con IVA (${usd(e.faltaUSD,0)})${porDia(e.faltaQ)}`}</div></div></div>`).join("")}</div>
-    <div class="nota">Antes del ${fmtN(cfg("desde"))}% no se comisiona por la meta; del ${fmtN(cfg("desde"))}% al 100% es proporcional (90% = ${qq(comision(90),0)}).</div>`;
+      <div class="es-d">${e.logrado?"Ya llegaste 🎉":`Te faltan ${qq(e.faltaQ,0)} con IVA (${usd(e.faltaUSD,0)} sin IVA)${porDia(e.faltaQ)}`}</div></div></div>`).join("")}</div>
+    <div class="nota">Antes del ${fmtN(cfg("desde"))}% no se comisiona por la meta; del ${fmtN(cfg("desde"))}% al 100% es proporcional (90% = ${qq(comision(90),0)}).</div>`+como;
 }
 function pintarSemanas(r){
   const meta=r.meta, mSem=meta&&meta.meta>0 ? meta.meta/4 : 0;
@@ -883,7 +888,7 @@ function pintarSemanas(r){
       const p=w.u.dr ? w.ppn/w.u.dr*100 : null;
       return celda(w, p??0, meta&&meta.pp&&p!=null?meta.pp:0, w.ppn, p!=null?fmtN(p)+"% de drones":"");
     }).join("")}</tr>`;
-  const filaV=`<tr class="tot"><th>Ventas</th><td class="meta">${mSem?usd(mSem):"—"}</td>${r.sem.map(w=>w.hayUSD ? celda(w, w.usd, mSem, usd(w.usd), mSem?fmtN(w.usd/mSem*100)+"%":"") : `<td class="nada">—</td>`).join("")}</tr>`;
+  const filaV=`<tr class="tot"><th>Ventas<small style="display:block;font-size:11px;color:var(--muted)">$ sin IVA</small></th><td class="meta">${mSem?usd(mSem):"—"}</td>${r.sem.map(w=>w.hayUSD ? celda(w, w.usd, mSem, usd(w.usd), mSem?fmtN(w.usd/mSem*100)+"%":"") : `<td class="nada">—</td>`).join("")}</tr>`;
   return `<div class="card-h"><b>📊 Por semana</b><span class="nota der" style="margin:0">Las unidades son las que vos ponés cada día</span></div>
     <div class="tabla"><table class="sem"><thead><tr><th></th><th>Metas</th>${r.sem.map(w=>`<th class="${w.estado==="actual"?"ahora":""}">Semana ${w.i+1}<small>${w.a}–${w.b}</small></th>`).join("")}</tr></thead>
     <tbody>${filaV}${CATS.map(filaU).join("")}${filaPP}</tbody></table></div>`;
@@ -894,7 +899,7 @@ function pintarDias(r){
     const d=dias[f], enRep=r.rep && f<=r.rep.hasta;
     const tags=CATS.filter(c=>d.u[c.k]).map(c=>`<span class="tag">${d.u[c.k]} ${d.u[c.k]===1?c.uno:c.n.toLowerCase()}</span>`).join("")+(d.ppn||d.pp?`<span class="tag pp">🛡️ ${d.ppn||0} PP${d.pp?" · "+qq(d.pp,0):""}</span>`:"");
     return `<button type="button" class="dia${f===fFecha?" sel":""}" onclick="irAFecha('${f}');document.getElementById('formCard').scrollIntoView({behavior:'smooth',block:'start'})">
-      <span class="f">${esc(diaCorto(f))}</span><span class="q">${d.q?qq(d.q):"—"}${d.q?` <small>${enRep?"(ya en el reporte)":usd(aUSD(d.q))}</small>`:""}</span><span class="u">${tags}</span></button>`;
+      <span class="f">${esc(diaCorto(f))}</span><span class="q">${d.q?qq(d.q):"—"}${d.q?` <small>${enRep?"(ya en el reporte)":"→ "+usd(aUSD(d.q))+" sin IVA"}</small>`:""}</span><span class="u">${tags}</span></button>`;
   });
   if(r.rep){
     const sem=r.rep.sem.map((s,i)=>s!=null?`S${i+1} ${usd(s,0)}`:"").filter(Boolean).join(" · ");
