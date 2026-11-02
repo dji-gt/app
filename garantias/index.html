@@ -192,6 +192,25 @@
   .odsb{display:inline-flex;align-items:center;gap:6px;margin-top:10px;border:1.5px solid var(--violet-br);background:var(--violet-bg);color:#5b21b6;border-radius:10px;padding:7px 12px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit}
   .odsb:hover{background:#ebe2fd;border-color:#c9b6f8}
   .odsb small{font-size:12px;font-weight:700;color:#6d28d9}
+  .gc-btns{display:flex;gap:8px;flex-wrap:wrap}
+  .solb{display:inline-flex;align-items:center;gap:6px;margin-top:10px;border:1.5px solid #f0d9a8;background:#fdf6e6;color:#8a5b12;border-radius:10px;padding:7px 12px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit}
+  .solb:hover{background:#fbeccc}
+  .solb small{font-size:12px;font-weight:700;opacity:.85}
+  .solb.ok{border-color:#bfe9d7;background:#e7f7f0;color:#0b7a53}
+  .solb.ok:hover{background:#d8f2e6}
+  .resb{font-size:12px;font-weight:800;color:#0b7a53;background:#e7f7f0;border:1px solid #bfe9d7;border-radius:20px;padding:3px 9px;white-space:nowrap}
+  .gc.resuelto{box-shadow:inset 4px 0 0 #0e9f6e, var(--shadow-sm, 0 1px 2px rgba(16,24,40,.06))}
+  .resopc{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .resopc button{border:2px solid var(--line);background:#fff;border-radius:12px;padding:10px 8px;cursor:pointer;font-family:inherit;text-align:center;color:var(--ink-2)}
+  .resopc button i{display:block;font-style:normal;font-size:20px}
+  .resopc button b{display:block;font-size:13.5px;margin-top:2px}
+  .resopc button small{display:block;font-size:11.5px;color:var(--muted);font-weight:600;margin-top:1px}
+  .resopc button[aria-pressed="true"]{border-color:#0e9f6e;background:#e7f7f0;color:#0b7a53}
+  .resbox{margin-top:14px;border:1.5px dashed var(--line);border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .resbox.ok{border-style:solid;border-color:#bfe9d7;background:#e7f7f0}
+  .resbox span{flex:1;min-width:180px;font-size:13.5px;font-weight:700;color:var(--ink-2)}
+  .resbox.ok span{color:#0b7a53}
+  @media(max-width:520px){ .resopc{grid-template-columns:1fr} .resopc button{display:flex;align-items:center;gap:10px;text-align:left} .resopc button i{font-size:22px} }
   .f-hint{margin-top:10px;font-size:13px;color:#5b21b6;background:var(--violet-bg);border:1px solid var(--violet-br);border-radius:10px;padding:9px 12px;font-weight:600;line-height:1.4}
   .f-hint.tl{color:var(--teal);background:var(--teal-bg);border-color:var(--teal-br)}
   .status .st-act{margin-left:auto;flex:none}
@@ -362,6 +381,35 @@
   </div>
 </div>
 <!-- ===== Modal: orden de servicio (el Word "Recepción de Producto") ===== -->
+<div class="modal-ov" id="solModal">
+  <div class="modal ancho">
+    <div class="modal-h"><b>📝 Solución <span class="num" id="solNum"></span></b><button class="modal-x" onclick="cerrarSol()" title="Cerrar">✕</button></div>
+    <div class="ods-body">
+      <div class="ods-form">
+        <p class="ods-hint">Anotá qué se le hizo al equipo y cómo se entregó. Se puede editar cuando quieran; la boleta sale con lo que diga aquí.</p>
+        <label class="fl">¿Qué se hizo?</label>
+        <div class="resopc" id="sRes">
+          <button type="button" data-v="solucionado" aria-pressed="false"><i>🔧</i><b>Solucionado</b><small>Se reparó / se arregló</small></button>
+          <button type="button" data-v="cambiado" aria-pressed="false"><i>🔄</i><b>Cambiado</b><small>Se cambió por uno nuevo</small></button>
+          <button type="button" data-v="entregado" aria-pressed="false"><i>🤝</i><b>Entregado</b><small>Se entregó sin cambios</small></button>
+        </div>
+        <div id="sSerieBox" hidden><label class="fl" for="sSerie">S/N del equipo nuevo <i>(opcional)</i></label><input class="in up" id="sSerie" autocomplete="off" spellcheck="false"></div>
+        <label class="fl" for="sDesc">Descripción de la solución</label>
+        <textarea class="in" id="sDesc" rows="5" placeholder="Ej: Se cambió el gimbal. Se probó el vuelo y la cámara, todo funciona bien."></textarea>
+        <label class="fl" for="sFecha">Fecha de entrega</label>
+        <input class="in" id="sFecha" type="date">
+        <div class="resbox" id="sResBox"><span id="sResTxt"></span><button type="button" class="btn sm" id="sResBtn"></button></div>
+      </div>
+      <div class="ods-prev"><span class="fl">Así sale la boleta <i>(en papel van 2 copias iguales)</i></span><div class="hoja"><canvas id="solVista" width="10" height="10"></canvas></div></div>
+    </div>
+    <div class="ods-acts">
+      <span id="solGuardado">Se guarda solo al cerrar o imprimir</span>
+      <button class="btn ghost" onclick="cerrarSol()">Listo</button>
+      <button class="btn primary" id="solImp">🖨️ Imprimir boleta de solución</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-ov" id="odsModal">
   <div class="modal ancho">
     <div class="modal-h"><b>📄 Orden de servicio <span class="num" id="odsNum"></span></b><button class="modal-x" onclick="cerrarOds()" title="Cerrar">✕</button></div>
@@ -406,10 +454,10 @@
 <input type="file" id="archivo" accept=".json,application/json" hidden>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261030b"></script>
+<script src="../nube.js?v=20261102a"></script>
 <script src="../recepcion/lib/exceljs.min.js"></script>
-<script src="../recepcion/catalog.js?v=20261030b"></script>
-<script src="orden-servicio.js?v=20261030b"></script>
+<script src="../recepcion/catalog.js?v=20261102a"></script>
+<script src="orden-servicio.js?v=20261102a"></script>
 <script>
 /* ============================================================
    Garantías y Protection Plus — clientes que dejan (o van a
@@ -561,6 +609,69 @@ async function conectarOds(){
   });
 }
 
+// ---------- solución: qué se hizo, descripción, fecha de entrega y si quedó resuelto ----------
+// En su propia colección ("soluciones", una por ingreso), como la orden de servicio:
+// así una computadora con la versión anterior abierta no las borra.
+const LS_SOL = "garantias_dji_soluciones_v1";   // {idIngreso: {res, desc, serieNueva, fecha, resuelto, resueltoEn, actualizado}}
+const RESULTADOS = [
+  {k:"solucionado", l:"Solucionado", ic:"🔧"},
+  {k:"cambiado",    l:"Cambiado",    ic:"🔄"},
+  {k:"entregado",   l:"Entregado",   ic:"🤝"}
+];
+const resDe = k => RESULTADOS.find(x=>x.k===k);
+let solDatos = {}, nubeSol = null, solSinSubir = false;
+function limpiarSol(x){
+  if(!x || typeof x!=="object") return null;
+  const S=v=>String(v??"").trim(), f=S(x.fecha);
+  const o={res:resDe(x.res)?x.res:"", desc:S(x.desc).slice(0,3000), serieNueva:S(x.serieNueva).toUpperCase().slice(0,60), fecha:/^\d{4}-\d{2}-\d{2}$/.test(f)?f:"", resuelto:!!x.resuelto};
+  if(o.resuelto && x.resueltoEn) o.resueltoEn=S(x.resueltoEn);
+  if(x.actualizado) o.actualizado=S(x.actualizado);
+  return o;
+}
+function limpiarMapaSol(m){ const out={}; for(const id in (m||{})){ const o=limpiarSol(m[id]); if(o) out[id]=o; } return out; }
+function cargarSol(){ try{ solDatos=limpiarMapaSol(JSON.parse(localStorage.getItem(LS_SOL)||"{}")); }catch(e){ solDatos={}; } }
+function guardarSolLocal(){ try{ localStorage.setItem(LS_SOL,JSON.stringify(solDatos)); }catch(e){ toast("⚠️ No se pudo guardar en este navegador"); } }
+const solDe = id => solDatos[id] || {};
+const CAMPOS_SOL = ["res","desc","serieNueva","fecha","resuelto"];
+function subirSol(){
+  if(!window.Nube || !Nube.conectado()) return;
+  if(nubeSol===null){ solSinSubir=true; return; }
+  Nube.guardarColeccion("soluciones", solDatos, nubeSol);
+}
+function setSol(id, campos){
+  const prev=solDatos[id], nuevo=limpiarSol(Object.assign({}, prev||{}, campos));
+  if(prev ? CAMPOS_SOL.every(k=>(prev[k]??null)===(nuevo[k]??null)) : (!nuevo.res && !nuevo.desc && !nuevo.serieNueva && !nuevo.resuelto)) return false;
+  if(nuevo.resuelto && !nuevo.resueltoEn) nuevo.resueltoEn=new Date().toISOString();
+  if(!nuevo.resuelto) delete nuevo.resueltoEn;
+  nuevo.actualizado=new Date().toISOString();
+  solDatos[id]=nuevo; guardarSolLocal(); subirSol();
+  return true;
+}
+function borrarSol(id){ if(!solDatos[id]) return; delete solDatos[id]; guardarSolLocal(); subirSol(); }
+function unirSol(nube, locales){
+  const out=limpiarMapaSol(nube);
+  for(const id in locales){ const l=locales[id], c=out[id]; if(!c || (l.actualizado||"")>(c.actualizado||"")) out[id]=l; }
+  return out;
+}
+async function conectarSol(){
+  const unido=await Nube.unirUnaVez("soluciones", async ()=>{
+    const nube=await Nube.leerColeccion("soluciones");
+    await Nube.guardarColeccion("soluciones", unirSol(nube, solDatos), nube);
+  });
+  if(!unido && localStorage.getItem("dji_nube_unido_soluciones")!==Nube.clave()){
+    addEventListener("online", ()=>conectarSol(), {once:true});
+    return;
+  }
+  Nube.escucharColeccion("soluciones",(mapa)=>{
+    let m=limpiarMapaSol(mapa);
+    nubeSol=mapa;
+    if(solSinSubir){ solSinSubir=false; m=unirSol(mapa, solDatos); Nube.guardarColeccion("soluciones", m, mapa); }
+    if(Nube.estable(m)===Nube.estable(solDatos)) return;
+    solDatos=m; guardarSolLocal(); render();
+    if(solId && !solSucio()) llenarSol();
+  });
+}
+
 // ---------- nube (todas las computadoras conectadas ven lo mismo) ----------
 let nubeReg=null, cambiosSinSubir=false;
 const mapaRegistros = lista => { const m={}; lista.forEach(r=>{ m[r.id]=r; }); return m; };
@@ -584,6 +695,7 @@ async function conectarNube(){
   $("respaldoTxt").textContent="Los ingresos ya se guardan en la nube y los ven todas las computadoras conectadas. El respaldo sirve para tener una copia en un archivo.";
   if(!await Nube.iniciar()) return;
   conectarOds();
+  conectarSol();
   conectarTaller();
   const unido=await Nube.unirUnaVez("garantias", async ()=>{
     const nube=await Nube.leerColeccion("garantias");
@@ -820,7 +932,8 @@ function borrarIngreso(id){
   datos.registros=datos.registros.filter(x=>x.id!==id);
   if(editId===id) limpiarForm();
   if(odsId===id) cerrarOds(true);
-  guardar(); borrarOds(id); render(); renderDatalist(); toast("Ingreso borrado");
+  if(solId===id) cerrarSol(true);
+  guardar(); borrarOds(id); borrarSol(id); render(); renderDatalist(); toast("Ingreso borrado");
 }
 function setPaso(id,k){
   const r=datos.registros.find(x=>x.id===id); if(!r || r.estado===k) return;
@@ -834,7 +947,8 @@ function setPaso(id,k){
 // ============================================================
 function pasaEstado(r,f){
   if(f==="todos") return true;
-  if(f==="activos") return r.estado!=="entregado";
+  if(f==="activos") return r.estado!=="entregado" && !solDe(r.id).resuelto;
+  if(f==="resueltos") return !!solDe(r.id).resuelto;
   return r.estado===f;
 }
 function filtrados(sinEstado){
@@ -843,8 +957,8 @@ function filtrados(sinEstado){
     if(!sinEstado && !pasaEstado(r,filtro)) return false;
     if(filtroTipo && r.tipo!==filtroTipo) return false;
     if(qs.length){
-      const o=odsDe(r.id);
-      const k=fold([r.nombre,r.producto,r.serie,r.motivo,r.registro,r.nota,r.accesorios,r.factura,numTxt(r.numero),tipoDe(r.tipo).l,o.nit,o.ods,o.cot].join(" "))+" "+soloDigitos(r.telefono);
+      const o=odsDe(r.id), sl=solDe(r.id);
+      const k=fold([r.nombre,r.producto,r.serie,r.motivo,r.registro,r.nota,r.accesorios,r.factura,numTxt(r.numero),tipoDe(r.tipo).l,o.nit,o.ods,o.cot,sl.desc,sl.serieNueva,sl.res&&resDe(sl.res).l,sl.resuelto?"resuelto":""].join(" "))+" "+soloDigitos(r.telefono);
       if(!qs.every(q=>k.includes(q))) return false;
     }
     return true;
@@ -880,22 +994,22 @@ function render(){
   if(filtroTipo==="taller") return renderTaller();
 
   const base=filtrados(true);
-  const chips=[["activos","Pendientes"],...PASOS.map(p=>[p.k,p.c]),["todos","Todos"]];
+  const chips=[["activos","Pendientes"],...PASOS.map(p=>[p.k,p.c]),["resueltos","✅ Resueltos"],["todos","Todos"]];
   $("chipsEstado").innerHTML=chips.map(([k,l])=>`<button class="chip" aria-pressed="${filtro===k}" onclick="setFiltro('${k}')">${l} <span class="n">${base.filter(r=>pasaEstado(r,k)).length}</span></button>`).join("");
 
   let L=filtrados();
   if(filtro==="cita") L.sort((a,b)=>(a.cita||"9").localeCompare(b.cita||"9")||a.numero-b.numero);
   else L.sort((a,b)=>b.numero-a.numero||b.fecha.localeCompare(a.fecha));
   const hayFiltro=filtro!=="activos"||filtroTipo||query;
-  $("listTitle").textContent=filtro==="activos"?"Pendientes":(filtro==="todos"?"Todos los ingresos":pasoDe(filtro).l);
+  $("listTitle").textContent=filtro==="activos"?"Pendientes":(filtro==="todos"?"Todos los ingresos":(filtro==="resueltos"?"Resueltos":pasoDe(filtro).l));
   $("listCount").textContent=hayFiltro?`${L.length} de ${R.length}`:plural(L.length,"ingreso","ingresos");
   if(!R.length){ $("list").innerHTML=`<div class="empty"><b>Todavía no hay ingresos</b>Cuando alguien deje (o vaya a dejar) su equipo por garantía o Protection Plus, anotalo con el formulario.</div>`; return; }
   if(!L.length){ $("list").innerHTML=`<div class="empty"><b>No hay ingresos aquí</b><button class="btn ghost sm" style="margin-top:10px" onclick="quitarFiltros()">Ver todos</button></div>`; return; }
   $("list").innerHTML=L.map(r=>{
-    const t=tipoDe(r.tipo), iAct=PASOS.findIndex(p=>p.k===r.estado);
+    const t=tipoDe(r.tipo), iAct=PASOS.findIndex(p=>p.k===r.estado), sl=solDe(r.id);
     const compra=[r.compra?"comprado el "+ymdCorto(r.compra):"", r.factura?"factura "+esc(r.factura):""].filter(Boolean).join(" · ");
-    return `<div class="gc e-${r.estado}">
-      <div class="gc-top"><span class="tipo ${t.k}">${t.ic} ${t.l}</span><span class="num">${numTxt(r.numero)}</span>${htmlCita(r)}
+    return `<div class="gc e-${r.estado}${sl.resuelto?" resuelto":""}">
+      <div class="gc-top"><span class="tipo ${t.k}">${t.ic} ${t.l}</span><span class="num">${numTxt(r.numero)}</span>${sl.resuelto?`<span class="resb">✅ Resuelto</span>`:""}${htmlCita(r)}
         <div class="gc-acts"><button class="ib" onclick="imprimirBoleta(${jsq(r.id)})" title="Imprimir boleta">${IC_PRINT}</button><button class="ib" onclick="editarIngreso(${jsq(r.id)})" title="Editar">${IC_EDIT}</button><button class="ib del" onclick="borrarIngreso(${jsq(r.id)})" title="Borrar">${IC_DEL}</button></div></div>
       <div class="gc-prod">${esc(r.producto)}${r.serie?`<span>S/N ${esc(r.serie)}</span>`:""}</div>
       <div class="gc-who"><b>${esc(r.nombre)}</b><a class="tel" href="tel:${esc(soloDigitos(r.telefono))}">${esc(telBonito(r.telefono))}</a>
@@ -906,7 +1020,11 @@ function render(){
         ${r.nota?`<div><b>Notas:</b> ${esc(r.nota)}</div>`:""}
         ${compra?`<div><b>Compra:</b> ${compra}</div>`:""}
       </div>
-      <button class="odsb" onclick="abrirOds(${jsq(r.id)})" title="Ver, completar e imprimir la orden de servicio">📄 Orden de servicio${odsDe(r.id).ods?` <small>· ODS# ${esc(odsDe(r.id).ods)}</small>`:""}</button>
+      ${sl.res||sl.desc?`<div class="gc-info"><div><b>Solución:</b> ${sl.res?resDe(sl.res).ic+" "+esc(resDe(sl.res).l):""}${sl.res&&sl.desc?" · ":""}${esc(sl.desc||"")}${sl.serieNueva?` · S/N nuevo ${esc(sl.serieNueva)}`:""}</div></div>`:""}
+      <div class="gc-btns">
+        <button class="odsb" onclick="abrirOds(${jsq(r.id)})" title="Ver, completar e imprimir la orden de servicio">📄 Orden de servicio${odsDe(r.id).ods?` <small>· ODS# ${esc(odsDe(r.id).ods)}</small>`:""}</button>
+        <button class="solb${sl.resuelto?" ok":""}" onclick="abrirSol(${jsq(r.id)})" title="Anotar la solución, marcar como resuelto e imprimir la boleta">${sl.resuelto?"✅ Resuelto":"📝 Solución"}${sl.res?` <small>· ${esc(resDe(sl.res).l)}</small>`:""}</button>
+      </div>
       <div class="gc-meta">Registró <b>${esc(r.registro||"—")}</b> · ${esc(fechaBonita(r.fecha))}</div>
       <div class="pasos">${PASOS.map((p,i)=>`<button class="paso p-${p.k}${i===iAct?" actual":(i<iAct?" hecho":"")}" onclick="setPaso(${jsq(r.id)},'${p.k}')" title="${p.l}"><i>${p.ic}</i>${p.c}${r.pasos[p.k]?`<small>${fechaCorta(r.pasos[p.k]).slice(0,5)}</small>`:""}</button>`).join("")}</div>
     </div>`;
@@ -1003,6 +1121,85 @@ function imprimirBoleta(id){
 }
 
 // ============================================================
+//  SOLUCIÓN Y ENTREGA: qué se hizo (solucionado, cambiado o entregado),
+//  la descripción (se puede editar), la fecha de entrega, marcar como
+//  resuelto y la boleta (carta horizontal, 2 copias, como la orden).
+// ============================================================
+let solId=null, solInicial="", solRes="", solRaf=0;
+function leerSolForm(){ return {res:solRes, desc:$("sDesc").value.trim(), serieNueva:$("sSerie").value.trim().toUpperCase(), fecha:$("sFecha").value}; }
+const solSucio = () => !!solId && JSON.stringify(leerSolForm())!==solInicial;
+function hojaSol(r, v){
+  const o=odsDe(r.id), sl=solDe(r.id);
+  return {fecha:v.fecha?ymdCorto(v.fecha):"", nombre:r.nombre, tel:telBonito(r.telefono), boleta:numTxt(r.numero), modelo:r.producto, serie:r.serie,
+    falla:r.motivo, res:v.res, desc:v.desc, serieNueva:v.serieNueva, resuelto:!!sl.resuelto, ods:o.ods||"", cot:o.cot||""};
+}
+function pintarRes(){
+  document.querySelectorAll("#sRes button").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.v===solRes)));
+  $("sSerieBox").hidden = solRes!=="cambiado" && !$("sSerie").value.trim();
+  const sl=solDe(solId);
+  $("sResBox").className="resbox"+(sl.resuelto?" ok":"");
+  $("sResTxt").textContent = sl.resuelto ? `✅ Resuelto${sl.resueltoEn?" el "+fechaCorta(sl.resueltoEn):""}. Ya no sale en Pendientes.` : "Cuando el caso quede terminado, marcalo como resuelto.";
+  $("sResBtn").className = "btn sm "+(sl.resuelto?"ghost":"primary");
+  $("sResBtn").textContent = sl.resuelto ? "↩ Quitar resuelto" : "✅ Marcar como resuelto";
+}
+function llenarSol(){
+  const r=datos.registros.find(x=>x.id===solId); if(!r) return;
+  const sl=solDe(r.id);
+  solRes=sl.res||"";
+  $("sDesc").value=sl.desc||""; $("sSerie").value=sl.serieNueva||""; $("sFecha").value=sl.fecha||hoyISO();
+  solInicial=JSON.stringify(leerSolForm());
+  pintarRes(); vistaSol();
+}
+function abrirSol(id){
+  const r=datos.registros.find(x=>x.id===id); if(!r) return;
+  if(solId && solId!==id) guardarSolForm();
+  solId=id;
+  $("solNum").textContent=numTxt(r.numero)+" · "+r.nombre;
+  llenarSol();
+  $("solModal").classList.add("show"); document.querySelector("#solModal .ods-body").scrollTop=0;
+  logoOds().then(vistaSol);
+}
+function vistaSol(){
+  cancelAnimationFrame(solRaf);
+  solRaf=requestAnimationFrame(()=>{
+    const r=solId && datos.registros.find(x=>x.id===solId); if(!r) return;
+    const cv=$("solVista"), ancho=Math.max(220, cv.clientWidth||480), dpr=Math.min(3, window.devicePixelRatio||1);
+    const k=ancho*dpr/OrdenServicio.CW;
+    cv.width=Math.round(OrdenServicio.CW*k); cv.height=Math.round(OrdenServicio.H*k);
+    OrdenServicio.dibujar(cv.getContext("2d"), k, "solucion", hojaSol(r, leerSolForm()), odsLogo, {una:true});
+  });
+}
+function guardarSolForm(){
+  if(!solId || !solSucio()) return false;
+  const cambio=setSol(solId, leerSolForm());
+  solInicial=JSON.stringify(leerSolForm());
+  if(cambio){ render(); $("solGuardado").textContent="✔ Guardado "+new Date().toLocaleTimeString("es-GT",{hour:"2-digit",minute:"2-digit"}); }
+  return cambio;
+}
+function cerrarSol(sinGuardar){
+  if(!solId) return;
+  if(!sinGuardar && guardarSolForm()) toast("Solución guardada");
+  $("solModal").classList.remove("show"); solId=null; $("solGuardado").textContent="Se guarda solo al cerrar o imprimir";
+}
+function alternarResuelto(){
+  const r=datos.registros.find(x=>x.id===solId); if(!r) return;
+  const sl=solDe(r.id);
+  if(!sl.resuelto && !solRes){ alert("Primero elegí qué se hizo: Solucionado, Cambiado o Entregado."); return; }
+  guardarSolForm();
+  setSol(r.id, Object.assign(leerSolForm(), {resuelto:!sl.resuelto}));
+  solInicial=JSON.stringify(leerSolForm());
+  pintarRes(); vistaSol(); render();
+  toast(solDe(r.id).resuelto ? `✅ ${numTxt(r.numero)} marcado como resuelto` : "Ya no está marcado como resuelto");
+}
+function imprimirSol(){
+  const r=datos.registros.find(x=>x.id===solId); if(!r) return;
+  guardarSolForm();
+  const w=window.open("","_blank");
+  if(!w){ alert("El navegador bloqueó la ventana para imprimir. Permití las ventanas emergentes para esta página y volvé a tocar 🖨️."); return; }
+  w.document.open(); w.document.write(htmlImpresionOds(r, hojaSol(r, leerSolForm()), "solucion")); w.document.close();
+}
+
+// ============================================================
 //  ORDEN DE SERVICIO (Protection Plus) — el Word "Recepción de Producto"
 //  editable: se llena con lo del ingreso, se puede cambiar y se imprime
 //  igual que el Word (carta horizontal, 2 copias + hoja de términos).
@@ -1078,7 +1275,8 @@ function imprimirOds(){
   if(!w){ alert("El navegador bloqueó la ventana para imprimir. Permití las ventanas emergentes para esta página y volvé a tocar 🖨️."); return; }
   w.document.open(); w.document.write(htmlImpresionOds(r, hojaOds(leerOdsForm()))); w.document.close();
 }
-function htmlImpresionOds(r, d){
+function htmlImpresionOds(r, d, modo){
+  const sol = modo==="solucion";
   // La hoja se dibuja como UNA imagen (canvas a 300 dpi), ya girada para carta vertical, con medida fija
   // en pulgadas: igual que la guía de Online, así Safari no la agranda ni la corta.
   const js=(document.querySelector('script[src*="orden-servicio.js"]')||{}).src||new URL("orden-servicio.js", location.href).href;
@@ -1086,8 +1284,8 @@ function htmlImpresionOds(r, d){
   try{ const t=parseFloat(localStorage.getItem("garantias_dji_tam_ods")); if(t>=0.7 && t<=1) tam=t; }catch(e){}
   try{ const h=localStorage.getItem("garantias_dji_hojas_ods"); if(["ambas","orden","terminos"].includes(h)) hojas=h; }catch(e){}
   try{ voltear=localStorage.getItem("garantias_dji_voltear_ods")!=="no"; }catch(e){}
-  const titulo=`Orden de servicio ${numTxt(r.numero)} · ${r.nombre}`;
-  const json=JSON.stringify({d, logo:new URL("../recepcion/logo.png", location.href).href, tam, hojas, voltear}).replace(/</g,"\\u003c");
+  const titulo=`${sol?"Boleta de solución":"Orden de servicio"} ${numTxt(r.numero)} · ${r.nombre}`;
+  const json=JSON.stringify({d, logo:new URL("../recepcion/logo.png", location.href).href, tam, hojas, voltear, modo:sol?"solucion":"orden"}).replace(/</g,"\\u003c");
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${esc(titulo)}</title><style>
   @page{size:8.5in 11in;margin:0.25in}
   *{box-sizing:border-box}
@@ -1107,16 +1305,16 @@ function htmlImpresionOds(r, d){
 </style></head><body>
   <div class="barra">
     <b>${esc(titulo)}</b>
-    <span class="grupo">Hojas: <button data-h="ambas">Orden + Términos</button><button data-h="orden">Solo la orden</button><button data-h="terminos">Solo términos</button></span>
+    ${sol?"":`<span class="grupo">Hojas: <button data-h="ambas">Orden + Términos</button><button data-h="orden">Solo la orden</button><button data-h="terminos">Solo términos</button></span>`}
     <span class="grupo">Tamaño: <button data-t="0.95">Grande</button><button data-t="0.92">Normal</button><button data-t="0.86">Chico</button></span>
-    <span class="grupo">Términos atrás: <button data-v="1">Girados (doble cara)</button><button data-v="0">Sin girar</button></span>
+    ${sol?"":`<span class="grupo">Términos atrás: <button data-v="1">Girados (doble cara)</button><button data-v="0">Sin girar</button></span>`}
     <button class="imp-btn" id="btnImp">🖨️ Imprimir</button>
-    <small>En la ventana de imprimir: tamaño Carta, orientación vertical (la normal) y escala 100 %. Salen 2 copias por hoja (se corta por la mitad).<br>Para que los términos queden atrás, elegí doble cara; o imprimí "Solo la orden", volvé a meter la hoja y después "Solo términos". Si los términos salen de cabeza, cambiá "Términos atrás".</small>
+    <small>En la ventana de imprimir: tamaño Carta, orientación vertical (la normal) y escala 100 %. Salen 2 copias por hoja (se corta por la mitad).${sol?" Una para el cliente y otra para la tienda (con la firma de que recibió conforme).":`<br>Para que los términos queden atrás, elegí doble cara; o imprimí "Solo la orden", volvé a meter la hoja y después "Solo términos". Si los términos salen de cabeza, cambiá "Términos atrás".`}</small>
   </div>
   <div id="msg">⏳ Preparando la hoja…</div>
   <div id="vistas"></div>
   <div id="imp"></div>
-  <script src="${esc(js)}"><\/script>
+  <script src="${esc(js)}" charset="utf-8"><\/script>
   <script type="application/json" id="datos">${json}<\/script>
 <script>
 (function(){
@@ -1124,7 +1322,7 @@ function htmlImpresionOds(r, d){
   var OS=window.OrdenServicio, est={hojas:D.hojas, tam:D.tam, voltear:D.voltear!==false}, PX_IMP=300/72, PX_VISTA=1.6, logo=null, urls=[], listo=Promise.resolve();
   var msg=document.getElementById("msg");
   if(!OS){ msg.textContent="⚠️ No se pudo cargar la hoja. Revisá el internet y volvé a tocar 🖨️."; return; }
-  function lista(){ return est.hojas==="ambas" ? ["orden","terminos"] : [est.hojas]; }
+  function lista(){ return D.modo==="solucion" ? ["solucion"] : (est.hojas==="ambas" ? ["orden","terminos"] : [est.hojas]); }
   function componer(){
     var m=OS.medidas(false), hs=lista(), vistas=document.getElementById("vistas"), imp=document.getElementById("imp");
     vistas.innerHTML="";
@@ -1143,7 +1341,7 @@ function htmlImpresionOds(r, d){
       urls.forEach(function(u){ URL.revokeObjectURL(u); }); urls=us;
       imp.innerHTML="";
       return Promise.all(us.map(function(u,i){ return new Promise(function(ok){
-        var im=new Image(); im.alt="Orden de servicio";
+        var im=new Image(); im.alt=D.modo==="solucion"?"Boleta de solución":"Orden de servicio";
         im.style.width=(m.H*est.tam).toFixed(1)+"pt"; im.style.height=(m.W*est.tam).toFixed(1)+"pt"; im.style.marginTop=arriba;
         if(i<us.length-1) im.className="salto";
         im.onload=function(){ ok(); }; im.onerror=function(){ ok(); }; im.src=u; imp.appendChild(im);
@@ -1174,7 +1372,7 @@ function htmlImpresionOds(r, d){
 function abrirAjustes(){ $("ajModal").classList.add("show"); }
 function cerrarAjustes(){ $("ajModal").classList.remove("show"); }
 function descargarRespaldo(){
-  const blob=new Blob([JSON.stringify({tipo:"garantias_dji",exportado:new Date().toISOString(),...datos,ods:odsDatos,taller},null,2)],{type:"application/json"});
+  const blob=new Blob([JSON.stringify({tipo:"garantias_dji",exportado:new Date().toISOString(),...datos,ods:odsDatos,sol:solDatos,taller},null,2)],{type:"application/json"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
   a.download="Respaldo garantias DJI "+fechaCorta(new Date().toISOString()).replace(/\//g,"-")+".json";
   document.body.appendChild(a); a.click(); a.remove();
@@ -1195,6 +1393,11 @@ $("archivo").addEventListener("change",async e=>{
       let n=0;
       for(const id in d.ods){ const o=limpiarOds(d.ods[id]), ex=odsDatos[id]; if(o && (!ex || (o.actualizado||"")>(ex.actualizado||""))){ odsDatos[id]=o; n++; } }
       if(n){ guardarOdsLocal(); subirOds(); }
+    }
+    if(d.sol && typeof d.sol==="object"){
+      let n=0;
+      for(const id in d.sol){ const o=limpiarSol(d.sol[id]), ex=solDatos[id]; if(o && (!ex || (o.actualizado||"")>(ex.actualizado||""))){ solDatos[id]=o; n++; } }
+      if(n){ guardarSolLocal(); subirSol(); }
     }
     let nT=0;
     if(Array.isArray(d.taller)){
@@ -1219,8 +1422,8 @@ async function exportExcel(){
   const DARK="FF44546A", WHITE="FFFFFFFF", INK="FF4A4F59", GRIDBG="FFF7F8FA";
   const wb=new ExcelJS.Workbook();
   const ws=wb.addWorksheet("Garantías",{views:[{showGridLines:false,state:"frozen",ySplit:5}]});
-  const heads=["N.º","Fecha","Tipo","Paso","Producto","N.º de serie","Falla / motivo","Deja","Notas","Compra","Factura","Cliente","Teléfono","Correo","Viene el","Registró","NIT","ODS #","Cotización #"];
-  const widths=[9,11,16,19,26,18,34,26,26,11,12,24,12,24,11,12,14,11,13];
+  const heads=["N.º","Fecha","Tipo","Paso","Producto","N.º de serie","Falla / motivo","Deja","Notas","Compra","Factura","Cliente","Teléfono","Correo","Viene el","Registró","NIT","ODS #","Cotización #","Solución","Descripción de la solución","S/N nuevo","Entregado el","Resuelto"];
+  const widths=[9,11,16,19,26,18,34,26,26,11,12,24,12,24,11,12,14,11,13,14,38,18,12,11];
   ws.columns=[{width:3},...widths.map(w=>({width:w})),{width:3}];
   const B=2, K=B+heads.length-1;
   const thin={style:"thin",color:{argb:"FFB9C0CC"}}, border={top:thin,left:thin,bottom:thin,right:thin};
@@ -1236,9 +1439,10 @@ async function exportExcel(){
   const font={name:"Calibri",size:11,color:{argb:INK}};
   let r=6;
   L.forEach(x=>{
-    const o=odsDe(x.id);
-    const vals=[numTxt(x.numero),fechaCorta(x.fecha),tipoDe(x.tipo).l,pasoDe(x.estado).l,x.producto,x.serie,x.motivo,x.accesorios,x.nota,x.compra?ymdCorto(x.compra):"",x.factura,x.nombre,telBonito(x.telefono),x.correo,x.cita?ymdCorto(x.cita):"",x.registro,o.nit||"",o.ods||"",o.cot||""];
-    vals.forEach((v,i)=>{ const c=ws.getCell(r,B+i); c.value=v; c.font=font; c.border=border; c.fill={type:"pattern",pattern:"solid",fgColor:{argb:GRIDBG}}; c.alignment={vertical:"top",wrapText:[6,7,8].includes(i),horizontal:[0,1,9,12,14].includes(i)?"center":"left",indent:[0,1,9,12,14].includes(i)?0:1}; });
+    const o=odsDe(x.id), sl=solDe(x.id);
+    const vals=[numTxt(x.numero),fechaCorta(x.fecha),tipoDe(x.tipo).l,pasoDe(x.estado).l,x.producto,x.serie,x.motivo,x.accesorios,x.nota,x.compra?ymdCorto(x.compra):"",x.factura,x.nombre,telBonito(x.telefono),x.correo,x.cita?ymdCorto(x.cita):"",x.registro,o.nit||"",o.ods||"",o.cot||"",
+      sl.res?resDe(sl.res).l:"",sl.desc||"",sl.serieNueva||"",sl.fecha?ymdCorto(sl.fecha):"",sl.resuelto?"Sí":""];
+    vals.forEach((v,i)=>{ const c=ws.getCell(r,B+i); c.value=v; c.font=font; c.border=border; c.fill={type:"pattern",pattern:"solid",fgColor:{argb:GRIDBG}}; c.alignment={vertical:"top",wrapText:[6,7,8,20].includes(i),horizontal:[0,1,9,12,14,22,23].includes(i)?"center":"left",indent:[0,1,9,12,14,22,23].includes(i)?0:1}; });
     r++;
   });
   ws.mergeCells(r,B,r,B+6); const g1=ws.getCell(r,B); g1.value="TOTAL";
@@ -1306,15 +1510,21 @@ $("btnExport").addEventListener("click",exportExcel);
 $("btnAjustes").addEventListener("click",abrirAjustes);
 $("ajModal").addEventListener("click",e=>{ if(e.target.id==="ajModal") cerrarAjustes(); });
 document.querySelectorAll(".kpi").forEach(k=>k.addEventListener("click",()=>{ filtro=k.dataset.f; if(filtroTipo==="taller") filtroTipo=""; render(); }));
-document.addEventListener("keydown",e=>{ if(e.key!=="Escape") return; if($("odsModal").classList.contains("show")) cerrarOds(); else if($("ajModal").classList.contains("show")) cerrarAjustes(); });
+document.addEventListener("keydown",e=>{ if(e.key!=="Escape") return; if($("solModal").classList.contains("show")) cerrarSol(); else if($("odsModal").classList.contains("show")) cerrarOds(); else if($("ajModal").classList.contains("show")) cerrarAjustes(); });
+$("solModal").addEventListener("click",e=>{ if(e.target.id==="solModal") cerrarSol(); });
+$("solModal").addEventListener("input",()=>{ pintarRes(); vistaSol(); });
+document.querySelectorAll("#sRes button").forEach(b=>b.addEventListener("click",()=>{ solRes = solRes===b.dataset.v ? "" : b.dataset.v; pintarRes(); vistaSol(); if(solRes==="cambiado") $("sSerie").focus(); }));
+$("sResBtn").addEventListener("click",alternarResuelto);
+$("solImp").addEventListener("click",imprimirSol);
 $("odsModal").addEventListener("click",e=>{ if(e.target.id==="odsModal") cerrarOds(); });
 $("odsModal").addEventListener("input",vistaOds);
 $("odsImp").addEventListener("click",imprimirOds);
-addEventListener("resize",()=>{ if(odsId) vistaOds(); });
+addEventListener("resize",()=>{ if(odsId) vistaOds(); if(solId) vistaSol(); });
 
 // ---------- inicio ----------
 cargar();
 cargarOds();
+cargarSol();
 cargarTaller();
 limpiarForm();
 renderDatalist();

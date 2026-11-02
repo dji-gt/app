@@ -190,6 +190,49 @@
     pie(ctx, x0, d, true);
   }
 
+  // ---------- boleta de solución / entrega ----------
+  const RESULTADOS=[["solucionado","Solucionado"],["cambiado","Cambiado por equipo nuevo"],["entregado","Entregado sin cambios"]];
+  function casilla(ctx, x, y, b, marcada){
+    ctx.strokeStyle=TINTA; ctx.lineWidth=0.8; ctx.strokeRect(x, y, b, b);
+    if(marcada){ ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(x+b*0.18,y+b*0.55); ctx.lineTo(x+b*0.42,y+b*0.8); ctx.lineTo(x+b*0.85,y+b*0.2); ctx.stroke(); }
+  }
+  function datosSolucion(ctx, x0, d, s, pintar){
+    const o={s, lh:s*1.24, pintar}, g=s*0.75, ancho=CW;
+    let r=campo(ctx, x0, Y_DATOS, ancho, "Nombre:", d.nombre, o, {raya:ancho*0.9});
+    r=dosCampos(ctx, x0, r.y+g, ancho, ["Tel:", d.tel], ["Boleta:", d.boleta], o);
+    r=dosCampos(ctx, x0, r.y+g, ancho, ["Modelo:", d.modelo, {negrita:false, color:GRIS}], ["S/N:", d.serie, {negrita:false}], o);
+    r=campo(ctx, x0, r.y+g*1.9, ancho, "Falla reportada:", d.falla, o, {negrita:false, raya:ancho});
+    // qué se hizo: las 3 casillas, la elegida marcada
+    r=parrafo(ctx, x0, r.y+g*1.9, [["Solución:",1]], ancho, o);
+    let y=r.y+s*0.35;
+    const b=s*0.95;
+    RESULTADOS.forEach(([k,l])=>{
+      if(pintar) casilla(ctx, x0+8, y+s*0.05, b, d.res===k);
+      y=parrafo(ctx, x0+8+b+7, y, [[l, d.res===k]], ancho-b-15, o).y+s*0.3;
+    });
+    if(d.res==="cambiado" || String(d.serieNueva||"").trim()) y=campo(ctx, x0, y+g*0.9, ancho, "S/N del equipo nuevo:", d.serieNueva, o, {negrita:true}).y;
+    r=campo(ctx, x0, y+g*1.4, ancho, "Descripción:", d.desc, o, {negrita:false, raya:ancho});
+    // sin descripción: renglones para escribirla a mano
+    if(!String(d.desc||"").trim()){ let yy=r.y; for(let i=0;i<2;i++){ yy+=s*1.45; raya(ctx, x0, x0+ancho, yy, pintar); } r={y:yy+s*0.4}; }
+    return r.y;
+  }
+  function copiaSolucion(ctx, x0, d, logo){
+    encabezado(ctx, x0, logo);
+    parrafo(ctx, x0, Y_TITULO, [["SOLUCIÓN Y ENTREGA",1]], CW, {s:11, pintar:true, alinear:"center", subrayar:true});
+    parrafo(ctx, x0, Y_FECHA, [["Fecha de entrega:  ",1],[d.fecha||"",1]], CW, {s:10, pintar:true, alinear:"right"});
+    if(d.resuelto) parrafo(ctx, x0, Y_FECHA, [["✔ CASO RESUELTO",1,AZUL]], CW, {s:10, pintar:true});
+    const limite=Y_FIRMA2-30;
+    let s=10;
+    for(const t of [10,9.5,9,8.5,8,7.5,7,6.5]){ s=t; if(datosSolucion(ctx, x0, d, t, false)<=limite) break; }
+    ctx.save(); ctx.beginPath(); ctx.rect(x0-1, Y_DATOS-2, CW+2, limite-Y_DATOS+6); ctx.clip();
+    datosSolucion(ctx, x0, d, s, true);
+    ctx.restore();
+    raya(ctx, x0, x0+128, Y_FIRMA2, true); raya(ctx, x0+CW-150, x0+CW, Y_FIRMA2, true);
+    parrafo(ctx, x0, Y_FIRMA2+3, [["DJI entrega",1]], 128, {s:10, pintar:true});
+    parrafo(ctx, x0+CW-150, Y_FIRMA2+3, [["Cliente recibe conforme",1]], 150, {s:10, pintar:true});
+    pie(ctx, x0, d, true);
+  }
+
   function textoTerminos(ctx, x0, s, pintar){
     const lh=s*1.2, ind=24;
     let y=Y_TITULO+26;
@@ -216,7 +259,7 @@
 
   // ---------- hoja completa ----------
   function medidas(una){ return {W:una?CW:W, H}; }
-  /* hoja: "orden" | "terminos" · k: pixeles por punto
+  /* hoja: "orden" | "terminos" | "solucion" · k: pixeles por punto
      op.girar: gira 90° para imprimir en carta vertical (-1 = al otro lado: así la hoja de atrás
      sale al derecho al imprimir a doble cara) · op.una: solo una copia (vista previa) */
   function dibujar(ctx, k, hoja, d, logo, op){
@@ -230,7 +273,9 @@
     ctx.textBaseline="alphabetic"; ctx.textAlign="left";
     (op.una?[0]:[0,CW+GAP]).forEach(x0=>{
       ctx.save(); ctx.beginPath(); ctx.rect(x0-2,0,CW+4,m.H); ctx.clip();
-      if(hoja==="terminos") copiaTerminos(ctx, x0, d, logo); else copiaOrden(ctx, x0, d, logo);
+      if(hoja==="terminos") copiaTerminos(ctx, x0, d, logo);
+      else if(hoja==="solucion") copiaSolucion(ctx, x0, d, logo);
+      else copiaOrden(ctx, x0, d, logo);
       ctx.restore();
     });
     if(!op.una){
