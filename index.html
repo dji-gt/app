@@ -43,7 +43,7 @@
     .rail{top:auto;right:0;width:auto;height:calc(var(--alto-movil) + env(safe-area-inset-bottom));flex-direction:row;justify-content:center;padding:4px 8px env(safe-area-inset-bottom);box-shadow:0 -1px 0 rgba(255,255,255,.06)}
     .rail .logo{display:none}
     .rail nav{flex-direction:row;justify-content:space-around;max-width:560px}
-    /* 8 apartados: cada botón se achica parejo para que quepan todos */
+    /* 9 apartados: cada botón se achica parejo para que quepan todos */
     .ir{width:auto;flex:1 1 0;min-width:0;padding:8px 1px 6px;font-size:10px;gap:4px}
     .ir svg{width:22px;height:22px}
     .ir span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -66,11 +66,11 @@
   </main>
 
 <div class="aviso" id="aviso"></div>
-<script src="nube.js?v=20261102a"></script>
+<script src="nube.js?v=20261114a"></script>
 <script>
 /* Versión de lo publicado: subirla en cada cambio para que todas las computadoras carguen lo nuevo
    (el navegador guarda los archivos unos minutos y un refresco normal no siempre los vuelve a bajar). */
-const VERSION = '20261102a';
+const VERSION = '20261114a';
 /* Apartados de la app. Para agregar uno nuevo: su carpeta + una línea aquí. */
 const ICONOS = {
   chat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.9-.9L3 20.5l1.5-4.6A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4z"/><path d="M8 10h8M8 14h5"/></svg>',
@@ -79,6 +79,7 @@ const ICONOS = {
   carrito:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3h2.6l2.3 11.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.2L21 7H6"/></svg>',
   ruleta:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 3v7M12 14v7M3 12h7M14 12h7M5.6 5.6l5 5M13.4 13.4l5 5M18.4 5.6l-5 5M10.6 13.4l-5 5"/></svg>',
   lista:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10l1.5 1.5L13 9M9 15.5l1.5 1.5L13 14.5M15 10.5h1M15 16h1"/></svg>',
+  factura:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>',
   grafica:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-6"/><path d="M15 8h5v5"/></svg>',
   caja:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/><path d="M7.5 5.5l9 5"/></svg>'
 };
@@ -89,6 +90,7 @@ const SECCIONES = [
   {id:'clientes',  nombre:'Clientes',  titulo:'Clientes en espera de producto', src:'clientes/index.html', icono:'personas'},
   {id:'garantias', nombre:'Garantías', titulo:'Garantías y Protection Plus', src:'garantias/index.html', icono:'llave'},
   {id:'online',    nombre:'Online',    titulo:'Pedidos online',          src:'online/index.html',    icono:'carrito'},
+  {id:'preventas', nombre:'Preventas', titulo:'Preventas: ya pagaron, falta facturar', src:'preventas/index.html', icono:'factura'},
   {id:'ruleta',    nombre:'Ruleta',    titulo:'Girá y Ganá · ruleta de premios', src:'ruleta/index.html', icono:'ruleta'},
   {id:'ventas',    nombre:'Ventas',    titulo:'Mis ventas y comisión',   src:'ventas/index.html',    icono:'grafica'}
 ];
@@ -124,6 +126,21 @@ function ir(id, extra){
   setTimeout(() => { try{ marcos[s.id].contentWindow.focus(); }catch(e){} }, 60);
 }
 window.addEventListener('hashchange', () => { const h = leerHash(); ir(h.id, h.extra); });
+// en el celular (barra abajo) cada nombre se achica solo lo justo para caber en su botón
+function ajustarNombres(){
+  nav.querySelectorAll('.ir span').forEach(s => {
+    s.style.fontSize = '';
+    const r = document.createRange(); r.selectNodeContents(s);
+    const texto = r.getBoundingClientRect().width, cabe = s.clientWidth - 1;
+    if(cabe > 0 && texto > cabe){
+      const f = parseFloat(getComputedStyle(s).fontSize);
+      s.style.fontSize = Math.max(7, f * cabe / texto).toFixed(2) + 'px';
+    }
+  });
+}
+window.addEventListener('resize', ajustarNombres);
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(ajustarNombres);
+ajustarNombres();
 
 let {id:inicio, extra:extraInicio} = leerHash();
 if(!SECCIONES.some(s => s.id === inicio)){ try{ inicio = localStorage.getItem(LS) || ''; }catch(e){ inicio = ''; } extraInicio = ''; }
