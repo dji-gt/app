@@ -82,6 +82,24 @@
   .cnt span{min-width:30px;text-align:center;font-weight:800}
   .x{border:none;background:var(--err-bg);color:#b71c1c;width:30px;height:30px;border-radius:9px;cursor:pointer;font-weight:800}
   .vacioItems{font-size:13px;color:var(--muted);margin-top:6px}
+  .it-extra{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px dashed var(--line);padding-top:7px;margin-top:1px}
+  .series{display:flex;gap:6px;flex-wrap:wrap;flex:1;min-width:180px}
+  .sn{flex:1;min-width:150px;padding:8px 10px!important;font-size:14px!important;font-family:"Consolas","SF Mono",monospace;text-transform:uppercase}
+  .sn::placeholder{text-transform:none;font-family:-apple-system,"Segoe UI",Roboto,sans-serif}
+  .ppb{border:2px solid var(--line);background:#fff;border-radius:10px;padding:7px 10px;font-size:13px;font-weight:800;color:var(--muted);cursor:pointer;white-space:nowrap}
+  .ppb[aria-pressed="true"]{border-color:#7c3aed;background:#f3edfe;color:#6d28d9}
+  .fotos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .ft{position:relative;aspect-ratio:4/3;border:2px dashed var(--line);border-radius:12px;background:#fafbfc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;font:inherit;color:var(--ink-2);padding:6px;text-align:center;overflow:hidden}
+  .ft:hover{border-color:#c9d6f5;background:var(--accent-bg)}
+  .ft i{font-style:normal;font-size:22px;line-height:1}
+  .ft b{font-size:12.5px;line-height:1.2}
+  .ft small{font-size:11px;color:var(--muted);font-weight:700}
+  .ft.lleno{border-style:solid;padding:0;background:#111318}
+  .ft.lleno img{width:100%;height:100%;object-fit:cover;opacity:.92}
+  .ft.lleno span{position:absolute;left:6px;bottom:6px;font-size:11.5px;font-weight:800;color:#fff;background:rgba(0,0,0,.55);border-radius:6px;padding:2px 6px}
+  .ft .fx{position:absolute;top:5px;right:5px;width:26px;height:26px;border:none;border-radius:8px;background:rgba(0,0,0,.6);color:#fff;font-weight:800;cursor:pointer}
+  .ft[disabled]{opacity:.5;cursor:not-allowed}
+  .nota-seg{margin-top:8px;font-size:12.5px;color:#8a5b12;background:var(--warn-bg);border:1px solid var(--warn-br);border-radius:10px;padding:8px 10px;font-weight:600}
   .money{display:flex;align-items:center;border:2px solid var(--line);border-radius:11px;background:#fafbfc;overflow:hidden}
   .money i{font-style:normal;font-weight:800;color:var(--muted);padding:0 2px 0 12px}
   .money input{flex:1;min-width:0;width:100%;border:none;outline:none;background:transparent;padding:11px 12px 11px 4px;font-size:15px;font-weight:700}
@@ -134,6 +152,23 @@
   .pp b{display:block;font-size:13.5px;line-height:1.25}
   .pp small{font-size:11.5px;color:var(--muted);font-weight:700;font-family:"Consolas","SF Mono",monospace}
   .pp .n{font-weight:850;font-size:14px}
+  .pp .sns{display:block;font-size:12px;color:var(--ink-2);font-weight:700;font-family:"Consolas","SF Mono",monospace;margin-top:1px}
+  .pp .sns.falta{color:#b7791f;font-family:inherit}
+  .ppt{display:inline-block;margin-top:3px;font-size:11.5px;font-weight:800;color:#6d28d9;background:#f3edfe;border:1px solid #ddd0fb;border-radius:20px;padding:1px 8px}
+  .fchips{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+  .fchip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:4px 10px;font-size:12.5px;font-weight:800;color:var(--ink-2);cursor:pointer}
+  .fchip:hover{background:var(--line-2)}
+  .modal-ov{position:fixed;inset:0;background:rgba(17,19,24,.7);backdrop-filter:blur(3px);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:4vh 16px;overflow:auto}
+  .modal-ov.show{display:flex}
+  .modal{background:var(--card);border-radius:18px;box-shadow:var(--shadow-lg);width:100%;max-width:760px;overflow:hidden}
+  .modal-h{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+  .modal-h b{font-size:16.5px}
+  .modal-x{border:none;background:var(--line-2);width:34px;height:34px;border-radius:9px;cursor:pointer;font-weight:700;color:var(--ink-2)}
+  .visor{padding:14px 18px 18px;display:grid;gap:14px}
+  .visor figure{margin:0}
+  .visor figcaption{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:14px;margin-bottom:6px}
+  .visor figcaption a{font-size:13px;color:var(--accent-d);text-decoration:none}
+  .visor img{display:block;width:100%;height:auto;border-radius:12px;border:1px solid var(--line);background:#f3f4f7}
   .pv-pago{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
   .tag{font-size:12.5px;font-weight:800;background:var(--accent-bg);color:var(--accent-d);border-radius:20px;padding:3px 10px}
   .monto{font-weight:850;font-size:15px;margin-left:auto}
@@ -160,6 +195,8 @@
     .kpi-n{font-size:22px}
     .kpi-l{font-size:11px}
     .monto{margin-left:0}
+    .modal-ov{padding:0}
+    .modal{max-width:100%;min-height:100vh;border-radius:0}
   }
 </style>
 </head>
@@ -206,6 +243,12 @@
         <div class="items" id="fItems"></div>
       </div>
 
+      <div class="sec"><h3>Fotos <span style="text-transform:none;letter-spacing:0;color:var(--muted);font-weight:600">(opcional)</span></h3>
+        <div class="fotos" id="fFotos"></div>
+        <div class="nota-seg">💳 Por seguridad, en la foto de la tarjeta tapá los números del medio y no le tomés foto al reverso (el código de seguridad).</div>
+        <input type="file" id="fArchivo" accept="image/*" hidden>
+      </div>
+
       <div class="sec"><h3>Pago</h3>
         <label class="fl">Forma de pago <i>(se puede elegir más de una)</i></label>
         <div class="chips" id="fPagos"></div>
@@ -240,11 +283,18 @@
   </div>
 </div>
 
+<div class="modal-ov" id="visor">
+  <div class="modal">
+    <div class="modal-h"><b id="visorTit">Fotos</b><button class="modal-x" onclick="cerrarVisor()" title="Cerrar">✕</button></div>
+    <div class="visor" id="visorFotos"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261114a"></script>
+<script src="../nube.js?v=20261114b"></script>
 <script src="../recepcion/lib/exceljs.min.js"></script>
-<script src="../recepcion/catalog.js?v=20261114a"></script>
+<script src="../recepcion/catalog.js?v=20261114b"></script>
 <script>
 /* ============================================================
    Preventas — clientes que ya pagaron un producto que todavía
@@ -272,7 +322,7 @@ let lista = [];              // preventas
 let catalogo = {}, porEan = {};
 let vendedores = VENDEDORES_INICIALES.slice();
 let editId = null, filtro = "pend", query = "";
-let form = {items:[], pagos:[], fact:false, registro:""};
+let form = {items:[], pagos:[], fact:false, registro:"", fotos:{}, fotosOrig:{}, fotosCargando:false};
 
 const $ = id => document.getElementById(id);
 const S = v => String(v ?? "").trim();
@@ -335,6 +385,117 @@ function cargarLocal(){
 function guardarLocal(){ try{ localStorage.setItem(LS_P, JSON.stringify({v:1, registros:lista})); }catch(e){ toast("⚠️ No se pudo guardar en este navegador"); } }
 function guardar(){ guardarLocal(); subirNube(); }
 
+// ---------- detalle: series, Protection Plus y qué fotos tiene ----------
+// Va en su propia colección ("preventas_det", una por preventa) y no dentro de la preventa:
+// así una computadora con la versión anterior abierta no lo borra al guardar.
+const LS_DET = "preventas_dji_det_v1";   // {idPreventa: {items:{clave:{pp, series}}, fotos:{dpi,dpi2,tarjeta}, actualizado}}
+const FOTOS = [
+  {k:"dpi",     l:"DPI (frente)",  ic:"🪪"},
+  {k:"dpi2",    l:"DPI (reverso)", ic:"🪪"},
+  {k:"tarjeta", l:"Tarjeta",       ic:"💳"}
+];
+let detDatos = {}, nubeDet = null, detSinSubir = false;
+// cada producto de la preventa se reconoce por su código (o su nombre) y cuántas veces va antes
+function claveItem(items, i){
+  const base = it => (it.c || "x_"+fold(it.d)).replace(/[^A-Za-z0-9]+/g,"_");
+  const b=base(items[i]); let k=0;
+  for(let j=0;j<i;j++) if(base(items[j])===b) k++;
+  return b+"_"+k;
+}
+function limpiarDet(x){
+  if(!x || typeof x!=="object") return null;
+  const items={};
+  for(const k in (x.items||{})){
+    const v=x.items[k]; if(!v || typeof v!=="object") continue;
+    const series=(Array.isArray(v.series)?v.series:[]).map(t=>S(t).toUpperCase().slice(0,60));
+    while(series.length && !series[series.length-1]) series.pop();
+    if(!v.pp && !series.length) continue;
+    items[String(k).replace(/[^A-Za-z0-9_]+/g,"_").slice(0,120)]={pp:!!v.pp, series};
+  }
+  const fotos={}; FOTOS.forEach(f=>{ if(x.fotos && x.fotos[f.k]) fotos[f.k]=true; });
+  const o={items, fotos}; if(x.actualizado) o.actualizado=S(x.actualizado);
+  return o;
+}
+function limpiarMapaDet(m){ const out={}; for(const id in (m||{})){ const o=limpiarDet(m[id]); if(o) out[id]=o; } return out; }
+function cargarDet(){ try{ detDatos=limpiarMapaDet(JSON.parse(localStorage.getItem(LS_DET)||"{}")); }catch(e){ detDatos={}; } }
+function guardarDetLocal(){ try{ localStorage.setItem(LS_DET, JSON.stringify(detDatos)); }catch(e){} }
+const detDe = id => detDatos[id] || {items:{}, fotos:{}};
+const sinFecha = d => { const o=Object.assign({}, d||{items:{}, fotos:{}}); delete o.actualizado; return estable(o); };
+function subirDet(){
+  if(!window.Nube || !Nube.conectado()) return;
+  if(nubeDet===null){ detSinSubir=true; return; }
+  Nube.guardarColeccion("preventas_det", detDatos, nubeDet);
+}
+function setDet(id, d){
+  if(d===null){ if(!detDatos[id]) return; delete detDatos[id]; }
+  else {
+    const n=limpiarDet(d);
+    if(sinFecha(n)===sinFecha(detDatos[id])) return;
+    n.actualizado=new Date().toISOString(); detDatos[id]=n;
+  }
+  guardarDetLocal(); subirDet();
+}
+function unirDet(nube, locales){
+  const out=limpiarMapaDet(nube);
+  for(const id in locales){ const l=locales[id], c=out[id]; if(!c || (l.actualizado||"")>(c.actualizado||"")) out[id]=l; }
+  return out;
+}
+async function conectarDet(){
+  const unido=await Nube.unirUnaVez("preventas_det", async ()=>{
+    const nube=await Nube.leerColeccion("preventas_det");
+    await Nube.guardarColeccion("preventas_det", unirDet(nube, detDatos), nube);
+  });
+  if(!unido && localStorage.getItem("dji_nube_unido_preventas_det")!==Nube.clave()){ addEventListener("online", ()=>conectarDet(), {once:true}); return; }
+  Nube.escucharColeccion("preventas_det",(mapa)=>{
+    let m=limpiarMapaDet(mapa);
+    nubeDet=mapa;
+    if(detSinSubir){ detSinSubir=false; m=unirDet(mapa, detDatos); Nube.guardarColeccion("preventas_det", m, mapa); }
+    if(estable(m)===estable(detDatos)) return;
+    detDatos=m; guardarDetLocal(); render();
+  });
+}
+// los productos de una preventa con su serie y Protection Plus
+const itemsCon = r => r.items.map((it,i)=>{ const d=detDe(r.id).items[claveItem(r.items,i)]||{}; return Object.assign({}, it, {pp:!!d.pp, series:(d.series||[]).slice()}); });
+const seriesTxt = it => (it.series||[]).slice(0,it.n).filter(Boolean);
+const faltanSeries = it => seriesTxt(it).length < it.n;
+
+// ---------- fotos (colección "preventas_fotos": un documento por preventa, se leen solo cuando se necesitan) ----------
+const nubeOk = () => !!(window.Nube && Nube.conectado());
+function leerFotos(id){
+  return new Promise(ok=>{
+    if(!nubeOk()){ ok({}); return; }
+    let fin=false, quitar=null;
+    const listo=m=>{ if(fin) return; fin=true; clearTimeout(t); try{ quitar && quitar(); }catch(e){} ok(m||{}); };
+    const t=setTimeout(()=>listo({}), 12000);
+    Nube.iniciar().then(db=>{
+      if(!db){ listo({}); return; }
+      quitar=Nube.escucharMapa("preventas_fotos", id, (m,existe,meta)=>{ if(existe || !(meta && meta.fromCache)) listo(m); });
+      if(fin) try{ quitar(); }catch(e){}
+    });
+  });
+}
+// se achica para que pese poco (hasta ~300 KB) pero se lea bien el DPI
+function comprimir(file){
+  return new Promise((ok,mal)=>{
+    const url=URL.createObjectURL(file), img=new Image();
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      let max=1400, q=0.78, out="";
+      for(let i=0;i<10;i++){
+        const k=Math.min(1, max/Math.max(img.naturalWidth, img.naturalHeight)), c=document.createElement("canvas");
+        c.width=Math.max(1,Math.round(img.naturalWidth*k)); c.height=Math.max(1,Math.round(img.naturalHeight*k));
+        const x=c.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,c.width,c.height); x.drawImage(img,0,0,c.width,c.height);
+        out=c.toDataURL("image/jpeg", q);
+        if(out.length<=300000) break;
+        if(q>0.56) q-=0.1; else max=Math.round(max*0.8);
+      }
+      ok(out);
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); mal(new Error("No se pudo leer la foto")); };
+    img.src=url;
+  });
+}
+
 // ---------- nube: colección "preventas" (una por cliente) ----------
 let nubeReg=null, sinSubir=false, escuchando=false;
 const mapa = L => { const m={}; L.forEach(r=>{ m[r.id]=r; }); return m; };
@@ -364,6 +525,7 @@ async function conectarNube(){
     });
     Nube.escucharMapa("recepcion","catalogo",(m,existe)=>{ if(existe){ armarCatalogo(m); pintarItems(); render(); } });
   }
+  conectarDet();
   const unido=await Nube.unirUnaVez("preventas", async ()=>{
     const nube=await Nube.leerColeccion("preventas");
     await Nube.guardarColeccion("preventas", mapa(unir(nube, lista)), nube);
@@ -402,12 +564,12 @@ function pintarSug(){
 }
 function agregarItem(c){
   const ya=form.items.find(x=>x.c===c);
-  if(ya) ya.n++; else form.items.push({c, d:(catalogo[c]||{}).descripcion||"", n:1});
+  if(ya) ya.n++; else form.items.push({c, d:(catalogo[c]||{}).descripcion||"", n:1, pp:false, series:[]});
   $("fBusca").value=""; $("fSug").hidden=true; pintarItems(); $("fBusca").focus();
 }
 function agregarLibre(){
   const d=S($("fBusca").value); if(!d) return;
-  form.items.push({c:"", d, n:1});
+  form.items.push({c:"", d, n:1, pp:false, series:[]});
   $("fBusca").value=""; $("fSug").hidden=true; pintarItems();
 }
 function cambiarCant(i, d){ const it=form.items[i]; if(!it) return; it.n=Math.max(1, it.n+d); pintarItems(); }
@@ -416,9 +578,32 @@ function pintarItems(){
   $("fItems").innerHTML = form.items.length ? form.items.map((it,i)=>`<div class="it">${fotoHtml(it)}
       <div><b>${esc(nombreItem(it))}</b><small>${it.c?esc(it.c):"sin código"}</small></div>
       <span class="cnt"><button type="button" onclick="cambiarCant(${i},-1)" aria-label="Uno menos">−</button><span>${it.n}</span><button type="button" onclick="cambiarCant(${i},1)" aria-label="Uno más">+</button></span>
-      <button type="button" class="x" onclick="quitarItem(${i})" title="Quitar">✕</button></div>`).join("")
+      <button type="button" class="x" onclick="quitarItem(${i})" title="Quitar">✕</button>
+      <div class="it-extra">
+        <div class="series">${Array.from({length:it.n},(_,u)=>`<input class="in sn" data-i="${i}" data-u="${u}" value="${esc((it.series||[])[u]||"")}" placeholder="N.º de serie${it.n>1?" "+(u+1):""}" autocomplete="off" spellcheck="false" enterkeyhint="next" aria-label="Número de serie">`).join("")}</div>
+        <button type="button" class="ppb" aria-pressed="${!!it.pp}" onclick="alternarPP(${i})" title="¿Compró Protection Plus para este producto?">🛡️ ${it.pp?"Con Protection Plus":"Sin Protection Plus"}</button>
+      </div></div>`).join("")
     : `<div class="vacioItems">Todavía no hay producto: buscalo arriba.</div>`;
 }
+function alternarPP(i){ const it=form.items[i]; if(!it) return; it.pp=!it.pp; pintarItems(); }
+
+// ---------- fotos en el formulario ----------
+let fotoSlot=null;
+function pintarFotos(){
+  const sinNube=!nubeOk();
+  $("fFotos").innerHTML=FOTOS.map(f=>{
+    if(form.fotosCargando) return `<div class="ft"><i>⏳</i><small>Cargando…</small></div>`;
+    const u=form.fotos[f.k];
+    if(u) return `<div class="ft lleno" onclick="verFotoForm('${f.k}')" title="Ver"><img src="${u}" alt=""><span>${f.ic} ${esc(f.l)}</span><button type="button" class="fx" onclick="event.stopPropagation();quitarFoto('${f.k}')" title="Quitar foto">✕</button></div>`;
+    return `<button type="button" class="ft" ${sinNube?"disabled":""} onclick="elegirFoto('${f.k}')"><i>${f.ic}</i><b>${esc(f.l)}</b><small>${sinNube?"Solo con la nube":"+ Agregar foto"}</small></button>`;
+  }).join("");
+}
+function elegirFoto(k){
+  if(!nubeOk()){ alert("Las fotos se guardan en la nube de la tienda: esta computadora no está conectada."); return; }
+  fotoSlot=k; $("fArchivo").value=""; $("fArchivo").click();
+}
+function quitarFoto(k){ const f=FOTOS.find(x=>x.k===k); if(!confirm(`¿Quitar la foto de ${f.l}?`)) return; delete form.fotos[k]; pintarFotos(); }
+function verFotoForm(k){ const f=FOTOS.find(x=>x.k===k); abrirVisor(f.ic+" "+f.l, [{f, u:form.fotos[k]}]); }
 function pintarPagos(){
   $("fPagos").innerHTML=PAGOS.map(p=>`<button type="button" aria-pressed="${form.pagos.includes(p.k)}" onclick="alternarPago('${p.k}')">${esc(p.l)}</button>`).join("");
 }
@@ -437,12 +622,12 @@ function irANombres(){
   try{ if(window.parent!==window){ window.parent.location.hash="clientes"; toast("En Clientes tocá ⚙️ Ajustes para cambiar los nombres"); return; } }catch(e){}
   location.href="../index.html#clientes";
 }
-function pintarForm(){ pintarItems(); pintarPagos(); pintarFact(); pintarVendedores(); }
+function pintarForm(){ pintarItems(); pintarFotos(); pintarPagos(); pintarFact(); pintarVendedores(); }
 function limpiarForm(){
   editId=null;
   ["fNombre","fTel","fNit","fCorreo","fDir","fMonto","fFactura","fNota","fBusca"].forEach(id=>$(id).value="");
   const reg=form.registro;
-  form={items:[], pagos:[], fact:false, registro:reg};
+  form={items:[], pagos:[], fact:false, registro:reg, fotos:{}, fotosOrig:{}, fotosCargando:false};
   $("fTitulo").textContent="Nueva preventa"; $("fHint").textContent="Cliente que ya pagó un producto que todavía no está cargado al sistema.";
   $("fGuardar").textContent="Guardar preventa"; $("fcard").classList.remove("editing"); $("fSug").hidden=true;
   pintarForm();
@@ -452,7 +637,9 @@ function editar(id){
   editId=id;
   $("fNombre").value=r.nombre; $("fTel").value=r.telefono; $("fNit").value=r.nit; $("fCorreo").value=r.correo; $("fDir").value=r.direccion;
   $("fMonto").value=r.monto!=null?r.monto:""; $("fFactura").value=r.factura; $("fNota").value=r.nota;
-  form={items:r.items.map(x=>Object.assign({},x)), pagos:r.pagos.slice(), fact:r.facturado, registro:r.registro};
+  const det=detDe(id), hayFotos=FOTOS.some(f=>det.fotos[f.k]);
+  form={items:itemsCon(r), pagos:r.pagos.slice(), fact:r.facturado, registro:r.registro, fotos:{}, fotosOrig:{}, fotosCargando:hayFotos && nubeOk()};
+  if(form.fotosCargando) leerFotos(id).then(m=>{ if(editId!==id) return; const fs={}; FOTOS.forEach(f=>{ if(typeof m[f.k]==="string") fs[f.k]=m[f.k]; }); form.fotosOrig=Object.assign({},fs); form.fotos=fs; form.fotosCargando=false; pintarFotos(); });
   $("fTitulo").textContent="Editando "+numTxt(r.numero); $("fHint").textContent="Cambiá lo que necesités y tocá Guardar cambios.";
   $("fGuardar").textContent="Guardar cambios"; $("fcard").classList.add("editing"); $("status").className="status";
   pintarForm();
@@ -469,18 +656,33 @@ function guardarForm(){
   if(monto && dinero(monto)==null){ estado("err","El monto pagado tiene que ser un número."); $("fMonto").focus(); return; }
   const ahora=new Date().toISOString(), previo=editId && lista.find(x=>x.id===editId);
   const datos={nombre, telefono:tel, nit:S($("fNit").value)||"CF", correo:S($("fCorreo").value), direccion:S($("fDir").value),
-    items:form.items, pagos:PAGOS.map(p=>p.k).filter(k=>form.pagos.includes(k)), monto:monto?dinero(monto):null,
+    items:form.items.map(it=>({c:it.c, d:it.d, n:it.n})), pagos:PAGOS.map(p=>p.k).filter(k=>form.pagos.includes(k)), monto:monto?dinero(monto):null,
     facturado:form.fact, factura:form.fact?S($("fFactura").value):"", fechaFactura:form.fact?((previo&&previo.facturado&&previo.fechaFactura)||ahora):"",
     nota:S($("fNota").value), registro:form.registro, actualizado:ahora};
+  const id=previo ? previo.id : nuevoId();
+  guardarDetalle(id);
   if(previo){
     Object.assign(previo, limpiar(Object.assign({}, previo, datos)));
     guardar(); render(); limpiarForm(); estado("ok","✔ Cambios guardados"); toast("Preventa actualizada");
   } else {
     const numero=Math.max(0,...lista.map(x=>x.numero))+1;
-    const r=limpiar(Object.assign({id:nuevoId(), numero, fecha:ahora}, datos));
+    const r=limpiar(Object.assign({id, numero, fecha:ahora}, datos));
     lista.push(r); guardar();
     filtro = r.facturado ? "fact" : "pend";
     render(); limpiarForm(); estado("ok",`✔ Preventa ${numTxt(numero)} guardada`); toast(`Preventa ${numTxt(numero)} guardada`);
+  }
+}
+
+// series, Protection Plus y fotos (cada cosa en su colección)
+function guardarDetalle(id){
+  const items={}, base=form.items.map(it=>({c:it.c, d:it.d, n:it.n}));
+  form.items.forEach((it,i)=>{ const series=(it.series||[]).slice(0,it.n).map(t=>S(t).toUpperCase()); if(it.pp || series.some(Boolean)) items[claveItem(base,i)]={pp:!!it.pp, series}; });
+  // si las fotos no terminaron de cargar, se dejan como estaban
+  const fotos = form.fotosCargando ? Object.assign({}, detDe(id).fotos) : Object.fromEntries(FOTOS.filter(f=>form.fotos[f.k]).map(f=>[f.k,true]));
+  setDet(id, Object.keys(items).length || Object.keys(fotos).length ? {items, fotos} : null);
+  if(!form.fotosCargando && nubeOk() && estable(form.fotos)!==estable(form.fotosOrig)){
+    const ahoraF=Object.assign({}, form.fotos), antesF=Object.assign({}, form.fotosOrig);
+    Nube.iniciar().then(db=>{ if(db) Nube.guardarMapa("preventas_fotos", id, ahoraF, antesF); });
   }
 }
 
@@ -493,7 +695,7 @@ function filtradas(sinFiltro){
   return lista.filter(r=>{
     if(!sinFiltro && !pasa(r)) return false;
     if(qs.length){
-      const k=fold([numTxt(r.numero), r.nombre, r.nit, r.correo, r.direccion, r.factura, r.nota, r.registro, ...r.items.map(i=>i.c+" "+nombreItem(i)), ...r.pagos.map(p=>pagoDe(p).l)].join(" "))+" "+soloDigitos(r.telefono);
+      const k=fold([numTxt(r.numero), r.nombre, r.nit, r.correo, r.direccion, r.factura, r.nota, r.registro, ...itemsCon(r).map(i=>i.c+" "+nombreItem(i)+" "+i.series.join(" ")+(i.pp?" protection plus seguro":"")), ...r.pagos.map(p=>pagoDe(p).l)].join(" "))+" "+soloDigitos(r.telefono);
       if(!qs.every(q=>k.includes(q))) return false;
     }
     return true;
@@ -521,7 +723,10 @@ function render(){
       ${r.direccion?`<div><b>Dirección:</b> ${esc(r.direccion)}</div>`:""}
       ${r.nota?`<div><b>Notas:</b> ${esc(r.nota)}</div>`:""}
     </div>
-    <div class="pv-prods">${r.items.map(it=>`<div class="pp">${fotoHtml(it)}<div><b>${esc(nombreItem(it))}</b><small>${it.c?esc(it.c):"sin código"}</small></div><span class="n">× ${it.n}</span></div>`).join("")}</div>
+    <div class="pv-prods">${itemsCon(r).map(it=>`<div class="pp">${fotoHtml(it)}<div><b>${esc(nombreItem(it))}</b><small>${it.c?esc(it.c):"sin código"}</small>
+        ${seriesTxt(it).length?`<span class="sns">S/N: ${esc(seriesTxt(it).join(" · "))}</span>`:""}${faltanSeries(it)?`<span class="sns falta">⚠️ Falta ${seriesTxt(it).length?"una serie":"el número de serie"}</span>`:""}
+        ${it.pp?`<span class="ppt">🛡️ Con Protection Plus</span>`:""}</div><span class="n">× ${it.n}</span></div>`).join("")}</div>
+    ${FOTOS.some(f=>detDe(r.id).fotos[f.k])?`<div class="fchips">${FOTOS.filter(f=>detDe(r.id).fotos[f.k]).map(f=>`<button type="button" class="fchip" onclick="verFotos(${jsq(r.id)})">${f.ic} ${esc(f.l)}</button>`).join("")}</div>`:""}
     <div class="pv-pago">${r.pagos.map(p=>`<span class="tag">${esc(pagoDe(p).l)}</span>`).join("")}${r.monto!=null?`<span class="monto">${qq(r.monto)}</span>`:""}</div>
     <div class="pv-foot"><span class="meta">${r.registro?`Registró <b>${esc(r.registro)}</b>`:""}${r.facturado&&r.fechaFactura?`${r.registro?" · ":""}facturada el ${fechaCorta(r.fechaFactura)}`:""}</span>
       ${r.facturado?`<button class="btn ghost sm" onclick="marcarFactura(${jsq(r.id)}, false)">↩ Quitar facturada</button>`:`<button class="btn ok sm" onclick="marcarFactura(${jsq(r.id)}, true)">🧾 Marcar como facturada</button>`}</div>
@@ -530,6 +735,8 @@ function render(){
 function marcarFactura(id, si){
   const r=lista.find(x=>x.id===id); if(!r) return;
   if(si){
+    const faltan=itemsCon(r).filter(faltanSeries);
+    if(faltan.length && !confirm(`Falta el número de serie de:\n${faltan.map(it=>"• "+nombreItem(it)).join("\n")}\n\n¿Marcar como facturada igual? (la serie se puede poner después con ✎ Editar)`)) return;
     const f=prompt(`${numTxt(r.numero)} · ${r.nombre}\n\nN.º de factura (opcional):`, r.factura||"");
     if(f===null) return;
     Object.assign(r, {facturado:true, factura:S(f).slice(0,40), fechaFactura:new Date().toISOString()});
@@ -545,9 +752,29 @@ function marcarFactura(id, si){
 function borrar(id){
   const r=lista.find(x=>x.id===id); if(!r) return;
   if(!confirm(`¿Borrar la preventa ${numTxt(r.numero)} de ${r.nombre}? No se puede deshacer.`)) return;
+  const tenia=FOTOS.some(f=>detDe(id).fotos[f.k]);
   lista=lista.filter(x=>x.id!==id);
   if(editId===id) limpiarForm();
-  guardar(); render(); toast("Preventa borrada");
+  guardar(); setDet(id, null);
+  if(tenia && nubeOk()) Nube.iniciar().then(db=>{ if(db) Nube.guardarColeccion("preventas_fotos", {}, {[id]:1}); });
+  render(); toast("Preventa borrada");
+}
+
+// ============================================================
+//  VER FOTOS
+// ============================================================
+function abrirVisor(titulo, fotos){
+  $("visorTit").textContent=titulo;
+  $("visorFotos").innerHTML=fotos.map(({f,u})=>`<figure><figcaption>${f.ic} ${esc(f.l)}<a href="${u}" download="${esc(f.l)}.jpg">⬇️ Descargar</a></figcaption><img src="${u}" alt="${esc(f.l)}"></figure>`).join("") || `<div class="empty"><b>No se encontraron las fotos</b>Revisá que esta computadora esté conectada a la nube.</div>`;
+  $("visor").classList.add("show"); $("visor").scrollTop=0;
+}
+function cerrarVisor(){ $("visor").classList.remove("show"); $("visorFotos").innerHTML=""; }
+async function verFotos(id){
+  const r=lista.find(x=>x.id===id); if(!r) return;
+  abrirVisor(`📷 ${numTxt(r.numero)} · ${r.nombre}`, []); $("visorFotos").innerHTML=`<div class="empty"><b>⏳ Cargando fotos…</b></div>`;
+  const m=await leerFotos(id);
+  if(!$("visor").classList.contains("show")) return;
+  abrirVisor(`📷 ${numTxt(r.numero)} · ${r.nombre}`, FOTOS.filter(f=>typeof m[f.k]==="string").map(f=>({f, u:m[f.k]})));
 }
 
 // ============================================================
@@ -558,8 +785,8 @@ async function exportExcel(){
   if(!L.length){ alert(lista.length?"No hay preventas con el filtro actual.":"Todavía no hay preventas."); return; }
   const DARK="FF44546A", WHITE="FFFFFFFF", INK="FF4A4F59", GRIDBG="FFF7F8FA";
   const wb=new ExcelJS.Workbook(), ws=wb.addWorksheet("Preventas",{views:[{showGridLines:false,state:"frozen",ySplit:5}]});
-  const heads=["N.º","Fecha","Cliente","Teléfono","NIT","Correo","Dirección","Productos","Forma de pago","Monto pagado","Facturada","N.º de factura","Facturada el","Registró","Notas"];
-  const widths=[9,11,26,12,13,26,30,46,24,14,11,15,12,12,30];
+  const heads=["N.º","Fecha","Cliente","Teléfono","NIT","Correo","Dirección","Productos","N.º de serie","Protection Plus","Forma de pago","Monto pagado","Facturada","N.º de factura","Facturada el","Registró","Fotos","Notas"];
+  const widths=[9,11,26,12,13,26,30,46,24,16,24,14,11,15,12,12,22,30];
   ws.columns=[{width:3},...widths.map(w=>({width:w})),{width:3}];
   const B=2, K=B+heads.length-1;
   const thin={style:"thin",color:{argb:"FFB9C0CC"}}, border={top:thin,left:thin,bottom:thin,right:thin};
@@ -574,12 +801,14 @@ async function exportExcel(){
   const font={name:"Calibri",size:11,color:{argb:INK}};
   let r=6;
   L.forEach(x=>{
+    const its=itemsCon(x), fts=FOTOS.filter(f=>detDe(x.id).fotos[f.k]).map(f=>f.l).join(", ");
     const vals=[numTxt(x.numero),fechaCorta(x.fecha),x.nombre,telBonito(x.telefono),x.nit,x.correo,x.direccion,
-      x.items.map(i=>`${i.n} × ${i.c?i.c+" · ":""}${nombreItem(i)}`).join("\n"), x.pagos.map(p=>pagoDe(p).l).join(", "),
-      x.monto!=null?x.monto:"", x.facturado?"Sí":"No", x.factura, x.facturado&&x.fechaFactura?fechaCorta(x.fechaFactura):"", x.registro, x.nota];
+      its.map(i=>`${i.n} × ${i.c?i.c+" · ":""}${nombreItem(i)}`).join("\n"), its.map(i=>seriesTxt(i).join(", ")||"—").join("\n"),
+      its.map(i=>i.pp?"Sí":"No").join("\n"), x.pagos.map(p=>pagoDe(p).l).join(", "),
+      x.monto!=null?x.monto:"", x.facturado?"Sí":"No", x.factura, x.facturado&&x.fechaFactura?fechaCorta(x.fechaFactura):"", x.registro, fts, x.nota];
     vals.forEach((v,i)=>{ const c=ws.getCell(r,B+i); c.value=v; c.font=font; c.border=border; c.fill={type:"pattern",pattern:"solid",fgColor:{argb:GRIDBG}};
-      c.alignment={vertical:"top",wrapText:[6,7,14].includes(i),horizontal:[0,1,3,10,12].includes(i)?"center":(i===9?"right":"left"),indent:[0,1,3,9,10,12].includes(i)?0:1};
-      if(i===9 && v!=="") c.numFmt='"Q"#,##0.00'; });
+      c.alignment={vertical:"top",wrapText:[6,7,8,9,16,17].includes(i),horizontal:[0,1,3,9,12,14].includes(i)?"center":(i===11?"right":"left"),indent:[0,1,3,9,11,12,14].includes(i)?0:1};
+      if(i===11 && v!=="") c.numFmt='"Q"#,##0.00'; });
     r++;
   });
   ws.mergeCells(r,B,r,B+6); const g1=ws.getCell(r,B); g1.value="TOTAL";
@@ -612,6 +841,25 @@ $("fBusca").addEventListener("keydown", e=>{
   if(sugs.length) return agregarItem(sugs[sugSel]||sugs[0]);
   if(t) agregarLibre();
 });
+// series: se guardan mientras se escriben; Enter pasa a la siguiente (sirve con el escáner)
+$("fItems").addEventListener("input", e=>{
+  const t=e.target; if(!t.classList.contains("sn")) return;
+  const it=form.items[+t.dataset.i]; if(!it) return;
+  it.series=(it.series||[]).slice(); it.series[+t.dataset.u]=S(t.value).toUpperCase();
+});
+$("fItems").addEventListener("keydown", e=>{
+  if(e.key!=="Enter" || !e.target.classList.contains("sn")) return;
+  e.preventDefault();
+  const todas=[...document.querySelectorAll("#fItems .sn")], i=todas.indexOf(e.target);
+  if(todas[i+1]) todas[i+1].focus(); else e.target.blur();
+});
+$("fArchivo").addEventListener("change", async e=>{
+  const f=e.target.files && e.target.files[0], k=fotoSlot; if(!f || !k) return;
+  try{ form.fotos[k]=await comprimir(f); pintarFotos(); }
+  catch(err){ alert("No se pudo leer esa foto. Probá con otra."); }
+});
+$("visor").addEventListener("click", e=>{ if(e.target.id==="visor") cerrarVisor(); });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape" && $("visor").classList.contains("show")) cerrarVisor(); });
 document.querySelectorAll("#fFact button").forEach(b=>b.addEventListener("click", ()=>{ form.fact=b.dataset.v==="1"; pintarFact(); if(form.fact) $("fFactura").focus(); }));
 $("fMonto").addEventListener("blur", ()=>{ const v=dinero($("fMonto").value); if(v!=null && S($("fMonto").value)) $("fMonto").value=v.toLocaleString("es-GT",{minimumFractionDigits:2,maximumFractionDigits:2}); });
 $("fGuardar").addEventListener("click", guardarForm);
@@ -625,6 +873,7 @@ addEventListener("storage", e=>{ if(e.key===LS_CLIENTES){ try{ const c=JSON.pars
 // ---------- inicio ----------
 armarCatalogo(null);
 cargarLocal();
+cargarDet();
 limpiarForm();
 render();
 conectarNube();
