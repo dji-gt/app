@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Precios para las mesas · DJI</title>
+<style>
+  :root{
+    --bg:#f3f4f7; --card:#ffffff; --ink:#14171c; --ink-2:#3b424d; --muted:#8b93a1;
+    --line:#e9ebef; --line-2:#f1f3f6;
+    --black:#111318;
+    --accent:#2563eb; --accent-d:#1d4ed8; --accent-bg:#eef3fe;
+    --ok:#0e9f6e; --ok-bg:#e7f7f0; --ok-br:#bfe9d7;
+    --warn:#b7791f; --warn-bg:#fdf6e6; --warn-br:#f0e0b8;
+    --err:#e02424; --err-bg:#fdecec; --err-br:#f6c9c9;
+    --pp:#6d28d9; --pp-bg:#f3edfe; --pp-br:#ddd0fb;
+    --shadow-sm:0 1px 2px rgba(16,24,40,.06);
+    --shadow:0 1px 3px rgba(16,24,40,.06),0 10px 26px rgba(16,24,40,.05);
+    --shadow-lg:0 18px 44px rgba(16,24,40,.13);
+    --r:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  [hidden]{display:none!important}
+  input,button,textarea,select{font-family:inherit}
+
+  .appbar{background:var(--black);color:#fff;padding:0 22px;display:flex;align-items:center;gap:12px;height:66px;position:sticky;top:0;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.16)}
+  .appbar b{font-size:17px;font-weight:750;white-space:nowrap}
+  .appbar .sub{font-size:13px;color:rgba(255,255,255,.6);font-weight:600}
+  .ab-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .appbar .logo{height:26px;opacity:.95;margin-left:4px}
+
+  .wrap{max-width:1360px;margin:0 auto;padding:20px 20px 40px}
+  .grid{display:grid;grid-template-columns:330px minmax(0,1fr);gap:18px;align-items:start}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+
+  /* lista de tarjetas */
+  .lcard{position:sticky;top:84px;display:flex;flex-direction:column;max-height:calc(100vh - 100px)}
+  .lc-top{padding:14px 14px 10px;border-bottom:1px solid var(--line-2)}
+  .sbox{position:relative}
+  .sbox span{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;opacity:.6}
+  .sbox input{width:100%;padding:11px 12px 11px 38px;border:2px solid var(--line);border-radius:12px;font-size:15px;outline:none;background:#fff;font-weight:600}
+  .sbox input:focus{border-color:var(--accent)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .chips button{border:1.5px solid var(--line);background:#fff;border-radius:20px;padding:5px 10px;font-size:12.5px;font-weight:800;color:var(--ink-2);cursor:pointer}
+  .chips button[aria-pressed="true"]{border-color:var(--black);background:var(--black);color:#fff}
+  .lista{overflow:auto;padding:6px 8px;flex:1;min-height:120px}
+  .lgrupo{font-size:11.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin:10px 8px 4px}
+  .fila{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;border-radius:11px;padding:2px 4px}
+  .fila:hover{background:var(--line-2)}
+  .fila.on{background:var(--accent-bg);box-shadow:inset 0 0 0 1.5px #c9d6f5}
+  .fila input{width:17px;height:17px;margin:0 0 0 4px;accent-color:var(--black);cursor:pointer}
+  .fila .ab{border:none;background:none;text-align:left;padding:7px 4px;cursor:pointer;font:inherit;color:inherit;min-width:0}
+  .fila .ab b{display:block;font-size:13.5px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .fila .ab small{display:block;font-size:12px;color:var(--muted);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .badge{font-size:10.5px;font-weight:800;border-radius:20px;padding:2px 7px;white-space:nowrap;margin-right:4px}
+  .badge.ed{background:var(--warn-bg);color:#8a5b12;border:1px solid var(--warn-br)}
+  .badge.nu{background:var(--ok-bg);color:#0b7a53;border:1px solid var(--ok-br)}
+  .badge.oc{background:var(--line-2);color:var(--muted);border:1px solid var(--line)}
+  .fila.oculta .ab{opacity:.55}
+  .vacio{padding:24px 12px;text-align:center;color:var(--muted);font-size:13.5px}
+  .lc-pie{border-top:1px solid var(--line-2);padding:10px 12px;display:grid;gap:8px}
+  .lc-pie .r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .lc-pie .r.sp{justify-content:space-between}
+  .lnk{border:none;background:none;color:var(--accent-d);font-weight:800;font-size:13px;cursor:pointer;padding:0}
+  .chk{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--ink-2);cursor:pointer}
+  .copias{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--ink-2)}
+  .copias input{width:54px;padding:7px 8px;border:2px solid var(--line);border-radius:9px;font-size:14px;font-weight:700;outline:none;text-align:center}
+
+  .btn{border:none;border-radius:11px;padding:11px 15px;font-size:14px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
+  .btn.primary{background:var(--accent);color:#fff}.btn.primary:hover{background:var(--accent-d)}
+  .btn.dark{background:var(--black);color:#fff}
+  .btn.ghost{background:var(--line-2);color:var(--ink-2)}.btn.ghost:hover{background:#e7eaef}
+  .btn.sm{padding:8px 11px;font-size:13px;border-radius:9px}
+  .btn.danger{background:var(--err-bg);color:#b71c1c}
+  .btn[disabled]{opacity:.45;cursor:not-allowed}
+
+  /* vista previa */
+  .vcard{padding:16px 18px 14px}
+  .vc-top{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .vc-top h2{margin:0;font-size:18px;font-weight:850;line-height:1.2}
+  .vc-top small{display:block;font-size:12.5px;color:var(--muted);font-weight:700;margin-top:2px}
+  .vc-acts{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+  .vista{position:relative;overflow:hidden;border-radius:6px;background:#d9dce2;padding:0}
+  .escala{width:max-content;transform-origin:0 0}
+  .escala .tj{box-shadow:0 0 0 1px rgba(0,0,0,.12)}
+  .cortada{margin-top:10px;font-size:13px;font-weight:700;color:#8a5b12;background:var(--warn-bg);border:1px solid var(--warn-br);border-radius:10px;padding:8px 11px}
+  .medida{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:var(--ink-2);font-weight:700}
+  .medida input{width:66px;padding:7px 8px;border:2px solid var(--line);border-radius:9px;font-size:14px;font-weight:700;outline:none;text-align:center}
+  .medida input:focus{border-color:var(--accent)}
+  .medida .info{color:var(--muted);font-weight:600}
+
+  /* editor */
+  .ed{margin-top:16px;padding:6px 18px 18px}
+  .sec{padding-top:14px;margin-top:14px;border-top:1px solid var(--line-2)}
+  .sec:first-child{border-top:none;margin-top:0}
+  .sec h3{margin:0 0 4px;font-size:12px;font-weight:850;letter-spacing:.6px;text-transform:uppercase;color:#44546a;display:flex;align-items:center;gap:8px}
+  .sec .hint{margin:0 0 10px;font-size:12.5px;color:var(--muted);font-weight:600}
+  .fl{display:block;font-size:11.5px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;color:var(--muted);margin:10px 0 4px}
+  .in{width:100%;padding:10px 11px;border:2px solid var(--line);border-radius:10px;font-size:14.5px;outline:none;background:#fafbfc;color:var(--ink)}
+  .in:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+  textarea.in{resize:vertical;min-height:42px;line-height:1.4}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .precios{display:grid;gap:8px}
+  .pr{display:grid;grid-template-columns:minmax(0,1fr) 150px 150px;gap:10px;align-items:center;background:var(--line-2);border-radius:12px;padding:8px 10px}
+  .pr-n{font-weight:800;font-size:14px;line-height:1.25;min-width:0}
+  .pr-n small{display:block;font-size:11.5px;color:var(--muted);font-weight:700}
+  .pr-h{display:grid;grid-template-columns:minmax(0,1fr) 150px 150px;gap:10px;padding:0 10px;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)}
+  .money{display:flex;align-items:center;border:2px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
+  .money i{font-style:normal;font-weight:800;color:var(--muted);padding:0 2px 0 10px;white-space:nowrap;font-size:13.5px}
+  .money input{flex:1;min-width:0;width:100%;border:none;outline:none;background:transparent;padding:9px 10px 9px 4px;font-size:16px;font-weight:800}
+  .money:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+  .money.pp i{color:var(--pp)}
+  .money.pp:focus-within{border-color:var(--pp);box-shadow:0 0 0 3px rgba(109,40,217,.1)}
+  .parte{border:1px solid var(--line);border-radius:14px;padding:4px 14px 14px;margin-top:12px}
+  .parte>h4{margin:10px 0 0;font-size:14px;font-weight:850;display:flex;align-items:center;gap:8px}
+  .feats{display:grid;gap:6px}
+  .ft{display:grid;grid-template-columns:40px minmax(0,1fr) 34px 34px;gap:6px;align-items:center}
+  .ft .in{padding:8px 10px;font-size:14px}
+  .icb{width:40px;height:40px;border:2px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink);position:relative;padding:0}
+  .icb svg{width:24px;height:24px}
+  .icb.auto::after{content:"auto";position:absolute;bottom:-1px;right:-1px;font-size:8px;font-weight:800;background:var(--line);color:var(--ink-2);border-radius:5px 0 8px 0;padding:0 3px;line-height:1.4}
+  .ib{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--ink-2);font-weight:800;font-size:14px;padding:0}
+  .ib:hover{background:var(--line-2)}
+  .ib.del:hover{background:var(--err-bg);color:#b71c1c}
+  .ib[disabled]{opacity:.35;cursor:default}
+  .vers{display:grid;gap:10px}
+  .ver{background:var(--line-2);border-radius:12px;padding:4px 12px 12px}
+  .ver-h{display:flex;align-items:center;gap:6px;margin-top:8px}
+  .ver-h b{font-size:13px;font-weight:850;color:var(--ink-2);flex:1}
+  .add{margin-top:8px}
+  .opts{display:grid;gap:8px;grid-template-columns:minmax(0,1fr)}
+  .opts .btn{white-space:normal;text-align:left}
+  .sw{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:700;cursor:pointer}
+  .sw input{width:18px;height:18px;accent-color:var(--black)}
+  select.in{padding:9px 10px}
+
+  /* selector de íconos */
+  .picker{position:fixed;z-index:200;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg);padding:10px;width:330px;max-width:calc(100vw - 20px);max-height:60vh;overflow:auto}
+  .picker .pk-h{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+  .picker .pk-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:5px}
+  .picker button.pk{height:40px;border:1.5px solid var(--line);border-radius:9px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;color:var(--ink)}
+  .picker button.pk:hover{border-color:var(--accent);background:var(--accent-bg)}
+  .picker button.pk[aria-pressed="true"]{border-color:var(--black);box-shadow:inset 0 0 0 1px var(--black)}
+  .picker button.pk svg{width:24px;height:24px}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--black);color:#fff;padding:11px 16px;border-radius:11px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:300;box-shadow:var(--shadow-lg);max-width:calc(100% - 32px)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:980px){
+    .grid{grid-template-columns:minmax(0,1fr)}
+    .lcard{position:static;max-height:none}
+    .lista{max-height:46vh}
+  }
+  @media(max-width:720px){
+    .appbar{padding:0 14px;height:60px}
+    .appbar .sub{display:none}
+    .wrap{padding:14px 12px 40px}
+    .vcard{padding:14px 12px 12px}
+    .ed{padding:4px 12px 14px}
+    .vc-acts{margin-left:0;width:100%}
+    .vc-acts .btn{flex:1 1 auto}
+    .pr,.pr-h{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+    .pr-n{grid-column:1/-1}
+    .pr-h span:first-child{display:none}
+    .row2{grid-template-columns:minmax(0,1fr)}
+  }
+</style>
+</head>
+<body>
+<div class="appbar">
+  <b>🏷️ Precios para las mesas</b><span class="sub">Buscá el modelo, cambiá el precio e imprimí la tarjeta</span>
+  <div class="ab-right">
+    <span id="nubeEstado"></span>
+    <img src="../recepcion/logo.png" class="logo" alt="DJI">
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="grid">
+    <aside class="card lcard">
+      <div class="lc-top">
+        <div class="sbox"><span>🔎</span><input id="q" type="search" placeholder="Buscar modelo…" autocomplete="off"></div>
+        <div class="chips" id="cats"></div>
+      </div>
+      <div class="lista" id="lista"></div>
+      <div class="lc-pie">
+        <div class="r sp">
+          <button class="btn ghost sm" id="btnNueva">＋ Nueva tarjeta</button>
+          <label class="chk"><input type="checkbox" id="verOcultas"> Ver ocultas</label>
+        </div>
+        <div class="r sp">
+          <span style="font-size:13px;font-weight:700;color:var(--ink-2)"><b id="nSel">0</b> para imprimir</span>
+          <button class="lnk" id="btnTodas">Marcar todas</button>
+        </div>
+        <div class="r">
+          <label class="copias">Copias <input id="copias" type="number" min="1" max="20" value="1" inputmode="numeric"></label>
+          <button class="btn dark sm" id="btnImpSel" style="flex:1">🖨️ Imprimir marcadas</button>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <section class="card vcard">
+        <div class="vc-top">
+          <div><h2 id="vTitulo">—</h2><small id="vInfo"></small></div>
+          <div class="vc-acts">
+            <button class="btn primary sm" id="btnImp">🖨️ Imprimir esta</button>
+            <button class="btn ghost sm" id="btnDup" title="Hacer una tarjeta nueva a partir de esta">Duplicar</button>
+            <button class="btn ghost sm" id="btnRest" title="Volver a la tarjeta original">↺ Original</button>
+            <button class="btn ghost sm" id="btnOcultar">Ocultar</button>
+          </div>
+        </div>
+        <div class="vista" id="vista"></div>
+        <div class="cortada" id="cortada" hidden>⚠️ No cabe todo en la tarjeta: acortá algún texto o cambiá la medida.</div>
+        <div class="medida">
+          Medida de la tarjeta:
+          <input id="mAncho" type="number" min="40" max="260" step="0.5" inputmode="decimal" aria-label="Ancho en milímetros"> ×
+          <input id="mAlto" type="number" min="30" max="260" step="0.5" inputmode="decimal" aria-label="Alto en milímetros"> mm
+          <span class="info" id="porHoja"></span>
+        </div>
+      </section>
+      <section class="card ed" id="editor"></section>
+    </main>
+  </div>
+</div>
+
+<div class="picker" id="picker" hidden></div>
+<div class="toast" id="toast"></div>
+
+<script src="../nube.js?v=20261116a"></script>
+<script src="tarjeta.js?v=20261116a"></script>
+<script src="tarjetas-base.js?v=20261116a"></script>
+<script>
+"use strict";
+/* ============================================================
+   Tarjetas de precio para las mesas.
+   - Las tarjetas de fábrica están en tarjetas-base.js.
+   - Lo que se cambia (precios, textos, tarjetas nuevas, ocultas) se guarda
+     en la nube en "tarjetas": un documento por tarjeta con un campo por dato
+     ("p0:v1:p" = precio de la 2.ª versión, "borrado" = oculta) que va encima
+     de la de fábrica. Borrar el documento = volver a como venía.
+   - La medida de la tarjeta: ajustes/tarjetas → medida {ancho, alto} (mm).
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const T = window.Tarjeta, BASE = window.TARJETAS_BASE || [], CATS = window.TARJETAS_CATS || [], TXT = window.TARJETAS_TEXTOS || {};
+const estable = (window.Nube && Nube.estable) || (v=>JSON.stringify(v));
+{ const st=document.createElement("style"); st.textContent=T.CSS; document.head.appendChild(st); }
+const S = x => x==null ? "" : String(x);
+const esc = s => S(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const clon = o => JSON.parse(JSON.stringify(o));
+const LS_C="dji_tarjetas", LS_M="dji_tarjetas_medida", LS_S="dji_tarjetas_sel", LS_A="dji_tarjetas_abierta", LS_N="dji_tarjetas_copias";
+const leer = (k,d) => { try{ const v=localStorage.getItem(k); return v==null ? d : JSON.parse(v); }catch(e){ return d; } };
+const escribir = (k,v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
+let tToast=null;
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tToast); tToast=setTimeout(()=>t.classList.remove("show"),2600); }
+
+const MEDIDA_INICIAL = {ancho:200, alto:85};
+const BASE_ID = {}; BASE.forEach((t,i)=>{ BASE_ID[t.id]={t, i}; });
+const CAT_ORDEN = {}; CATS.forEach(([c],i)=>{ CAT_ORDEN[c]=i; });
+const nombreCat = c => (CATS.find(x=>x[0]===c)||[c,c])[1];
+
+const ID_OK = id => /^[\w-]{1,60}$/.test(id);
+let docs = limpiarDocs(leer(LS_C, {}));    // id → campos de la tarjeta (lo mismo que hay en la nube + lo que falta subir)
+let medida = limpiaMedida(leer(LS_M, null)) || Object.assign({}, MEDIDA_INICIAL);
+let selec = new Set((leer(LS_S, [])||[]).filter(x=>typeof x==="string"));
+let actual = null, edit = null, base = null;   // base: cómo estaba en la nube la tarjeta abierta (para unir cambios de dos equipos)
+let filtroCat = "todas", query = "", verOcultas = false;
+let nube = null, sucios = new Set(), tSubir = null, remotoPendiente = false, escuchando = false;
+
+function limpiaMedida(m){
+  if(!m || typeof m!=="object") return null;
+  const a=Number(m.ancho), h=Number(m.alto);
+  if(!(a>=40 && a<=260 && h>=30 && h<=260)) return null;
+  return {ancho:Math.round(a*10)/10, alto:Math.round(h*10)/10};
+}
+function limpiarDocs(c){
+  const out={};
+  if(c && typeof c==="object") for(const id in c){ const d=c[id]; if(ID_OK(id) && d && typeof d==="object" && !Array.isArray(d)) out[id]=Object.assign({}, d); }
+  return out;
+}
+// lo que llega de la nube viene con cada campo en texto (JSON)
+function leerDoc(d){ const o={}; for(const k in (d||{})){ try{ o[k]=JSON.parse(d[k]); }catch(e){} } return o; }
+
+// ---------- datos de una tarjeta ----------
+function normal(t){
+  const N = x => (x===""||x==null||!isFinite(Number(x))) ? null : Number(x);
+  const L = a => Array.isArray(a) ? a.map(S) : [];
+  const partes=(Array.isArray(t&&t.partes)?t.partes:[]).slice(0,2).map(p=>({
+    titulo:S(p&&p.titulo), sub:S(p&&p.sub),
+    feats:(Array.isArray(p&&p.feats)?p.feats:[]).map(f=>Array.isArray(f) ? [S(f[0]), S(f[1])] : ["", S(f)]),
+    vers:(Array.isArray(p&&p.vers)?p.vers:[]).map(v=>({n:S(v&&v.n), s:S(v&&v.s), p:N(v&&v.p), pp:N(v&&v.pp), items:L(v&&v.items), desc:S(v&&v.desc)})),
+    comun:L(p&&p.comun)
+  }));
+  if(!partes.length) partes.push({titulo:"", sub:"", feats:[], vers:[], comun:[]});
+  return {id:S(t&&t.id), cat:S(t&&t.cat)||"accesorios", partes, banda:!!(t && t.banda!==false), ppOn:!!(t&&t.ppOn), ppTxt:S(t&&t.ppTxt), notas:S(t&&t.notas)};
+}
+/* En la nube cada dato va en su propio campo ("p0:v1:p" = precio de la 2.ª versión),
+   así dos personas cambiando cosas distintas de la misma tarjeta no se pisan. */
+function aPlano(t){
+  const n=normal(t), o={cat:n.cat, banda:n.banda, ppOn:n.ppOn, ppTxt:n.ppTxt, notas:n.notas, np:n.partes.length};
+  n.partes.forEach((p,i)=>{
+    const P="p"+i+":";
+    o[P+"titulo"]=p.titulo; o[P+"sub"]=p.sub; o[P+"comun"]=p.comun; o[P+"nf"]=p.feats.length; o[P+"nv"]=p.vers.length;
+    p.feats.forEach((f,j)=>{ o[P+"f"+j]=f; });
+    p.vers.forEach((v,j)=>{ const V=P+"v"+j+":"; o[V+"n"]=v.n; o[V+"s"]=v.s; o[V+"p"]=v.p; o[V+"pp"]=v.pp; o[V+"items"]=v.items; o[V+"desc"]=v.desc; });
+  });
+  return o;
+}
+function desdePlano(o, id){
+  const cuantos=(x,max)=>Math.max(0, Math.min(max, Math.floor(Number(x))||0));
+  const np=Math.max(1, cuantos(o.np, 2)), partes=[];
+  for(let i=0;i<np;i++){
+    const P="p"+i+":";
+    partes.push({titulo:o[P+"titulo"], sub:o[P+"sub"], comun:o[P+"comun"],
+      feats:Array.from({length:cuantos(o[P+"nf"], 40)}, (_,j)=>o[P+"f"+j]||["",""]),
+      vers:Array.from({length:cuantos(o[P+"nv"], 20)}, (_,j)=>{ const V=P+"v"+j+":"; return {n:o[V+"n"], s:o[V+"s"], p:o[V+"p"], pp:o[V+"pp"], items:o[V+"items"], desc:o[V+"desc"]}; })});
+  }
+  return normal({id, cat:o.cat, partes, banda:o.banda, ppOn:o.ppOn, ppTxt:o.ppTxt, notas:o.notas});
+}
+const META = {borrado:1, actualizado:1};
+const sinMeta = o => { const r={}; for(const k in (o||{})) if(!META[k]) r[k]=o[k]; return r; };
+const PLANO_BASE = {}; BASE.forEach(t=>{ PLANO_BASE[t.id]=aPlano(t); });
+const NORMAL_BASE = {}; BASE.forEach(t=>{ NORMAL_BASE[t.id]=estable(normal(t)); });
+const tieneDatos = d => !!d && Object.keys(d).some(k=>!META[k]);
+// tarjeta tal como queda: la de fábrica + lo cambiado (null si no existe)
+function planoEn(mapa, id){
+  const d=mapa && mapa[id];
+  if(!PLANO_BASE[id] && !tieneDatos(d)) return null;
+  return Object.assign({}, PLANO_BASE[id]||{}, sinMeta(d));
+}
+function tarjeta(id){ const p=planoEn(docs, id); return p ? desdePlano(p, id) : null; }
+const oculta = id => !!(docs[id] && docs[id].borrado);
+const deFabrica = id => !!BASE_ID[id];
+const editada = id => deFabrica(id) && tieneDatos(docs[id]) && estable(tarjeta(id))!==NORMAL_BASE[id];
+function todasIds(){
+  const ids=BASE.map(t=>t.id);
+  Object.keys(docs).filter(id=>!BASE_ID[id] && tieneDatos(docs[id])).sort().forEach(id=>ids.push(id));
+  return ids;
+}
+const tituloDe = t => t.partes.map(p=>p.titulo||"Sin nombre").join(" + ");
+function rangoPrecios(t){
+  const ps=[]; t.partes.forEach(p=>p.vers.forEach(v=>{ if(v.p!=null) ps.push(v.p); }));
+  const nv=t.partes.reduce((a,p)=>a+p.vers.length,0);
+  const vtxt=nv===1?"1 versión":nv+" versiones";
+  if(!ps.length) return vtxt+" · sin precio";
+  const mn=Math.min(...ps), mx=Math.max(...ps);
+  return vtxt+" · "+(mn===mx ? T.precio(mn) : T.precio(mn)+" – "+T.precio(mx));
+}
+
+// ---------- guardar ----------
+function guardarLocal(){ escribir(LS_C, docs); }
+function marcar(id, doc){
+  if(doc) docs[id]=doc; else delete docs[id];
+  guardarLocal(); sucios.add(id); programarSubida();
+}
+function guardarTarjeta(id, t){
+  const d=Object.assign(aPlano(t), {actualizado:Date.now()});
+  if(oculta(id)) d.borrado=true;
+  if(docs[id] && estable(sinMeta(d))===estable(sinMeta(docs[id])) && !!d.borrado===!!docs[id].borrado) return;
+  marcar(id, d);
+}
+function comoEnNube(id){
+  const n=nube && nube[id], o=Object.assign({}, planoEn(nube, id)||{});
+  if(n){ if("borrado" in n) o.borrado=n.borrado; if("actualizado" in n) o.actualizado=n.actualizado; }
+  return o;
+}
+function programarSubida(){ clearTimeout(tSubir); tSubir=setTimeout(subir, 450); }
+function subir(){
+  clearTimeout(tSubir); tSubir=null;
+  if(!window.Nube || !Nube.conectado() || nube===null) return;   // sin nube: queda en este equipo
+  const ids=[...sucios]; sucios.clear();
+  ids.forEach(id=>{
+    const d=docs[id];
+    // solo se escriben los campos que cambiaron respecto a como está en la nube
+    // (la de fábrica + lo que ya tenga cambiado): así no se pisa lo que cambió otro
+    if(d) Nube.guardarMapa("tarjetas", id, d, comoEnNube(id));
+    else Nube.guardarColeccion("tarjetas", {}, {[id]:1});
+  });
+}
+addEventListener("pagehide", ()=>{ if(tSubir) subir(); });
+document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="hidden" && tSubir) subir(); });
+
+// ---------- lista ----------
+function coincide(t, id){
+  if(!query) return true;
+  const h=T.sinAcentos([id, nombreCat(t.cat), ...t.partes.flatMap(p=>[p.titulo, p.sub, ...p.vers.map(v=>v.n+" "+v.s)])].join(" "));
+  return T.sinAcentos(query).split(/\s+/).filter(Boolean).every(w=>h.includes(w));
+}
+// primero las que tienen lo buscado en el nombre
+function rango(t){
+  if(!query) return 0;
+  const h=T.sinAcentos(t.partes.map(p=>p.titulo).join(" "));
+  return T.sinAcentos(query).split(/\s+/).filter(Boolean).every(w=>h.includes(w)) ? 0 : 1;
+}
+function visibles(){
+  return todasIds().map(id=>({id, t:tarjeta(id)})).filter(x=>x.t)
+    .filter(x=>verOcultas || !oculta(x.id))
+    .filter(x=>filtroCat==="todas" || x.t.cat===filtroCat)
+    .filter(x=>coincide(x.t, x.id))
+    .sort((a,b)=>(CAT_ORDEN[a.t.cat]??99)-(CAT_ORDEN[b.t.cat]??99) || rango(a.t)-rango(b.t) || (BASE_ID[a.id]?BASE_ID[a.id].i:999)-(BASE_ID[b.id]?BASE_ID[b.id].i:999) || a.id.localeCompare(b.id));
+}
+function pintarCats(){
+  $("cats").innerHTML=[["todas","Todas"],...CATS].map(([c,n])=>`<button data-cat="${c}" aria-pressed="${c===filtroCat}">${esc(n)}</button>`).join("");
+}
+function pintarLista(){
+  const L=visibles(); let html="", grupo=null;
+  L.forEach(({id,t})=>{
+    if(filtroCat==="todas" && t.cat!==grupo){ grupo=t.cat; html+=`<div class="lgrupo">${esc(nombreCat(grupo))}</div>`; }
+    const b = oculta(id) ? `<span class="badge oc">oculta</span>` : editada(id) ? `<span class="badge ed">editada</span>` : !deFabrica(id) ? `<span class="badge nu">nueva</span>` : "";
+    html+=`<div class="fila${id===actual?" on":""}${oculta(id)?" oculta":""}" data-id="${esc(id)}">
+      <input type="checkbox" data-sel="${esc(id)}" ${selec.has(id)?"checked":""} aria-label="Marcar para imprimir" ${oculta(id)?"disabled":""}>
+      <button class="ab" data-abrir="${esc(id)}"><b>${esc(tituloDe(t))}</b><small>${esc(rangoPrecios(t))}</small></button>${b}</div>`;
+  });
+  $("lista").innerHTML = html || `<div class="vacio">No hay tarjetas con “${esc(query)}”.<br>Podés crear una con <b>＋ Nueva tarjeta</b>.</div>`;
+  // lo marcado que ya no existe se quita
+  [...selec].forEach(id=>{ if(!tarjeta(id) || oculta(id)) selec.delete(id); });
+  $("nSel").textContent=selec.size; $("btnImpSel").disabled=!selec.size;
+  const vis=L.filter(x=>!oculta(x.id));
+  $("btnTodas").textContent = vis.length && vis.every(x=>selec.has(x.id)) ? "Desmarcar" : "Marcar todas";
+}
+$("lista").addEventListener("click", e=>{
+  const a=e.target.closest("[data-abrir]"); if(a){ abrir(a.dataset.abrir, true); }
+});
+$("lista").addEventListener("change", e=>{
+  const c=e.target.closest("[data-sel]"); if(!c) return;
+  if(c.checked) selec.add(c.dataset.sel); else selec.delete(c.dataset.sel);
+  escribir(LS_S, [...selec]); pintarLista();
+});
+$("cats").addEventListener("click", e=>{ const b=e.target.closest("[data-cat]"); if(!b) return; filtroCat=b.dataset.cat; pintarCats(); pintarLista(); });
+$("q").addEventListener("input", e=>{ query=e.target.value.trim(); pintarLista(); });
+$("q").addEventListener("keydown", e=>{ if(e.key==="Enter"){ const v=visibles(); if(v.length) abrir(v[0].id, true); } });
+$("verOcultas").addEventListener("change", e=>{ verOcultas=e.target.checked; pintarLista(); });
+$("btnTodas").addEventListener("click", ()=>{
+  const vis=visibles().filter(x=>!oculta(x.id)), todas=vis.length && vis.every(x=>selec.has(x.id));
+  vis.forEach(x=>{ if(todas) selec.delete(x.id); else selec.add(x.id); });
+  escribir(LS_S, [...selec]); pintarLista();
+});
+$("copias").value = Math.max(1, Math.min(20, Number(leer(LS_N, 1))||1));
+$("copias").addEventListener("change", e=>{ const n=Math.max(1, Math.min(20, Math.round(Number(e.target.value))||1)); e.target.value=n; escribir(LS_N, n); });
+$("btnImpSel").addEventListener("click", ()=>{
+  const orden=todasIds().filter(id=>selec.has(id));
+  imprimir(orden, Number($("copias").value)||1);
+});
+
+// ---------- abrir / vista previa ----------
+function abrir(id, desdeLista){
+  const t=tarjeta(id); if(!t) return;
+  if(tSubir) subir();
+  actual=id; edit=clon(t); remotoPendiente=false;
+  base = nube ? planoEn(nube, id) || aPlano(t) : aPlano(t);
+  escribir(LS_A, id);
+  pintarLista(); pintarEditor(); pintarVista();
+  if(desdeLista && matchMedia("(max-width:980px)").matches) document.querySelector(".vcard").scrollIntoView({behavior:"smooth", block:"start"});
+}
+let rafVista=0;
+function vistaLuego(){ cancelAnimationFrame(rafVista); rafVista=requestAnimationFrame(pintarVista); }
+function pintarVista(){
+  const v=$("vista");
+  if(!edit){ v.innerHTML=""; v.style.height="0"; return; }
+  v.innerHTML=`<div class="escala">${T.html(edit, medida)}</div>`;
+  const tj=v.querySelector(".tj"), ok=T.ajustar(tj);
+  $("cortada").hidden=ok;
+  escalar();
+  $("vTitulo").textContent=tituloDe(edit);
+  $("vInfo").textContent=nombreCat(edit.cat)+" · "+rangoPrecios(edit)+(editada(actual)?" · editada":"")+(!deFabrica(actual)?" · tarjeta nueva":"");
+  $("btnRest").hidden=!editada(actual);
+  $("btnOcultar").textContent = deFabrica(actual) ? (oculta(actual) ? "Mostrar" : "Ocultar") : "🗑 Borrar";
+  $("btnOcultar").classList.toggle("danger", !deFabrica(actual));
+}
+function escalar(){
+  const v=$("vista"), e=v.querySelector(".escala"), tj=v.querySelector(".tj"); if(!tj) return;
+  const s=Math.min(1.5, v.clientWidth/tj.offsetWidth);
+  e.style.transform=`scale(${s})`;
+  v.style.height=(tj.offsetHeight*s)+"px";
+}
+if(window.ResizeObserver) new ResizeObserver(()=>escalar()).observe($("vista")); else addEventListener("resize", escalar);
+
+// ---------- medida ----------
+function distribucion(W, H){
+  const M=6, PW=215.9, PH=279.4, a=x=>x-2*M-1;
+  const op=[["portrait", Math.floor(a(PW)/W), Math.floor(a(PH)/H)], ["landscape", Math.floor(a(PH)/W), Math.floor(a(PW)/H)]]
+    .map(([o,c,r])=>({orient:o, cols:Math.max(0,c), rows:Math.max(0,r), n:Math.max(0,c)*Math.max(0,r)}));
+  return op[1].n>op[0].n ? op[1] : op[0];
+}
+function pintarMedida(){
+  if(document.activeElement!==$("mAncho")) $("mAncho").value=medida.ancho;
+  if(document.activeElement!==$("mAlto")) $("mAlto").value=medida.alto;
+  const d=distribucion(medida.ancho, medida.alto);
+  $("porHoja").textContent = d.n ? `· caben ${d.n} por hoja carta${d.orient==="landscape"?" (horizontal)":""}` : "· no cabe en una hoja carta";
+}
+function cambiarMedida(){
+  const m=limpiaMedida({ancho:$("mAncho").value, alto:$("mAlto").value});
+  if(!m){ toast("La medida va de 40 a 260 mm de ancho y de 30 a 260 mm de alto"); pintarMedida(); return; }
+  if(estable(m)===estable(medida)) return;
+  const antes=medida; medida=m; escribir(LS_M, medida);
+  if(window.Nube && Nube.conectado()) Nube.iniciar().then(db=>{ if(db) Nube.guardarMapa("ajustes","tarjetas",{medida:m},{medida:antes}); });
+  pintarMedida(); pintarVista(); toast(`Medida: ${m.ancho} × ${m.alto} mm`);
+}
+$("mAncho").addEventListener("change", cambiarMedida);
+$("mAlto").addEventListener("change", cambiarMedida);
+
+// ---------- editor ----------
+const lineas = a => (a||[]).join("\n");
+function icono(ic, tx){ const n=ic||T.iconoPara(tx,"feat"); return T.svg(n); }
+function pintarEditor(){
+  const ed=$("editor");
+  if(!edit){ ed.innerHTML=`<div class="vacio">Elegí una tarjeta de la lista.</div>`; return; }
+  const doble=edit.partes.length>1;
+  let h=`<div class="sec"><h3>💲 Precios</h3><p class="hint">Escribí el precio en quetzales. El de Protection Plus solo sale si activás su línea abajo.</p>
+    <div class="pr-h"><span>Versión</span><span>Precio</span><span>Protection Plus</span></div><div class="precios">`;
+  edit.partes.forEach((p,i)=>p.vers.forEach((v,j)=>{
+    h+=`<div class="pr"><div class="pr-n"><span data-lbl="${i}.${j}">${esc(v.n||"Sin nombre")}</span>${doble?`<small>${esc(p.titulo)}</small>`:""}</div>
+      <label class="money"><i>Q</i><input data-k="p.${i}.v.${j}.p" inputmode="decimal" value="${v.p==null?"":v.p}" placeholder="0" aria-label="Precio de ${esc(v.n)}"></label>
+      <label class="money pp"><i>PP Q</i><input data-k="p.${i}.v.${j}.pp" inputmode="decimal" value="${v.pp==null?"":v.pp}" placeholder="—" aria-label="Protection Plus de ${esc(v.n)}"></label></div>`;
+  }));
+  if(!edit.partes.some(p=>p.vers.length)) h+=`<div class="vacio">Agregá una versión abajo.</div>`;
+  h+=`</div></div>`;
+  edit.partes.forEach((p,i)=>{
+    h+=`<div class="sec"><h3>📦 ${doble?"Producto "+(i+1):"Producto"}${doble?` <button class="ib del" data-a="delParte:${i}" title="Quitar este producto" style="margin-left:auto">✕</button>`:""}</h3>
+      <div class="row2"><div><label class="fl">Nombre (título)</label><input class="in" data-k="p.${i}.titulo" value="${esc(p.titulo)}"></div>
+      <div><label class="fl">Subtítulo <i>(opcional)</i></label><input class="in" data-k="p.${i}.sub" value="${esc(p.sub)}"></div></div>
+      <label class="fl">Características <i>(el ícono se elige solo; tocalo para cambiarlo)</i></label><div class="feats">`;
+    p.feats.forEach((f,j)=>{
+      h+=`<div class="ft"><button class="icb${f[0]?"":" auto"}" data-a="ic:${i}:${j}" title="Cambiar ícono">${icono(f[0],f[1])}</button>
+        <input class="in" data-k="p.${i}.f.${j}" value="${esc(f[1])}">
+        <button class="ib" data-a="upF:${i}:${j}" title="Subir" ${j?"":"disabled"}>↑</button><button class="ib del" data-a="delF:${i}:${j}" title="Quitar">✕</button></div>`;
+    });
+    h+=`</div><button class="btn ghost sm add" data-a="addF:${i}">＋ Característica</button>
+      <label class="fl" style="margin-top:16px">Versiones y lo que incluye cada una</label><div class="vers">`;
+    p.vers.forEach((v,j)=>{
+      h+=`<div class="ver"><div class="ver-h"><b>Versión ${j+1}</b>
+          <button class="ib" data-a="upV:${i}:${j}" title="Mover a la izquierda" ${j?"":"disabled"}>↑</button>
+          <button class="ib" data-a="downV:${i}:${j}" title="Mover a la derecha" ${j<p.vers.length-1?"":"disabled"}>↓</button>
+          <button class="ib del" data-a="delV:${i}:${j}" title="Quitar versión">✕</button></div>
+        <div class="row2"><div><label class="fl">Nombre</label><input class="in" data-k="p.${i}.v.${j}.n" value="${esc(v.n)}"></div>
+        <div><label class="fl">Debajo del nombre <i>(opcional)</i></label><input class="in" data-k="p.${i}.v.${j}.s" value="${esc(v.s)}"></div></div>
+        <label class="fl">Lo que incluye <i>(uno por línea · “× 2” para cantidad)</i></label><textarea class="in" rows="${Math.min(8,Math.max(3,v.items.length+1))}" data-k="p.${i}.v.${j}.items">${esc(lineas(v.items))}</textarea>
+        <label class="fl">Descripción <i>(opcional, en lugar de la lista)</i></label><textarea class="in" rows="2" data-k="p.${i}.v.${j}.desc">${esc(v.desc)}</textarea></div>`;
+    });
+    h+=`</div><button class="btn ghost sm add" data-a="addV:${i}">＋ Versión</button>
+      <label class="fl" style="margin-top:16px">Lo que traen todas las versiones <i>(opcional, uno por línea)</i></label>
+      <textarea class="in" rows="${Math.min(6,Math.max(2,p.comun.length+1))}" data-k="p.${i}.comun">${esc(lineas(p.comun))}</textarea></div>`;
+  });
+  h+=`<div class="sec"><h3>⚙️ Opciones</h3><div class="opts">
+      <div class="row2"><div><label class="fl">Categoría</label><select class="in" data-k="cat">${CATS.map(([c,n])=>`<option value="${c}" ${c===edit.cat?"selected":""}>${esc(n)}</option>`).join("")}</select></div><div></div></div>
+      <label class="sw"><input type="checkbox" data-k="banda" ${edit.banda?"checked":""}> Mostrar “${esc(TXT.banda||"Te invitamos a probar el producto…")}”</label>
+      <label class="sw"><input type="checkbox" data-k="ppOn" ${edit.ppOn?"checked":""}> Mostrar la línea de DJI Protection Plus con sus precios</label>
+      <div ${edit.ppOn?"":"hidden"} id="ppBox"><label class="fl">Texto de Protection Plus</label><input class="in" data-k="ppTxt" value="${esc(edit.ppTxt)}"></div>
+      <label class="fl">Notas al pie <i>(letra pequeña)</i></label><textarea class="in" rows="3" data-k="notas">${esc(edit.notas)}</textarea>
+      <div>${doble ? "" : `<button class="btn ghost sm" data-a="addParte">＋ Agregar otro producto a la par (como Osmo Mobile 8 + 7)</button>`}</div>
+    </div></div>`;
+  ed.innerHTML=h; ed.dataset.forma=forma(edit);
+}
+function poner(k, el){
+  const v = el.type==="checkbox" ? el.checked : el.value;
+  const num = s => { const t=S(s).replace(/[^\d.]/g,""); if(!t) return null; const n=parseFloat(t); return isFinite(n) ? n : null; };
+  const ls = s => S(s).split("\n").map(x=>x.trim()).filter(Boolean);
+  const r=k.split(".");
+  if(r[0]!=="p"){ edit[r[0]] = (r[0]==="banda"||r[0]==="ppOn") ? !!v : S(v); if(r[0]==="ppOn") $("ppBox").hidden=!v; return; }
+  const p=edit.partes[+r[1]]; if(!p) return;
+  if(r[2]==="titulo"||r[2]==="sub") p[r[2]]=S(v);
+  else if(r[2]==="comun") p.comun=ls(v);
+  else if(r[2]==="f"){ const f=p.feats[+r[3]]; if(f){ f[1]=S(v); const b=el.closest(".ft").querySelector(".icb"); if(b && !f[0]) b.innerHTML=icono("", f[1]); } }
+  else if(r[2]==="v"){
+    const x=p.vers[+r[3]]; if(!x) return; const c=r[4];
+    if(c==="p"||c==="pp") x[c]=num(v);
+    else if(c==="items") x.items=ls(v);
+    else { x[c]=S(v); if(c==="n"){ const l=document.querySelector(`[data-lbl="${r[1]}.${r[3]}"]`); if(l) l.textContent=x.n||"Sin nombre"; } }
+  }
+}
+function cambio(){ guardarTarjeta(actual, edit); vistaLuego(); pintarListaLuego(); }
+let tLista=null;
+function pintarListaLuego(){ clearTimeout(tLista); tLista=setTimeout(pintarLista, 250); }
+$("editor").addEventListener("input", e=>{ const k=e.target.dataset && e.target.dataset.k; if(!k || !edit) return; poner(k, e.target); cambio(); });
+$("editor").addEventListener("change", e=>{ const k=e.target.dataset && e.target.dataset.k; if(!k || !edit) return; if(e.target.type==="checkbox" || e.target.tagName==="SELECT"){ poner(k, e.target); cambio(); } });
+$("editor").addEventListener("focusout", ()=>{ setTimeout(()=>{ if(remotoPendiente && !$("editor").contains(document.activeElement)) aplicarRemoto(); }, 0); });
+$("editor").addEventListener("click", e=>{
+  const b=e.target.closest("[data-a]"); if(!b || !edit) return;
+  const [a, x, y] = b.dataset.a.split(":"), i=+x, j=+y, p=edit.partes[i];
+  const mover=(arr,de,a2)=>{ if(a2<0||a2>=arr.length) return; const [el]=arr.splice(de,1); arr.splice(a2,0,el); };
+  if(a==="ic"){ abrirPicker(b, i, j); return; }
+  if(a==="addF"){ p.feats.push(["",""]); }
+  else if(a==="delF"){ p.feats.splice(j,1); }
+  else if(a==="upF"){ mover(p.feats, j, j-1); }
+  else if(a==="addV"){ p.vers.push({n:"Versión "+(p.vers.length+1), s:"", p:null, pp:null, items:[], desc:""}); }
+  else if(a==="delV"){ if(!confirm(`¿Quitar la versión “${p.vers[j].n||"sin nombre"}” de esta tarjeta?`)) return; p.vers.splice(j,1); }
+  else if(a==="upV"){ mover(p.vers, j, j-1); }
+  else if(a==="downV"){ mover(p.vers, j, j+1); }
+  else if(a==="addParte"){ edit.partes.push({titulo:"OTRO MODELO", sub:"", feats:[["",""]], vers:[{n:"Estándar", s:"", p:null, pp:null, items:[], desc:""}], comun:[]}); }
+  else if(a==="delParte"){ if(!confirm(`¿Quitar “${edit.partes[i].titulo||"este producto"}” de la tarjeta?`)) return; edit.partes.splice(i,1); }
+  else return;
+  const y0=window.scrollY; pintarEditor(); window.scrollTo(0,y0); cambio();
+  if(a==="addF"){ const ins=document.querySelectorAll(`[data-k^="p.${i}.f."]`); if(ins.length) ins[ins.length-1].focus(); }
+  if(a==="addV"){ const ins=document.querySelectorAll(`[data-k^="p.${i}.v."][data-k$=".n"]`); if(ins.length){ ins[ins.length-1].focus(); ins[ins.length-1].select(); } }
+});
+
+// selector de íconos
+let pk=null;
+function abrirPicker(btn, i, j){
+  const f=edit.partes[i].feats[j]; if(!f) return;
+  pk={i,j};
+  const P=$("picker");
+  P.innerHTML=`<div class="pk-h"><span>Ícono</span><button class="lnk" data-pk="">Automático</button></div><div class="pk-g">${T.NOMBRES.map(n=>`<button class="pk" data-pk="${n}" title="${n}" aria-pressed="${f[0]===n}">${T.svg(n)}</button>`).join("")}</div>`;
+  P.hidden=false;
+  const r=btn.getBoundingClientRect(), w=P.offsetWidth, hh=P.offsetHeight;
+  P.style.left=Math.max(10, Math.min(innerWidth-w-10, r.left))+"px";
+  P.style.top=(r.bottom+6+hh>innerHeight ? Math.max(10, r.top-hh-6) : r.bottom+6)+"px";
+}
+function cerrarPicker(){ $("picker").hidden=true; pk=null; }
+$("picker").addEventListener("click", e=>{
+  const b=e.target.closest("[data-pk]"); if(!b || !pk) return;
+  const f=edit.partes[pk.i].feats[pk.j]; if(f){ f[0]=b.dataset.pk; }
+  const btn=document.querySelector(`[data-a="ic:${pk.i}:${pk.j}"]`);
+  if(btn && f){ btn.innerHTML=icono(f[0], f[1]); btn.classList.toggle("auto", !f[0]); }
+  cerrarPicker(); cambio();
+});
+document.addEventListener("mousedown", e=>{ if(pk && !e.target.closest("#picker") && !e.target.closest(".icb")) cerrarPicker(); });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape" && pk) cerrarPicker(); });
+addEventListener("scroll", ()=>{ if(pk) cerrarPicker(); }, {passive:true});
+
+// ---------- acciones ----------
+function nuevoId(){ return "c"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function crear(t){
+  const id=nuevoId(); t.id=id;
+  marcar(id, Object.assign(aPlano(t), {actualizado:Date.now()}));
+  return id;
+}
+$("btnNueva").addEventListener("click", ()=>{
+  const id=crear({cat:filtroCat!=="todas"?filtroCat:"accesorios", partes:[{titulo:"NUEVO MODELO", sub:"", feats:[["",""],["",""],["",""],["",""]], vers:[{n:"Estándar", s:"", p:null, pp:null, items:[], desc:""}], comun:[]}], banda:true, ppOn:false, ppTxt:TXT.pp||"", notas:TXT.notas||""});
+  query=""; $("q").value=""; abrir(id, true);
+  const ti=document.querySelector('[data-k="p.0.titulo"]'); if(ti){ ti.focus(); ti.select(); }
+  toast("Tarjeta nueva: escribí el nombre, las versiones y el precio");
+});
+$("btnDup").addEventListener("click", ()=>{
+  if(!edit) return;
+  const t=clon(edit); t.partes[0].titulo=(t.partes[0].titulo||"")+" (COPIA)";
+  abrir(crear(t), true); toast("Se hizo una copia: cambiale el nombre y lo que haga falta");
+});
+$("btnRest").addEventListener("click", ()=>{
+  if(!actual || !editada(actual)) return;
+  if(!confirm("¿Volver esta tarjeta a como venía? Se pierden los precios y textos que le cambiaron.")) return;
+  marcar(actual, oculta(actual) ? {borrado:true, actualizado:Date.now()} : null); abrir(actual); toast("↺ Tarjeta como venía");
+});
+$("btnOcultar").addEventListener("click", ()=>{
+  if(!actual) return;
+  const id=actual, d=Object.assign({}, docs[id]||{});
+  if(!deFabrica(id)){
+    if(!confirm(`¿Borrar la tarjeta “${tituloDe(edit)}”? Se borra en todas las computadoras.`)) return;
+    marcar(id, null); selec.delete(id); escribir(LS_S,[...selec]);
+    actual=null; edit=null; abrirPrimera(); toast("🗑 Tarjeta borrada"); return;
+  }
+  if(oculta(id)){
+    // vuelve a mostrarse con lo que tenía cambiado
+    delete d.borrado; d.actualizado=Date.now(); marcar(id, d);
+    abrir(id); toast("La tarjeta se vuelve a mostrar"); return;
+  }
+  if(!confirm(`¿Ocultar la tarjeta “${tituloDe(edit)}”? (Se puede volver a mostrar con “Ver ocultas”.)`)) return;
+  d.borrado=true; d.actualizado=Date.now(); marcar(id, d); selec.delete(id); escribir(LS_S,[...selec]);
+  if(verOcultas){ abrir(id); } else { actual=null; edit=null; abrirPrimera(); }
+  toast("Tarjeta oculta");
+});
+$("btnImp").addEventListener("click", ()=>{ if(actual){ guardarTarjeta(actual, edit); imprimir([actual], 1); } });
+function abrirPrimera(){
+  const v=visibles().filter(x=>!oculta(x.id));
+  if(v.length) abrir(v[0].id); else { actual=null; edit=null; base=null; pintarLista(); pintarEditor(); pintarVista(); }
+}
+
+// ---------- imprimir ----------
+function imprimir(ids, copias){
+  const lista=[];
+  ids.forEach(id=>{ const t = id===actual && edit ? normal(edit) : tarjeta(id); if(t) for(let k=0;k<copias;k++) lista.push(t); });
+  if(!lista.length){ toast("Marcá al menos una tarjeta"); return; }
+  const d=distribucion(medida.ancho, medida.alto);
+  if(!d.n){ alert("Con esa medida la tarjeta no cabe en una hoja carta."); return; }
+  // se arma y se ajusta aquí (mismo navegador y letra), y en la hoja se vuelve a revisar
+  const tmp=document.createElement("div"); tmp.style.cssText="position:absolute;left:-30000px;top:0;visibility:hidden"; document.body.appendChild(tmp);
+  const cortadas=[];
+  const piezas=lista.map(t=>{ tmp.innerHTML=T.html(t, medida); const el=tmp.firstElementChild; if(!T.ajustar(el)) cortadas.push(tituloDe(t)); return el.outerHTML; });
+  tmp.remove();
+  const hojas=[]; for(let k=0;k<piezas.length;k+=d.n) hojas.push(`<div class="hoja" style="grid-template-columns:repeat(${d.cols},${medida.ancho}mm)">${piezas.slice(k,k+d.n).join("")}</div>`);
+  const pw=d.orient==="portrait"?215.9:279.4, ph=d.orient==="portrait"?279.4:215.9;
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Precios para las mesas</title><style>
+@page{size:letter ${d.orient};margin:6mm}
+html,body{margin:0;background:#fff}
+.hoja{display:grid;justify-content:center;align-content:start;break-after:page;page-break-after:always}
+.hoja:last-child{break-after:auto;page-break-after:auto}
+.hoja .tj{outline:.2mm dashed #a3a3a3;outline-offset:0;break-inside:avoid}
+${T.CSS}
+@media screen{body{background:#e5e7eb;padding:18px 0}.hoja{background:#fff;width:${pw}mm;min-height:${ph}mm;padding:6mm;margin:0 auto 18px;box-shadow:0 4px 18px rgba(0,0,0,.15)}}
+</style></head><body>${hojas.join("")}
+<script>var ajustar=${T.ajustar.toString()};
+window.onload=function(){ [].forEach.call(document.querySelectorAll(".tj"),function(t){ try{ ajustar(t); }catch(e){} }); setTimeout(function(){ window.focus(); window.print(); }, 300); };<\/script></body></html>`;
+  const w=window.open("","_blank");
+  if(!w){ alert("El navegador bloqueó la ventana para imprimir. Permití las ventanas emergentes para esta página y volvé a intentar."); return; }
+  w.document.open(); w.document.write(html); w.document.close();
+  if(cortadas.length) toast("⚠️ No cabe todo en: "+cortadas.join(", "));
+}
+
+// ---------- nube ----------
+// une lo de aquí con lo que llegó: campo por campo, lo que no se tocó aquí toma lo de la nube
+function unir3(b, aqui, alla){
+  const out={}, ks=new Set([...Object.keys(b||{}), ...Object.keys(aqui||{}), ...Object.keys(alla||{})]);
+  ks.forEach(k=>{ const v = estable(aqui[k])===estable(b[k]) ? alla[k] : aqui[k]; if(v!==undefined) out[k]=v; });
+  return out;
+}
+// valor que corresponde a un campo del editor
+function valorDe(k){
+  const r=k.split("."), lineas=a=>(a||[]).join("\n");
+  if(r[0]!=="p") return edit[r[0]];
+  const p=edit.partes[+r[1]]; if(!p) return undefined;
+  if(r[2]==="comun") return lineas(p.comun);
+  if(r[2]==="f") return (p.feats[+r[3]]||[])[1];
+  if(r[2]==="v"){ const v=p.vers[+r[3]]; if(!v) return undefined; const c=r[4]; if(c==="items") return lineas(v.items); if(c==="p"||c==="pp") return v[c]==null?"":String(v[c]); return v[c]; }
+  return p[r[2]];
+}
+const forma = t => t ? t.partes.map(p=>p.feats.length+"/"+p.vers.length).join("|") : "";
+// cuando alguien está escribiendo: se actualizan los demás campos sin moverle el cursor
+function refrescarCampos(){
+  if($("editor").dataset.forma!==forma(edit)){ remotoPendiente=true; return; }
+  document.querySelectorAll("#editor [data-k]").forEach(el=>{
+    if(el===document.activeElement) return;
+    const v=valorDe(el.dataset.k); if(v===undefined) return;
+    if(el.type==="checkbox"){ if(el.checked!==!!v) el.checked=!!v; }
+    else if(el.value!==S(v)) el.value=S(v);
+  });
+  edit.partes.forEach((p,i)=>p.vers.forEach((v,j)=>{ const l=document.querySelector(`[data-lbl="${i}.${j}"]`); if(l) l.textContent=v.n||"Sin nombre"; }));
+  const pb=$("ppBox"); if(pb) pb.hidden=!edit.ppOn;
+}
+function aplicarRemoto(){
+  remotoPendiente=false;
+  if(!actual || !edit) return abrirPrimera();
+  pintarEditor(); pintarVista();
+}
+function alLlegar(crudo){
+  const m={}; for(const id in crudo) if(ID_OK(id)) m[id]=leerDoc(crudo[id]);
+  nube=m;
+  const nuevo=Object.assign({}, m);
+  for(const id of sucios){ if(id===actual) continue; if(docs[id]) nuevo[id]=docs[id]; else delete nuevo[id]; }
+  let tocaActual=false;
+  if(actual && edit){
+    const alla=planoEn(m, actual);
+    if(alla){
+      if(estable(alla)!==estable(base)){
+        const aqui=aPlano(edit), unido=unir3(base, aqui, alla);
+        base=alla;
+        if(estable(unido)!==estable(aqui)){ edit=desdePlano(unido, actual); tocaActual=true; }
+      }
+      // si aquí quedó algo distinto a la nube, se sube (solo esos campos)
+      const aquiAhora=aPlano(edit);
+      if(estable(aquiAhora)!==estable(alla) || sucios.has(actual)){
+        const local=docs[actual]||{}, pend=sucios.has(actual), d=Object.assign({}, aquiAhora);
+        if(pend ? local.borrado : (m[actual] && m[actual].borrado)) d.borrado=true;
+        d.actualizado = pend && local.actualizado ? local.actualizado : Date.now();
+        nuevo[actual]=d;
+        if(estable(sinMeta(d))!==estable(sinMeta(m[actual]||{})) || !!d.borrado!==!!(m[actual]&&m[actual].borrado)) sucios.add(actual);
+      }
+    } else if(sucios.has(actual) && docs[actual]) nuevo[actual]=docs[actual];
+  }
+  if(estable(nuevo)===estable(docs) && !tocaActual) return;
+  docs=nuevo; guardarLocal(); pintarLista();
+  if(actual && (!tarjeta(actual) || (oculta(actual) && !verOcultas))){ actual=null; edit=null; abrirPrimera(); return; }
+  if(!actual){ abrirPrimera(); return; }
+  if(tocaActual){
+    if($("editor").contains(document.activeElement) || pk) refrescarCampos(); else aplicarRemoto();
+    pintarVista();
+  } else pintarVista();
+  if(sucios.size) programarSubida();
+}
+async function conectarNube(){
+  if(!window.Nube) return;
+  if(!conectarNube.pintado){ Nube.pintar($("nubeEstado")); conectarNube.pintado=true; }
+  if(!Nube.conectado() || !await Nube.iniciar()) return;
+  if(!escuchando){
+    escuchando=true;
+    Nube.escucharMapa("ajustes","tarjetas",(m,existe)=>{
+      const mm=limpiaMedida(m.medida); if(!existe || !mm || estable(mm)===estable(medida)) return;
+      medida=mm; escribir(LS_M, medida); pintarMedida(); pintarVista();
+    });
+  }
+  const unido=await Nube.unirUnaVez("tarjetas", async ()=>{
+    // lo que este equipo cambió antes de conectarse: sube si es más nuevo que lo de la nube
+    const crudo=await Nube.leerColeccion("tarjetas"), enNube={};
+    for(const id in crudo) enNube[id]=leerDoc(crudo[id]);
+    for(const id in docs){
+      const l=docs[id], n=enNube[id];
+      if(!n || (Number(l.actualizado)||0)>(Number(n.actualizado)||0)){
+        const antes=Object.assign({}, planoEn(enNube, id)||{}); if(n && "borrado" in n) antes.borrado=n.borrado;
+        await Nube.guardarMapa("tarjetas", id, l, antes);
+      }
+    }
+    // la medida de este equipo sube solo si en la nube no hay
+    const a=await Nube.leerMapa("ajustes","tarjetas");
+    if(!limpiaMedida(a.mapa.medida) && estable(medida)!==estable(MEDIDA_INICIAL)) await Nube.guardarMapa("ajustes","tarjetas",{medida},{});
+  });
+  if(!unido && localStorage.getItem("dji_nube_unido_tarjetas")!==Nube.clave()){ addEventListener("online", ()=>conectarNube(), {once:true}); return; }
+  if(conectarNube.oyendo) return; conectarNube.oyendo=true;
+  Nube.escucharColeccion("tarjetas", alLlegar);
+}
+
+// ---------- inicio ----------
+pintarCats(); pintarMedida();
+{
+  const a=leer(LS_A, null);
+  if(a && tarjeta(a) && !oculta(a)) abrir(a); else abrirPrimera();
+}
+conectarNube();
+</script>
+</body>
+</html>
