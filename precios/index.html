@@ -229,9 +229,9 @@
 <div class="picker" id="picker" hidden></div>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261116a"></script>
-<script src="tarjeta.js?v=20261116a"></script>
-<script src="tarjetas-base.js?v=20261116a"></script>
+<script src="../nube.js?v=20261116b"></script>
+<script src="tarjeta.js?v=20261116b"></script>
+<script src="tarjetas-base.js?v=20261116b"></script>
 <script>
 "use strict";
 /* ============================================================
@@ -256,7 +256,7 @@ const escribir = (k,v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }ca
 let tToast=null;
 function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tToast); tToast=setTimeout(()=>t.classList.remove("show"),2600); }
 
-const MEDIDA_INICIAL = {ancho:200, alto:85};
+const MEDIDA_INICIAL = {ancho:200, alto:90};   // el papel de las tarjetas de acrílico: 20 × 9 cm
 const BASE_ID = {}; BASE.forEach((t,i)=>{ BASE_ID[t.id]={t, i}; });
 const CAT_ORDEN = {}; CATS.forEach(([c],i)=>{ CAT_ORDEN[c]=i; });
 const nombreCat = c => (CATS.find(x=>x[0]===c)||[c,c])[1];
@@ -478,11 +478,17 @@ function escalar(){
 if(window.ResizeObserver) new ResizeObserver(()=>escalar()).observe($("vista")); else addEventListener("resize", escalar);
 
 // ---------- medida ----------
+// cuántas caben en una hoja carta; el margen se achica (hasta 4 mm) solo si así cabe una fila más
 function distribucion(W, H){
-  const M=6, PW=215.9, PH=279.4, a=x=>x-2*M-1;
-  const op=[["portrait", Math.floor(a(PW)/W), Math.floor(a(PH)/H)], ["landscape", Math.floor(a(PH)/W), Math.floor(a(PW)/H)]]
-    .map(([o,c,r])=>({orient:o, cols:Math.max(0,c), rows:Math.max(0,r), n:Math.max(0,c)*Math.max(0,r)}));
-  return op[1].n>op[0].n ? op[1] : op[0];
+  const PW=215.9, PH=279.4; let mejor=null;
+  [6,5,4].forEach(M=>{
+    const a=x=>x-2*M-0.6;
+    const op=[["portrait", Math.floor(a(PW)/W), Math.floor(a(PH)/H)], ["landscape", Math.floor(a(PH)/W), Math.floor(a(PW)/H)]]
+      .map(([o,c,r])=>({orient:o, cols:Math.max(0,c), rows:Math.max(0,r), n:Math.max(0,c)*Math.max(0,r), M}));
+    const d=op[1].n>op[0].n ? op[1] : op[0];
+    if(!mejor || d.n>mejor.n) mejor=d;
+  });
+  return mejor;
 }
 function pintarMedida(){
   if(document.activeElement!==$("mAncho")) $("mAncho").value=medida.ancho;
@@ -682,13 +688,13 @@ function imprimir(ids, copias){
   const hojas=[]; for(let k=0;k<piezas.length;k+=d.n) hojas.push(`<div class="hoja" style="grid-template-columns:repeat(${d.cols},${medida.ancho}mm)">${piezas.slice(k,k+d.n).join("")}</div>`);
   const pw=d.orient==="portrait"?215.9:279.4, ph=d.orient==="portrait"?279.4:215.9;
   const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Precios para las mesas</title><style>
-@page{size:letter ${d.orient};margin:6mm}
+@page{size:letter ${d.orient};margin:${d.M}mm}
 html,body{margin:0;background:#fff}
 .hoja{display:grid;justify-content:center;align-content:start;break-after:page;page-break-after:always}
 .hoja:last-child{break-after:auto;page-break-after:auto}
 .hoja .tj{outline:.2mm dashed #a3a3a3;outline-offset:0;break-inside:avoid}
 ${T.CSS}
-@media screen{body{background:#e5e7eb;padding:18px 0}.hoja{background:#fff;width:${pw}mm;min-height:${ph}mm;padding:6mm;margin:0 auto 18px;box-shadow:0 4px 18px rgba(0,0,0,.15)}}
+@media screen{body{background:#e5e7eb;padding:18px 0}.hoja{background:#fff;width:${pw}mm;min-height:${ph}mm;padding:${d.M}mm;margin:0 auto 18px;box-shadow:0 4px 18px rgba(0,0,0,.15)}}
 </style></head><body>${hojas.join("")}
 <script>var ajustar=${T.ajustar.toString()};
 window.onload=function(){ [].forEach.call(document.querySelectorAll(".tj"),function(t){ try{ ajustar(t); }catch(e){} }); setTimeout(function(){ window.focus(); window.print(); }, 300); };<\/script></body></html>`;
