@@ -224,7 +224,11 @@
     const vs=[];
     t.partes.forEach(p=>(p.vers||[]).forEach(v=>{ if(v.pp!=null && v.pp!=="" && isFinite(Number(v.pp))) vs.push([v,p]); }));
     if(!vs.length) return "";
-    const lista = vs.length===1 ? `<b>${precio(vs[0][0].pp)}</b>` : vs.map(([v,p])=>`${esc(corto(v.n,p.titulo))} <b>${precio(v.pp)}</b>`).join(" · ");
+    let lista;
+    if(vs.length===1) lista=`<b>${precio(vs[0][0].pp)}</b>`;
+    else if(t.partes.length>1 && t.partes.every(p=>vs.some(x=>x[1]===p)))   // dos modelos: se agrupa por modelo
+      lista=t.partes.map(p=>{ const de=vs.filter(x=>x[1]===p); return `<u>${esc(p.titulo)}</u> `+(de.length===1 ? `<b>${precio(de[0][0].pp)}</b>` : de.map(([v])=>`${esc(corto(v.n,p.titulo))} <b>${precio(v.pp)}</b>`).join(" · ")); }).join(" &nbsp;|&nbsp; ");
+    else lista=vs.map(([v,p])=>`${esc(corto(v.n,p.titulo))} <b>${precio(v.pp)}</b>`).join(" · ");
     return `<div class="tj-pp">${svg("proteccion")}<div><b class="tj-ppt">DJI PROTECTION PLUS</b> <span class="tj-ppl">${lista}</span>${t.ppTxt?`<div class="tj-ppx">${esc(t.ppTxt)}</div>`:""}</div></div>`;
   }
   const BANDA = "Te invitamos a probar el producto. Consulta los detalles al personal de la tienda.";
@@ -254,10 +258,11 @@
     // no cabe: se pasa de alto o de ancho (también una palabra larga que se sale de su recuadro)
     var sobra=function(el){ return el.scrollHeight>el.clientHeight+0.5 || el.scrollWidth>el.clientWidth+0.5
       || Array.prototype.some.call(el.querySelectorAll(".tj-v,.tj-comun,.tj-f"), function(x){ return x.scrollWidth>x.clientWidth+0.5; }); };
-    function buscar(el, max){
+    // min: un tamaño que ya se sabe que cabe
+    function buscar(el, max, min){
       el.style.fontSize=max+"px"; if(!sobra(el)) return max;
-      var lo=1.5, hi=max;
-      for(var i=0;i<11;i++){ var m=(lo+hi)/2; el.style.fontSize=m+"px"; if(sobra(el)) hi=m; else lo=m; }
+      var lo=min||1.5, hi=max;
+      for(var i=0;i<9;i++){ var m=(lo+hi)/2; el.style.fontSize=m+"px"; if(sobra(el)) hi=m; else lo=m; }
       el.style.fontSize=lo+"px"; return lo;
     }
     function columnas(vers, c){
@@ -292,9 +297,38 @@
       izq.style.fontSize=fi+"px"; der.style.fontSize=fd+"px";
       tj.setAttribute("data-cols", mejor.c);
     } else if(mitades.length){
-      mitades.forEach(function(m){ var v=m.querySelector(".tj-vers"); if(v) columnas(v, Math.min(v.children.length, 2) || 1); });
-      var fs=mitades.map(function(m){ return buscar(m, tope); }), f=Math.min.apply(null, fs);
-      mitades.forEach(function(m){ m.style.fontSize=f+"px"; });
+      // cada lado busca su mejor forma (versiones y características en columnas).
+      // piso: solo interesa si la letra puede quedar más grande que eso (si no, devuelve 0 rápido)
+      var cabe=function(el, f){ el.style.fontSize=f+"px"; return !sobra(el); };
+      var lado=function(m, piso){
+        var v=m.querySelector(".tj-vers"), ft=m.querySelector(".tj-feats"), nv=v?v.children.length:0, nf=ft?ft.children.length:0, vops=[], fops=[], formas=[], mejor=null;
+        [Math.min(nv,3), 2, 1].forEach(function(c){ if(c>=1 && c<=nv && vops.indexOf(c)<0) vops.push(c); }); if(!vops.length) vops.push(1);
+        [Math.min(nf,4), 3, 2].forEach(function(c){ if(c>=1 && c<=nf && fops.indexOf(c)<0) fops.push(c); }); if(!fops.length) fops.push(1);
+        vops.forEach(function(vc){ fops.forEach(function(fc){ formas.push([vc, fc]); }); });
+        var poner=function(x){ if(v) columnas(v, x[0]); if(ft) ft.style.gridTemplateColumns="repeat("+x[1]+",minmax(0,1fr))"; };
+        formas.forEach(function(x){
+          poner(x);
+          var meta = mejor ? mejor.f*1.08 : (piso||0);
+          if(meta>0 && (meta>=tope || !cabe(m, meta))) return;
+          var f=buscar(m, tope, meta>0 ? meta : 0);
+          if(!mejor || f>mejor.f*1.08) mejor={x:x, f:f};
+        });
+        if(!mejor) return 0;
+        poner(mejor.x); m.style.fontSize=mejor.f+"px"; return mejor.f;
+      };
+      // con dos modelos, el que trae más cosas puede quedarse con más ancho
+      var cuerpo=q(".tj-cuerpo"), anchos=mitades.length===2 ? [[1,1],[1.4,1],[1,1.4],[2,1],[1,2]] : [[1]], mejorA=null;
+      var ponerA=function(a){ if(mitades.length===2) cuerpo.style.gridTemplateColumns="minmax(0,"+a[0]+"fr) minmax(0,"+a[1]+"fr)"; };
+      anchos.forEach(function(a){
+        ponerA(a);
+        var piso=mejorA ? mejorA.f*1.06 : 0, f=Infinity;
+        for(var k=0;k<mitades.length;k++){ var fk=lado(mitades[k], piso); if(!fk){ f=0; break; } f=Math.min(f, fk); }
+        if(f && (!mejorA || f>mejorA.f*1.06)) mejorA={a:a, f:f};
+      });
+      ponerA(mejorA.a);
+      var fs=mitades.map(function(m){ return lado(m); }), fmin=Math.min.apply(null, fs);
+      // la letra de los dos lados parecida (el que tiene menos cosas puede ir un poco más grande)
+      mitades.forEach(function(m, k){ m.style.fontSize=Math.min(fs[k], fmin*1.2)+"px"; });
     }
     var cortado=qa(".tj-izq,.tj-der,.tj-mitad").some(sobra) || (notas && notas.offsetHeight>H*0.3);
     tj.classList.toggle("tj-cortada", !!cortado);
@@ -349,6 +383,7 @@
 .tj-pp svg{width:2.3em;height:2.3em}
 .tj-ppt{font-weight:800;letter-spacing:.03em}
 .tj-ppl b{font-weight:800}
+.tj-ppl u{text-decoration:none;font-weight:700}
 .tj-ppx{font-size:.88em;color:#444;margin-top:.1em}
 .tj-abajo{display:flex;gap:2mm;margin-top:1.6mm;align-items:stretch}
 .tj-abajo>*{flex:1}

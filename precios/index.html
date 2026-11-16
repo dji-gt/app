@@ -139,6 +139,13 @@
   .ver-h b{font-size:13px;font-weight:850;color:var(--ink-2);flex:1}
   .add{margin-top:8px}
   .opts{display:grid;gap:8px;grid-template-columns:minmax(0,1fr)}
+  .lados{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:end}
+  .refbox{background:var(--accent-bg);border:1px solid #c9d6f5;border-radius:12px;padding:10px 12px;font-size:13.5px;color:var(--ink-2);font-weight:600}
+  .refbox .r{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .vchk{display:grid;gap:6px;background:var(--line-2);border-radius:12px;padding:10px 12px}
+  .vchk .chk{font-size:13.5px}
+  .vchk .pz{color:var(--muted);font-weight:700}
+  .pr-n small.ref{color:var(--accent-d)}
   .opts .btn{white-space:normal;text-align:left}
   .sw{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:700;cursor:pointer}
   .sw input{width:18px;height:18px;accent-color:var(--black)}
@@ -185,6 +192,7 @@
     .pr-n{grid-column:1/-1}
     .pr-h span:first-child{display:none}
     .row2{grid-template-columns:minmax(0,1fr)}
+    .lados{grid-template-columns:minmax(0,1fr)}
   }
 </style>
 </head>
@@ -227,6 +235,7 @@
           <div><h2 id="vTitulo">—</h2><small id="vInfo"></small></div>
           <div class="vc-acts">
             <button class="btn primary sm" id="btnImp">🖨️ Imprimir esta</button>
+            <button class="btn ghost sm" id="btnDos" title="Hacer una tarjeta partida en dos: este modelo y otro a la par">➗ 2 modelos</button>
             <button class="btn ghost sm" id="btnDup" title="Hacer una tarjeta nueva a partir de esta">Duplicar</button>
             <button class="btn ghost sm" id="btnRest" title="Volver a la tarjeta original">↺ Original</button>
             <button class="btn ghost sm" id="btnOcultar">Ocultar</button>
@@ -249,10 +258,10 @@
 <div class="picker" id="picker" hidden></div>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261116c"></script>
-<script src="fotos.js?v=20261116c"></script>
-<script src="tarjeta.js?v=20261116c"></script>
-<script src="tarjetas-base.js?v=20261116c"></script>
+<script src="../nube.js?v=20261116d"></script>
+<script src="fotos.js?v=20261116d"></script>
+<script src="tarjeta.js?v=20261116d"></script>
+<script src="tarjetas-base.js?v=20261116d"></script>
 <script>
 "use strict";
 /* ============================================================
@@ -310,12 +319,15 @@ function normal(t){
   // cada cosa de "lo que incluye": [foto, texto] (foto "" = automática, "-" = sin foto)
   const LI = a => Array.isArray(a) ? a.map(x=>Array.isArray(x) ? [S(x[0]), S(x[1])] : ["", S(x)]) : [];
   const partes=(Array.isArray(t&&t.partes)?t.partes:[]).slice(0,2).map(p=>({
+    ref:S(p&&p.ref),   // si tiene: este lado muestra otra tarjeta ("neo2" o "om8-om7#1")
+    oc:(Array.isArray(p&&p.oc)?p.oc:[]).map(Number).filter(n=>Number.isInteger(n) && n>=0),   // de ese modelo: versiones que no salen
+    sinF:!!(p&&p.sinF),                                                                       // y si no salen sus características
     titulo:S(p&&p.titulo), sub:S(p&&p.sub),
     feats:(Array.isArray(p&&p.feats)?p.feats:[]).map(f=>Array.isArray(f) ? [S(f[0]), S(f[1])] : ["", S(f)]),
     vers:(Array.isArray(p&&p.vers)?p.vers:[]).map(v=>({n:S(v&&v.n), s:S(v&&v.s), p:N(v&&v.p), pp:N(v&&v.pp), items:LI(v&&v.items), desc:S(v&&v.desc), c:S(v&&v.c)})),
     comun:LI(p&&p.comun)
   }));
-  if(!partes.length) partes.push({titulo:"", sub:"", feats:[], vers:[], comun:[]});
+  if(!partes.length) partes.push({ref:"", oc:[], sinF:false, titulo:"", sub:"", feats:[], vers:[], comun:[]});
   return {id:S(t&&t.id), cat:S(t&&t.cat)||"accesorios", partes, banda:!!(t && t.banda!==false), ppOn:!!(t&&t.ppOn), ppTxt:S(t&&t.ppTxt), notas:S(t&&t.notas)};
 }
 /* En la nube cada dato va en su propio campo ("p0:v1:p" = precio de la 2.ª versión),
@@ -324,7 +336,7 @@ function aPlano(t){
   const n=normal(t), o={cat:n.cat, banda:n.banda, ppOn:n.ppOn, ppTxt:n.ppTxt, notas:n.notas, np:n.partes.length};
   n.partes.forEach((p,i)=>{
     const P="p"+i+":";
-    o[P+"titulo"]=p.titulo; o[P+"sub"]=p.sub; o[P+"comun"]=p.comun; o[P+"nf"]=p.feats.length; o[P+"nv"]=p.vers.length;
+    o[P+"ref"]=p.ref; o[P+"oc"]=p.oc; o[P+"sinF"]=p.sinF; o[P+"titulo"]=p.titulo; o[P+"sub"]=p.sub; o[P+"comun"]=p.comun; o[P+"nf"]=p.feats.length; o[P+"nv"]=p.vers.length;
     p.feats.forEach((f,j)=>{ o[P+"f"+j]=f; });
     p.vers.forEach((v,j)=>{ const V=P+"v"+j+":"; o[V+"n"]=v.n; o[V+"s"]=v.s; o[V+"p"]=v.p; o[V+"pp"]=v.pp; o[V+"items"]=v.items; o[V+"desc"]=v.desc; o[V+"c"]=v.c; });
   });
@@ -335,7 +347,7 @@ function desdePlano(o, id){
   const np=Math.max(1, cuantos(o.np, 2)), partes=[];
   for(let i=0;i<np;i++){
     const P="p"+i+":";
-    partes.push({titulo:o[P+"titulo"], sub:o[P+"sub"], comun:o[P+"comun"],
+    partes.push({ref:o[P+"ref"], oc:o[P+"oc"], sinF:o[P+"sinF"], titulo:o[P+"titulo"], sub:o[P+"sub"], comun:o[P+"comun"],
       feats:Array.from({length:cuantos(o[P+"nf"], 40)}, (_,j)=>o[P+"f"+j]||["",""]),
       vers:Array.from({length:cuantos(o[P+"nv"], 20)}, (_,j)=>{ const V=P+"v"+j+":"; return {n:o[V+"n"], s:o[V+"s"], p:o[V+"p"], pp:o[V+"pp"], items:o[V+"items"], desc:o[V+"desc"], c:o[V+"c"]}; })});
   }
@@ -361,9 +373,39 @@ function todasIds(){
   Object.keys(docs).filter(id=>!BASE_ID[id] && tieneDatos(docs[id])).sort().forEach(id=>ids.push(id));
   return ids;
 }
-const tituloDe = t => t.partes.map(p=>p.titulo||"Sin nombre").join(" + ");
+/* Tarjetas de 2 modelos: un lado puede mostrar otra tarjeta ("neo2", o "om8-om7#1" = el 2.º lado
+   de esa). Así el precio es uno solo: si cambia en su tarjeta, cambia en todas donde aparece. */
+function origen(ref, prof){
+  const r=S(ref), h=r.lastIndexOf("#"), id=h>0 ? r.slice(0,h) : r, k=h>0 ? (+r.slice(h+1)||0) : 0;
+  const t=id && tarjeta(id); if(!t) return null;
+  const p=t.partes[k]; if(!p) return null;
+  if(p.ref) return (prof||0)<3 ? origen(p.ref, (prof||0)+1) : null;
+  return {id, k, t, p};
+}
+const PERDIDA = {ref:"", oc:[], sinF:false, titulo:"(modelo no encontrado)", sub:"", feats:[], vers:[], comun:[]};
+// el lado como sale en la tarjeta: el de su modelo, sin las versiones/características que se quitaron
+function ladoVisto(p){
+  if(!p.ref) return p;
+  const o=origen(p.ref); if(!o) return clon(PERDIDA);
+  const q=Object.assign(clon(o.p), {ref:"", oc:[], sinF:false});
+  q.vers=q.vers.filter((v,j)=>p.oc.indexOf(j)<0);
+  if(p.sinF) q.feats=[];
+  return q;
+}
+function resuelta(t){
+  if(!t || !t.partes.some(p=>p.ref)) return t;
+  const r=clon(t); r.partes=t.partes.map(ladoVisto); return r;
+}
+const vacia = ref => ({ref, oc:[], sinF:false, titulo:"", sub:"", feats:[], vers:[], comun:[]});
+// notas al pie de una tarjeta de 2 modelos: las de cada modelo (una sola vez si son iguales)
+function notasAuto(partes){
+  const ns=[];
+  partes.forEach(p=>{ if(!p.ref) return; const o=origen(p.ref); if(!o) return; const n=o.t.notas.trim(); if(n && !ns.some(x=>x.n===n)) ns.push({tit:o.p.titulo, n}); });
+  return ns.length>1 ? ns.map(x=>`${x.tit}: ${x.n}`).join("  ") : ns.length ? ns[0].n : "";
+}
+const tituloDe = t => resuelta(t).partes.map(p=>p.titulo||"Sin nombre").join(" + ");
 function rangoPrecios(t){
-  const ps=[]; t.partes.forEach(p=>p.vers.forEach(v=>{ if(v.p!=null) ps.push(v.p); }));
+  t=resuelta(t); const ps=[]; t.partes.forEach(p=>p.vers.forEach(v=>{ if(v.p!=null) ps.push(v.p); }));
   const nv=t.partes.reduce((a,p)=>a+p.vers.length,0);
   const vtxt=nv===1?"1 versión":nv+" versiones";
   if(!ps.length) return vtxt+" · sin precio";
@@ -388,6 +430,12 @@ function comoEnNube(id){
   if(n){ if("borrado" in n) o.borrado=n.borrado; if("actualizado" in n) o.actualizado=n.actualizado; }
   return o;
 }
+function ponerCampo(id, campo, valor){
+  const d=Object.assign({}, docs[id]||{}); d[campo]=valor; d.actualizado=Date.now();
+  docs[id]=d; guardarLocal();
+  if(window.Nube && Nube.conectado() && nube!==null) Nube.guardarMapa("tarjetas", id, {[campo]:valor, actualizado:d.actualizado}, {[campo]:comoEnNube(id)[campo]});
+  else { sucios.add(id); programarSubida(); }
+}
 function programarSubida(){ clearTimeout(tSubir); tSubir=setTimeout(subir, 450); }
 function subir(){
   clearTimeout(tSubir); tSubir=null;
@@ -407,13 +455,14 @@ document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState=
 // ---------- lista ----------
 function coincide(t, id){
   if(!query) return true;
+  t=resuelta(t);
   const h=T.sinAcentos([id, nombreCat(t.cat), ...t.partes.flatMap(p=>[p.titulo, p.sub, ...p.vers.map(v=>v.n+" "+v.s)])].join(" "));
   return T.sinAcentos(query).split(/\s+/).filter(Boolean).every(w=>h.includes(w));
 }
 // primero las que tienen lo buscado en el nombre
 function rango(t){
   if(!query) return 0;
-  const h=T.sinAcentos(t.partes.map(p=>p.titulo).join(" "));
+  const h=T.sinAcentos(resuelta(t).partes.map(p=>p.titulo).join(" "));
   return T.sinAcentos(query).split(/\s+/).filter(Boolean).every(w=>h.includes(w)) ? 0 : 1;
 }
 function visibles(){
@@ -481,13 +530,14 @@ function vistaLuego(){ cancelAnimationFrame(rafVista); rafVista=requestAnimation
 function pintarVista(){
   const v=$("vista");
   if(!edit){ v.innerHTML=""; v.style.height="0"; return; }
-  v.innerHTML=`<div class="escala">${T.html(edit, medida)}</div>`;
+  v.innerHTML=`<div class="escala">${T.html(resuelta(edit), medida)}</div>`;
   const tj=v.querySelector(".tj"), ok=T.ajustar(tj);
   $("cortada").hidden=ok;
   escalar();
   $("vTitulo").textContent=tituloDe(edit);
   $("vInfo").textContent=nombreCat(edit.cat)+" · "+rangoPrecios(edit)+(editada(actual)?" · editada":"")+(!deFabrica(actual)?" · tarjeta nueva":"");
   $("btnRest").hidden=!editada(actual);
+  $("btnDos").hidden=edit.partes.length>1;
   $("btnOcultar").textContent = deFabrica(actual) ? (oculta(actual) ? "Mostrar" : "Ocultar") : "🗑 Borrar";
   $("btnOcultar").classList.toggle("danger", !deFabrica(actual));
 }
@@ -562,18 +612,33 @@ function icono(ic, tx){ const n=ic||T.iconoPara(tx,"feat"); return T.svg(n); }
 function pintarEditor(){
   const ed=$("editor");
   if(!edit){ ed.innerHTML=`<div class="vacio">Elegí una tarjeta de la lista.</div>`; return; }
-  const doble=edit.partes.length>1;
-  let h=`<div class="sec"><h3>💲 Precios</h3><p class="hint">Escribí el precio en quetzales. El de Protection Plus solo sale si activás su línea abajo.</p>
+  const doble=edit.partes.length>1, PV=edit.partes.map((p,i)=>parteVista(i)), lado=i=>doble ? (i ? "Lado derecho" : "Lado izquierdo") : "Producto";
+  let h="";
+  if(doble) h+=`<div class="sec"><h3>➗ Los dos modelos de la tarjeta</h3><p class="hint">Elegí qué modelo va en cada lado. Sus precios, fotos y textos salen de la tarjeta de ese modelo: si cambiás un precio aquí, también cambia allá (y al revés).</p>
+    <div class="lados"><div><label class="fl">Lado izquierdo</label><select class="in" data-lado="0">${opcionesModelos(edit.partes[0].ref)}</select></div>
+    <button class="btn ghost sm" data-a="swap" title="Pasar el de la izquierda a la derecha y al revés">⇄ Intercambiar</button>
+    <div><label class="fl">Lado derecho</label><select class="in" data-lado="1">${opcionesModelos(edit.partes[1].ref)}</select></div></div></div>`;
+  h+=`<div class="sec"><h3>💲 Precios</h3><p class="hint">Escribí el precio en quetzales. El de Protection Plus solo sale si activás su línea abajo.</p>
     <div class="pr-h"><span>Versión</span><span>Precio</span><span>Protection Plus</span></div><div class="precios">`;
-  edit.partes.forEach((p,i)=>p.vers.forEach((v,j)=>{
-    h+=`<div class="pr"><div class="pr-n"><span data-lbl="${i}.${j}">${esc(v.n||"Sin nombre")}</span>${doble?`<small>${esc(p.titulo)}</small>`:""}</div>
+  PV.forEach((p,i)=>p.vers.forEach((v,j)=>{
+    h+=`<div class="pr"><div class="pr-n"><span data-lbl="${i}.${j}">${esc(v.n||"Sin nombre")}</span>${doble?`<small${edit.partes[i].ref?' class="ref"':""}>${edit.partes[i].ref?"🔗 ":""}${esc(p.titulo)}</small>`:""}</div>
       <label class="money"><i>Q</i><input data-k="p.${i}.v.${j}.p" inputmode="decimal" value="${v.p==null?"":v.p}" placeholder="0" aria-label="Precio de ${esc(v.n)}"></label>
       <label class="money pp"><i>PP Q</i><input data-k="p.${i}.v.${j}.pp" inputmode="decimal" value="${v.pp==null?"":v.pp}" placeholder="—" aria-label="Protection Plus de ${esc(v.n)}"></label></div>`;
   }));
-  if(!edit.partes.some(p=>p.vers.length)) h+=`<div class="vacio">Agregá una versión abajo.</div>`;
+  if(!PV.some(p=>p.vers.length)) h+=`<div class="vacio">Agregá una versión abajo.</div>`;
   h+=`</div></div>`;
   edit.partes.forEach((p,i)=>{
-    h+=`<div class="sec"><h3>📦 ${doble?"Producto "+(i+1):"Producto"}${doble?` <button class="ib del" data-a="delParte:${i}" title="Quitar este producto" style="margin-left:auto">✕</button>`:""}</h3>
+    const quitar = doble ? ` <button class="ib del" data-a="delParte:${i}" title="Quitar este lado" style="margin-left:auto">✕</button>` : "";
+    if(p.ref){
+      const t=esc(PV[i].titulo||"ese modelo");
+      h+=`<div class="sec"><h3>📦 ${lado(i)}: ${t}${quitar}</h3><div class="refbox">🔗 Este lado muestra la tarjeta de <b>${t}</b>: los textos y las fotos salen de allá y el precio es el mismo en las dos.
+        <div class="r"><button class="btn ghost sm" data-a="abrirRef:${i}">Abrir la tarjeta de ${t}</button><button class="btn ghost sm" data-a="copiaRef:${i}">Cambiar textos solo en esta tarjeta</button></div></div>
+        <label class="fl">Qué sale de este modelo en esta tarjeta</label><div class="vchk">
+        ${PV[i].vers.map((v,j)=>`<label class="chk"><input type="checkbox" data-oc="${i}.${j}" ${p.oc.indexOf(j)<0?"checked":""}> ${esc(v.n||"Sin nombre")} <span class="pz">${esc(T.precio(v.p))}</span></label>`).join("")}
+        <label class="chk"><input type="checkbox" data-sinf="${i}" ${p.sinF?"":"checked"}> Características (los íconos)</label></div></div>`;
+      return;
+    }
+    h+=`<div class="sec"><h3>📦 ${lado(i)}${quitar}</h3>
       <div class="row2"><div><label class="fl">Nombre (título)</label><input class="in" data-k="p.${i}.titulo" value="${esc(p.titulo)}"></div>
       <div><label class="fl">Subtítulo <i>(opcional)</i></label><input class="in" data-k="p.${i}.sub" value="${esc(p.sub)}"></div></div>
       <label class="fl">Características <i>(el ícono se elige solo; tocalo para cambiarlo)</i></label><div class="feats">`;
@@ -603,9 +668,40 @@ function pintarEditor(){
       <label class="sw"><input type="checkbox" data-k="ppOn" ${edit.ppOn?"checked":""}> Mostrar la línea de DJI Protection Plus con sus precios</label>
       <div ${edit.ppOn?"":"hidden"} id="ppBox"><label class="fl">Texto de Protection Plus</label><input class="in" data-k="ppTxt" value="${esc(edit.ppTxt)}"></div>
       <label class="fl">Notas al pie <i>(letra pequeña)</i></label><textarea class="in" rows="3" data-k="notas">${esc(edit.notas)}</textarea>
-      <div>${doble ? "" : `<button class="btn ghost sm" data-a="addParte">＋ Agregar otro producto a la par (como Osmo Mobile 8 + 7)</button>`}</div>
+      <div>${doble ? "" : `<button class="btn ghost sm" data-a="addParte">＋ Agregar otro producto en blanco a la par (o usá “➗ 2 modelos” arriba para elegir uno que ya existe)</button>`}</div>
     </div></div>`;
   ed.innerHTML=h; ed.dataset.forma=forma(edit);
+}
+// lado como se ve (si viene de otra tarjeta, el de esa)
+function parteVista(i){
+  const p=edit.partes[i]; if(!p || !p.ref) return p;
+  const o=origen(p.ref); return o ? o.p : PERDIDA;
+}
+// lista para elegir el modelo de un lado: todas las tarjetas (y cada lado de las que ya son de 2), menos esta
+function opcionesModelos(sel){
+  let h=`<option value="" ${sel?"":"selected"}>✏️ Escrito aquí (solo en esta tarjeta)</option>`;
+  CATS.forEach(([c,n])=>{
+    const ops=[];
+    todasIds().forEach(id=>{
+      if(id===actual) return; const t=tarjeta(id); if(!t || t.cat!==c) return;
+      t.partes.forEach((p,k)=>{
+        if(p.ref) return;
+        const val=t.partes.length>1 ? id+"#"+k : id;
+        ops.push(`<option value="${esc(val)}" ${val===sel?"selected":""}>${esc(p.titulo||"Sin nombre")}${t.partes.length>1?` (de ${esc(tituloDe(t))})`:""}${oculta(id)?" · oculta":""}</option>`);
+      });
+    });
+    if(ops.length) h+=`<optgroup label="${esc(n)}">${ops.join("")}</optgroup>`;
+  });
+  if(sel && !origen(sel)) h+=`<option value="${esc(sel)}" selected>(modelo no encontrado)</option>`;
+  return h;
+}
+function cambiarLado(i, val){
+  const p=edit.partes[i]; if(!p || S(val)===S(p.ref)) return;
+  const auto=notasAuto(edit.partes).trim();
+  if(val) edit.partes[i]=vacia(val);
+  else edit.partes[i]=ladoVisto(edit.partes[i]);   // se copia (como se ve) para cambiarla solo aquí
+  if(edit.notas.trim()===auto) edit.notas=notasAuto(edit.partes);
+  const y0=window.scrollY; pintarEditor(); window.scrollTo(0,y0); cambio();
 }
 function poner(k, el){
   const v = el.type==="checkbox" ? el.checked : el.value;
@@ -613,6 +709,10 @@ function poner(k, el){
   const r=k.split(".");
   if(r[0]!=="p"){ edit[r[0]] = (r[0]==="banda"||r[0]==="ppOn") ? !!v : S(v); if(r[0]==="ppOn") $("ppBox").hidden=!v; return; }
   const p=edit.partes[+r[1]]; if(!p) return;
+  if(p.ref){
+    if(r[2]==="v" && (r[4]==="p"||r[4]==="pp")){ const o=origen(p.ref); if(o) ponerCampo(o.id, `p${o.k}:v${+r[3]}:${r[4]}`, num(v)); }
+    return;
+  }
   if(r[2]==="titulo"||r[2]==="sub") p[r[2]]=S(v);
   else if(r[2]==="comun"){ const it=p.comun[+r[3]]; if(it){ it[1]=S(v); refrescarFotos(`p.${r[1]}.comun`); } }
   else if(r[2]==="f"){ const f=p.feats[+r[3]]; if(f){ f[1]=S(v); const b=el.closest(".ft").querySelector(".icb"); if(b && !f[0]) b.innerHTML=icono("", f[1]); } }
@@ -627,13 +727,25 @@ function cambio(){ guardarTarjeta(actual, edit); vistaLuego(); pintarListaLuego(
 let tLista=null;
 function pintarListaLuego(){ clearTimeout(tLista); tLista=setTimeout(pintarLista, 250); }
 $("editor").addEventListener("input", e=>{ const k=e.target.dataset && e.target.dataset.k; if(!k || !edit) return; poner(k, e.target); cambio(); });
-$("editor").addEventListener("change", e=>{ const k=e.target.dataset && e.target.dataset.k; if(!k || !edit) return; if(e.target.type==="checkbox" || e.target.tagName==="SELECT"){ poner(k, e.target); cambio(); } });
+$("editor").addEventListener("change", e=>{ if(e.target.dataset && e.target.dataset.lado!=null && edit){ cambiarLado(+e.target.dataset.lado, e.target.value); return; }
+  if(e.target.dataset && (e.target.dataset.oc!=null || e.target.dataset.sinf!=null) && edit){
+    if(e.target.dataset.sinf!=null){ const p=edit.partes[+e.target.dataset.sinf]; if(p) p.sinF=!e.target.checked; }
+    else { const [i,j]=e.target.dataset.oc.split(".").map(Number), p=edit.partes[i]; if(p){ p.oc=p.oc.filter(x=>x!==j); if(!e.target.checked) p.oc.push(j); p.oc.sort((a,b)=>a-b); } }
+    cambio(); return;
+  } const k=e.target.dataset && e.target.dataset.k; if(!k || !edit) return; if(e.target.type==="checkbox" || e.target.tagName==="SELECT"){ poner(k, e.target); cambio(); } });
 $("editor").addEventListener("focusout", ()=>{ setTimeout(()=>{ if(remotoPendiente && !$("editor").contains(document.activeElement)) aplicarRemoto(); }, 0); });
 $("editor").addEventListener("click", e=>{
   const b=e.target.closest("[data-a]"); if(!b || !edit) return;
   const [a, x, y] = b.dataset.a.split(":"), i=+x, j=+y, p=edit.partes[i];
   const mover=(arr,de,a2)=>{ if(a2<0||a2>=arr.length) return; const [el]=arr.splice(de,1); arr.splice(a2,0,el); };
   if(a==="ic"){ abrirPicker(b, i, j); return; }
+  if(a==="abrirRef"){ const o=origen(edit.partes[i].ref); if(o){ if(tSubir) subir(); abrir(o.id, true); } return; }
+  if(a==="copiaRef"){ cambiarLado(i, ""); toast("Este lado ahora se escribe aquí: los cambios de textos son solo para esta tarjeta"); return; }
+  if(a==="swap"){
+    const auto=notasAuto(edit.partes).trim(); edit.partes.reverse();
+    if(edit.notas.trim()===auto) edit.notas=notasAuto(edit.partes);
+    const y0=window.scrollY; pintarEditor(); window.scrollTo(0,y0); cambio(); toast("⇄ Se intercambiaron los lados"); return;
+  }
   if(a==="fo"){ abrirFotos(b.dataset.l, +b.dataset.n); return; }
   if(a==="addIt"||a==="delIt"||a==="upIt"){
     const l=listaDe(b.dataset.l), n=+b.dataset.n; if(!l) return;
@@ -649,8 +761,12 @@ $("editor").addEventListener("click", e=>{
   else if(a==="delV"){ if(!confirm(`¿Quitar la versión “${p.vers[j].n||"sin nombre"}” de esta tarjeta?`)) return; p.vers.splice(j,1); }
   else if(a==="upV"){ mover(p.vers, j, j-1); }
   else if(a==="downV"){ mover(p.vers, j, j+1); }
-  else if(a==="addParte"){ edit.partes.push({titulo:"OTRO MODELO", sub:"", feats:[["",""]], vers:[{n:"Estándar", s:"", p:null, pp:null, items:[], desc:""}], comun:[]}); }
-  else if(a==="delParte"){ if(!confirm(`¿Quitar “${edit.partes[i].titulo||"este producto"}” de la tarjeta?`)) return; edit.partes.splice(i,1); }
+  else if(a==="addParte"){ edit.partes.push({ref:"", titulo:"OTRO MODELO", sub:"", feats:[["",""]], vers:[{n:"Estándar", s:"", p:null, pp:null, items:[], desc:""}], comun:[]}); }
+  else if(a==="delParte"){
+    if(!confirm(`¿Quitar “${parteVista(i).titulo||"este producto"}” de la tarjeta?`)) return;
+    if(edit.partes.length===2 && edit.partes[1-i].ref) edit.partes[1-i]=ladoVisto(edit.partes[1-i]);   // el que queda pasa a ser propio
+    edit.partes.splice(i,1);
+  }
   else return;
   const y0=window.scrollY; pintarEditor(); window.scrollTo(0,y0); cambio();
   if(a==="addF"){ const ins=document.querySelectorAll(`[data-k^="p.${i}.f."]`); if(ins.length) ins[ins.length-1].focus(); }
@@ -727,6 +843,18 @@ $("btnDup").addEventListener("click", ()=>{
   const t=clon(edit); t.partes[0].titulo=(t.partes[0].titulo||"")+" (COPIA)";
   abrir(crear(t), true); toast("Se hizo una copia: cambiale el nombre y lo que haga falta");
 });
+$("btnDos").addEventListener("click", ()=>{
+  if(!edit || edit.partes.length>1) return;
+  // a la par: la siguiente tarjeta de un solo modelo (de la misma categoría si hay)
+  const ids=todasIds(), i0=ids.indexOf(actual), sola=id=>{ const t=tarjeta(id); return t && !oculta(id) && t.partes.length===1 && !t.partes[0].ref; };
+  const orden=[...ids.slice(i0+1), ...ids.slice(0, Math.max(0,i0))].filter(id=>id!==actual && sola(id));
+  const otra=orden.find(id=>tarjeta(id).cat===edit.cat) || orden[0];
+  if(tSubir) subir();
+  const partes=[vacia(actual), otra ? vacia(otra) : {ref:"", titulo:"OTRO MODELO", sub:"", feats:[["",""]], vers:[{n:"Estándar", s:"", p:null, pp:null, items:[["",""]], desc:"", c:""}], comun:[]}];
+  const id=crear({cat:edit.cat, partes, banda:false, ppOn:false, ppTxt:TXT.pp||"", notas:notasAuto(partes)});
+  query=""; $("q").value=""; abrir(id, true);
+  toast("Tarjeta de 2 modelos: elegí abajo qué modelo va en cada lado");
+});
 $("btnRest").addEventListener("click", ()=>{
   if(!actual || !editada(actual)) return;
   if(!confirm("¿Volver esta tarjeta a como venía? Se pierden los precios y textos que le cambiaron.")) return;
@@ -759,7 +887,7 @@ function abrirPrimera(){
 // ---------- imprimir ----------
 function imprimir(ids, copias){
   const lista=[];
-  ids.forEach(id=>{ const t = id===actual && edit ? normal(edit) : tarjeta(id); if(t) for(let k=0;k<copias;k++) lista.push(t); });
+  ids.forEach(id=>{ const t = resuelta(id===actual && edit ? normal(edit) : tarjeta(id)); if(t) for(let k=0;k<copias;k++) lista.push(t); });
   if(!lista.length){ toast("Marcá al menos una tarjeta"); return; }
   const d=distribucion(medida.ancho, medida.alto);
   if(!d.n){ alert("Con esa medida la tarjeta no cabe en una hoja carta."); return; }
@@ -798,13 +926,13 @@ function unir3(b, aqui, alla){
 function valorDe(k){
   const r=k.split(".");
   if(r[0]!=="p") return edit[r[0]];
-  const p=edit.partes[+r[1]]; if(!p) return undefined;
+  const p=parteVista(+r[1]); if(!p) return undefined;
   if(r[2]==="comun") return (p.comun[+r[3]]||[])[1];
   if(r[2]==="f") return (p.feats[+r[3]]||[])[1];
   if(r[2]==="v"){ const v=p.vers[+r[3]]; if(!v) return undefined; const c=r[4]; if(c==="items") return (v.items[+r[5]]||[])[1]; if(c==="p"||c==="pp") return v[c]==null?"":String(v[c]); return v[c]; }
   return p[r[2]];
 }
-const forma = t => t ? t.partes.map(p=>p.feats.length+"/"+p.vers.map(v=>v.items.length).join(",")+"/"+p.comun.length).join("|") : "";
+const forma = t => t ? t.partes.map((q,i)=>{ const p = t===edit ? parteVista(i) : q; return (q.ref?"r:"+q.ref+":":"")+p.feats.length+"/"+p.vers.map(v=>v.items.length).join(",")+"/"+p.comun.length; }).join("|") : "";
 // cuando alguien está escribiendo: se actualizan los demás campos sin moverle el cursor
 function refrescarCampos(){
   if($("editor").dataset.forma!==forma(edit)){ remotoPendiente=true; return; }
@@ -814,8 +942,10 @@ function refrescarCampos(){
     if(el.type==="checkbox"){ if(el.checked!==!!v) el.checked=!!v; }
     else if(el.value!==S(v)) el.value=S(v);
   });
-  edit.partes.forEach((p,i)=>p.vers.forEach((v,j)=>{ const l=document.querySelector(`[data-lbl="${i}.${j}"]`); if(l) l.textContent=v.n||"Sin nombre"; }));
+  edit.partes.forEach((q,i)=>parteVista(i).vers.forEach((v,j)=>{ const l=document.querySelector(`[data-lbl="${i}.${j}"]`); if(l) l.textContent=v.n||"Sin nombre"; }));
   const pb=$("ppBox"); if(pb) pb.hidden=!edit.ppOn;
+  document.querySelectorAll("#editor [data-oc]").forEach(el=>{ const [i,j]=el.dataset.oc.split(".").map(Number), p=edit.partes[i]; if(p && el!==document.activeElement) el.checked=p.oc.indexOf(j)<0; });
+  document.querySelectorAll("#editor [data-sinf]").forEach(el=>{ const p=edit.partes[+el.dataset.sinf]; if(p && el!==document.activeElement) el.checked=!p.sinF; });
   document.querySelectorAll("#editor [data-lista]").forEach(x=>refrescarFotos(x.dataset.lista));
 }
 function aplicarRemoto(){
@@ -855,7 +985,11 @@ function alLlegar(crudo){
   if(tocaActual){
     if($("editor").contains(document.activeElement) || pk) refrescarCampos(); else aplicarRemoto();
     pintarVista();
-  } else pintarVista();
+  } else {
+    pintarVista();
+    // tarjeta de 2 modelos: si cambió la tarjeta de uno de sus modelos, se actualizan sus precios aquí
+    if(edit && edit.partes.some(p=>p.ref)){ refrescarCampos(); if(remotoPendiente && !$("editor").contains(document.activeElement) && !pk) aplicarRemoto(); }
+  }
   if(sucios.size) programarSubida();
 }
 async function conectarNube(){
