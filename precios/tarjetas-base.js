@@ -16,7 +16,7 @@
   const NOTA_GEN = "Para obtener descripciones detalladas de las características y condiciones de uso, consulta el sitio web oficial de DJI o el manual de usuario del producto.";
   const f = t => ["", t];
   const T = (id, cat, partes, extra) => Object.assign({id, cat, partes, banda:true, ppOn:false, ppTxt:PP_TXT, notas:NOTA_GEN}, extra||{});
-  const P = (titulo, sub, feats, vers, comun) => ({titulo, sub, feats:feats.map(f), vers, comun:comun||[]});
+  const P = (titulo, sub, feats, vers, comun) => ({titulo, sub, feats:feats.map(x=>Array.isArray(x)?x:f(x)), vers, comun:comun||[]});
   const V = (n, p, items, extra) => Object.assign({n, s:"", p, pp:null, items, desc:""}, extra||{});
 
   window.TARJETAS_BASE = [
@@ -39,10 +39,12 @@
       V("Fly More Combo (DJI RC-N3)",4849,["Aeronave","Control remoto DJI RC-N3","Batería × 3","Centro de carga","Bolso de hombro"],{pp:999}),
       V("Fly More Combo (DJI RC 2)",5849,["Aeronave","Control DJI RC 2 con pantalla","Batería × 3","Centro de carga","Bolso de hombro"],{pp:1149}),
       V("Fly More Combo Plus (DJI RC 2)",6629,["Aeronave","Control DJI RC 2 con pantalla","Batería Plus × 3 (52 min)","Centro de carga","Bolso de hombro"],{pp:1379})])]),
-    T("mini5pro","drones",[P("DJI MINI 5 PRO","Mini dron con sensor de 1 pulgada",[
-        "Sensor de 1 pulgada con fotos de 50 MP","Video 4K a 60 fps y cámara lenta 4K a 120 fps","Gimbal que gira 225° para tomas verticales reales",
-        "Detección de obstáculos omnidireccional y LiDAR frontal","Seguimiento ActiveTrack 360°","Hasta 52 minutos de vuelo con la batería Plus"],[
-      V("Fly More Combo Plus (DJI RC 2)",9999,["Aeronave","Control DJI RC 2 con pantalla","Batería Plus × 3","Centro de carga bidireccional","Filtros ND (ND8/32/128)","Bolso de hombro","Hélices de repuesto × 3 pares"],{pp:1069})])]),
+    // tal como la tarjeta oficial escaneada
+    T("mini5pro","drones",[P("DJI MINI 5 PRO","Dron mini con cámara todo en uno con CMOS grande de 1 pulgada",[
+        ["chip","Cámara CMOS grande de 1 pulgada"],["obstaculos","Detección de obstáculos omnidireccional en escenas nocturnas¹"],["rotar","Filmación vertical real y rotación flexible del estabilizador de 225°"],
+        ["seguimiento","ActiveTrack 360° mejorado"],["pluma","Ligero y portátil"],["bateria","Vida de la batería aumentada²"]],[
+      V("Pack DJI Mini 5 Pro Vuela Más Plus (RC 2)",9999,["Aeronave","RC 2","Batería Plus × 3","Centro de carga","Juego de filtros ND (ND8/32/128)"],{pp:1069, desc:"Por favor consulte a los asesores para más detalles sobre DJI Mini 5 Pro"})])],
+      {notas:"1. Esta función solo es eficaz en superficies con texturas reconocibles y con una iluminación superior a 1 lux. Consulta los detalles en el sitio web oficial de DJI o en el manual de usuario del producto. 2. La vida de la batería extendida es de hasta 36 o 52 minutos. El tiempo puede variar según la batería instalada. Medido en un entorno de prueba controlado. Consulta más detalles en la página del producto del sitio web oficial de DJI. La batería de vuelo inteligente Plus solo está disponible en ciertos países y regiones."}),
     T("avata360","drones",[P("DJI AVATA 360","Dron 360° en 8K con hélices protegidas",[
         "Video 360° en 8K a 60 fps con HDR","Fotos 360° de hasta 120 MP","Reencuadre después de volar: una toma, muchos ángulos",
         "Protectores de hélices integrados","Detección de obstáculos omnidireccional y LiDAR frontal","Transmisión DJI O4+ de hasta 20 km"],[
@@ -52,7 +54,7 @@
     T("avata2","drones",[P("DJI AVATA 2","Vuelo inmersivo en primera persona",[
         "Sensor de 1/1.3\" con video 4K a 60 fps","Lente ultra gran angular de 155°","Acrobacias con un solo botón (Easy ACRO)",
         "Hélices protegidas integradas","Estabilización RockSteady 3.0+ y HorizonSteady","Transmisión DJI O4 de hasta 13 km"],[
-      V("Fly Smart Combo",7399,["Aeronave","Goggles N3","RC Motion 3","Batería × 3","Centro de carga bidireccional"],{s:"3 baterías, con gafas",pp:2219})])]),
+      V("Fly Smart Combo",7399,["Aeronave",["465f1b13c6","Goggles N3"],["02a341d8d1","RC Motion 3"],"Batería × 3","Centro de carga bidireccional"],{s:"3 baterías, con gafas",pp:2219})])]),
     T("flip","drones",[P("DJI FLIP","Dron para vlogs todo en uno",[
         "Cámara de 1/1.3\" con fotos de 48 MP","Video 4K a 60 fps HDR","Protectores de hélices plegables integrados",
         "Seguimiento de objetivos con IA","Menos de 249 g: se pliega y cabe en cualquier bolso","Hasta 31 minutos de vuelo"],[
@@ -156,6 +158,16 @@
         "Batería integrada de aprox. 3 horas","Videos panorámicos y 3D hasta 4K/60","Compatibles con DJI Avata 2"],[
       V("Estándar",4799,["Gafas DJI Goggles 3","Lentes correctivos (par)","Almohadilla de espuma","Cable USB-C OTG"])])])
   ];
+  // de qué combos de Mensajes salen las fotos de "lo que incluye" (una lista por versión, en orden)
+  const FOTOS_DE = {
+    neo2:["neo2-solo","neo2-fmc","neo2-motion"], lito1:["lito1-solo","lito1-fmc"], litox1:["litox1-solo","litox1-fmc-n3","litox1-fmc","litox1-fmcplus"],
+    mini5pro:["mini5pro-fmcplus"], avata360:["avata360-rc2","avata360-fmc","avata360-motion"], flip:["flip-std","flip-fmc"], air3s:["air3s-fmc"],
+    mavic4pro:["mavic4pro-fmc","mavic4pro-creator"], pocket3:["pocket3-creator"], pocket4:["pocket4-std","pocket4-creator"], pocket4p:["pocket4p-std","pocket4p-vlog"],
+    nano:["nano-std","nano-std"], action6:["action6-adv","action6-adv"], osmo360ii:["osmo360ii-std","osmo360ii-adv"], om8p:["om8p-adv","om8p-creator"],
+    rs5:["rs5-combo"], rs4pro:["rs4pro-combo"], rs4mini:["rs4mini-combo"], mic3:["pocket4-creator"], goggles3:["goggles3-std"],
+    micmini2:["micmini2-rx","micmini2-movil","micmini2-movil micmini2-1tx","micmini2-movil"], micmini2s:["micmini2s-2tx","micmini2s-movil","micmini2s-2tx"]
+  };
+  window.TARJETAS_BASE.forEach(t=>{ const c=FOTOS_DE[t.id]; if(c) t.partes[0].vers.forEach((v,i)=>{ if(c[i]) v.c=c[i]; }); });
   window.TARJETAS_TEXTOS = {pp:PP_TXT, notas:NOTA_GEN, banda:"Te invitamos a probar el producto. Consulta los detalles al personal de la tienda."};
   window.TARJETAS_CATS = [["drones","Drones"],["camaras","Cámaras"],["estabilizadores","Estabilizadores"],["microfonos","Micrófonos"],["accesorios","Accesorios"]];
 })();

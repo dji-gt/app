@@ -126,6 +126,14 @@
   .ib.del:hover{background:var(--err-bg);color:#b71c1c}
   .ib[disabled]{opacity:.35;cursor:default}
   .vers{display:grid;gap:10px}
+  .its{display:grid;gap:6px}
+  .it{display:grid;grid-template-columns:48px minmax(0,1fr) 34px 34px;gap:6px;align-items:center}
+  .it .in{padding:8px 10px;font-size:14px}
+  .fob{width:48px;height:48px;border:2px solid var(--line);border-radius:10px;background:#fff;padding:2px;cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:10px;font-weight:800;line-height:1.1;text-align:center}
+  .fob img{width:100%;height:100%;object-fit:contain}
+  .fob:hover{border-color:var(--accent)}
+  .fob.auto::after{content:"auto";position:absolute;bottom:-1px;right:-1px;font-size:8px;font-weight:800;background:var(--line);color:var(--ink-2);border-radius:5px 0 8px 0;padding:0 3px;line-height:1.4}
+  .ver .fob{background:#fff}
   .ver{background:var(--line-2);border-radius:12px;padding:4px 12px 12px}
   .ver-h{display:flex;align-items:center;gap:6px;margin-top:8px}
   .ver-h b{font-size:13px;font-weight:850;color:var(--ink-2);flex:1}
@@ -144,6 +152,18 @@
   .picker button.pk:hover{border-color:var(--accent);background:var(--accent-bg)}
   .picker button.pk[aria-pressed="true"]{border-color:var(--black);box-shadow:inset 0 0 0 1px var(--black)}
   .picker button.pk svg{width:24px;height:24px}
+  .picker.fotos{left:50%!important;top:50%!important;transform:translate(-50%,-50%);width:min(620px,calc(100vw - 20px));max-height:84vh;display:flex;flex-direction:column;padding:12px}
+  .picker.fotos .pk-top{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .picker.fotos .pk-top .in{flex:1;padding:9px 11px}
+  .picker.fotos .pk-sub{font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin:6px 2px 5px}
+  .picker.fotos .pk-scroll{overflow:auto;min-height:0}
+  .picker.fotos .pk-g{grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:6px}
+  .picker button.pkf{border:1.5px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;padding:4px 4px 5px;display:flex;flex-direction:column;align-items:center;gap:3px;font:inherit;color:var(--ink-2)}
+  .picker button.pkf:hover{border-color:var(--accent);background:var(--accent-bg)}
+  .picker button.pkf[aria-pressed="true"]{border-color:var(--black);box-shadow:inset 0 0 0 1px var(--black)}
+  .picker button.pkf img{width:64px;height:56px;object-fit:contain;mix-blend-mode:multiply}
+  .picker button.pkf small{font-size:9.5px;font-weight:700;color:var(--muted);line-height:1.1;text-align:center}
+  .picker button.pkf span{font-size:10.5px;font-weight:700;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-align:center}
 
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--black);color:#fff;padding:11px 16px;border-radius:11px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:300;box-shadow:var(--shadow-lg);max-width:calc(100% - 32px)}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -229,9 +249,10 @@
 <div class="picker" id="picker" hidden></div>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261116b"></script>
-<script src="tarjeta.js?v=20261116b"></script>
-<script src="tarjetas-base.js?v=20261116b"></script>
+<script src="../nube.js?v=20261116c"></script>
+<script src="fotos.js?v=20261116c"></script>
+<script src="tarjeta.js?v=20261116c"></script>
+<script src="tarjetas-base.js?v=20261116c"></script>
 <script>
 "use strict";
 /* ============================================================
@@ -286,12 +307,13 @@ function leerDoc(d){ const o={}; for(const k in (d||{})){ try{ o[k]=JSON.parse(d
 // ---------- datos de una tarjeta ----------
 function normal(t){
   const N = x => (x===""||x==null||!isFinite(Number(x))) ? null : Number(x);
-  const L = a => Array.isArray(a) ? a.map(S) : [];
+  // cada cosa de "lo que incluye": [foto, texto] (foto "" = automática, "-" = sin foto)
+  const LI = a => Array.isArray(a) ? a.map(x=>Array.isArray(x) ? [S(x[0]), S(x[1])] : ["", S(x)]) : [];
   const partes=(Array.isArray(t&&t.partes)?t.partes:[]).slice(0,2).map(p=>({
     titulo:S(p&&p.titulo), sub:S(p&&p.sub),
     feats:(Array.isArray(p&&p.feats)?p.feats:[]).map(f=>Array.isArray(f) ? [S(f[0]), S(f[1])] : ["", S(f)]),
-    vers:(Array.isArray(p&&p.vers)?p.vers:[]).map(v=>({n:S(v&&v.n), s:S(v&&v.s), p:N(v&&v.p), pp:N(v&&v.pp), items:L(v&&v.items), desc:S(v&&v.desc)})),
-    comun:L(p&&p.comun)
+    vers:(Array.isArray(p&&p.vers)?p.vers:[]).map(v=>({n:S(v&&v.n), s:S(v&&v.s), p:N(v&&v.p), pp:N(v&&v.pp), items:LI(v&&v.items), desc:S(v&&v.desc), c:S(v&&v.c)})),
+    comun:LI(p&&p.comun)
   }));
   if(!partes.length) partes.push({titulo:"", sub:"", feats:[], vers:[], comun:[]});
   return {id:S(t&&t.id), cat:S(t&&t.cat)||"accesorios", partes, banda:!!(t && t.banda!==false), ppOn:!!(t&&t.ppOn), ppTxt:S(t&&t.ppTxt), notas:S(t&&t.notas)};
@@ -304,7 +326,7 @@ function aPlano(t){
     const P="p"+i+":";
     o[P+"titulo"]=p.titulo; o[P+"sub"]=p.sub; o[P+"comun"]=p.comun; o[P+"nf"]=p.feats.length; o[P+"nv"]=p.vers.length;
     p.feats.forEach((f,j)=>{ o[P+"f"+j]=f; });
-    p.vers.forEach((v,j)=>{ const V=P+"v"+j+":"; o[V+"n"]=v.n; o[V+"s"]=v.s; o[V+"p"]=v.p; o[V+"pp"]=v.pp; o[V+"items"]=v.items; o[V+"desc"]=v.desc; });
+    p.vers.forEach((v,j)=>{ const V=P+"v"+j+":"; o[V+"n"]=v.n; o[V+"s"]=v.s; o[V+"p"]=v.p; o[V+"pp"]=v.pp; o[V+"items"]=v.items; o[V+"desc"]=v.desc; o[V+"c"]=v.c; });
   });
   return o;
 }
@@ -315,7 +337,7 @@ function desdePlano(o, id){
     const P="p"+i+":";
     partes.push({titulo:o[P+"titulo"], sub:o[P+"sub"], comun:o[P+"comun"],
       feats:Array.from({length:cuantos(o[P+"nf"], 40)}, (_,j)=>o[P+"f"+j]||["",""]),
-      vers:Array.from({length:cuantos(o[P+"nv"], 20)}, (_,j)=>{ const V=P+"v"+j+":"; return {n:o[V+"n"], s:o[V+"s"], p:o[V+"p"], pp:o[V+"pp"], items:o[V+"items"], desc:o[V+"desc"]}; })});
+      vers:Array.from({length:cuantos(o[P+"nv"], 20)}, (_,j)=>{ const V=P+"v"+j+":"; return {n:o[V+"n"], s:o[V+"s"], p:o[V+"p"], pp:o[V+"pp"], items:o[V+"items"], desc:o[V+"desc"], c:o[V+"c"]}; })});
   }
   return normal({id, cat:o.cat, partes, banda:o.banda, ppOn:o.ppOn, ppTxt:o.ppTxt, notas:o.notas});
 }
@@ -508,7 +530,34 @@ $("mAncho").addEventListener("change", cambiarMedida);
 $("mAlto").addEventListener("change", cambiarMedida);
 
 // ---------- editor ----------
-const lineas = a => (a||[]).join("\n");
+// ---- listas de "lo que incluye" (con foto) ----
+function listaDe(path){
+  const r=path.split("."), p=edit && edit.partes[+r[1]]; if(!p) return null;
+  if(r[2]==="comun") return p.comun;
+  const v=p.vers[+r[3]]; return v ? v.items : null;
+}
+function idsLista(path){
+  const r=path.split("."), p=edit.partes[+r[1]]; if(!p) return [];
+  if(r[2]==="comun"){ const ids=[]; p.vers.forEach(v=>T.idsDe(v.c, edit.id).forEach(x=>{ if(ids.indexOf(x)<0) ids.push(x); })); return ids.length ? ids : T.idsDe("", edit.id); }
+  const v=p.vers[+r[3]]; return v ? T.idsDe(v.c, edit.id) : [];
+}
+function fotoBoton(path, n, it, res){
+  const src=res && res.src;
+  return `<button class="fob${it[0]?"":" auto"}" data-a="fo" data-l="${path}" data-n="${n}" title="Elegir foto">${src?`<img src="${src}" alt="">`:"sin<br>foto"}</button>`;
+}
+function listaItems(path){
+  const l=listaDe(path)||[], res=T.conFotos(l.map(x=>x[1].trim()?x:[x[0],"·"]), idsLista(path));
+  return `<div class="its" data-lista="${path}">${l.map((it,n)=>`<div class="it">${fotoBoton(path, n, it, res[n])}
+      <input class="in" data-k="${path}.${n}" value="${esc(it[1])}" placeholder="Ej.: Batería × 3">
+      <button class="ib" data-a="upIt" data-l="${path}" data-n="${n}" title="Subir" ${n?"":"disabled"}>↑</button><button class="ib del" data-a="delIt" data-l="${path}" data-n="${n}" title="Quitar">✕</button></div>`).join("")}</div>
+    <button class="btn ghost sm add" data-a="addIt" data-l="${path}">＋ Agregar</button>`;
+}
+// al escribir, la foto automática se vuelve a buscar
+function refrescarFotos(path){
+  const l=listaDe(path); if(!l) return;
+  const res=T.conFotos(l.map(x=>x[1].trim()?x:[x[0],"·"]), idsLista(path));
+  document.querySelectorAll(`#editor .fob[data-l="${path}"]`).forEach(b=>{ const n=+b.dataset.n, it=l[n]; if(!it) return; const src=res[n] && res[n].src; const html=src?`<img src="${src}" alt="">`:"sin<br>foto"; if(b.innerHTML!==html) b.innerHTML=html; b.classList.toggle("auto", !it[0]); });
+}
 function icono(ic, tx){ const n=ic||T.iconoPara(tx,"feat"); return T.svg(n); }
 function pintarEditor(){
   const ed=$("editor");
@@ -542,12 +591,11 @@ function pintarEditor(){
           <button class="ib del" data-a="delV:${i}:${j}" title="Quitar versión">✕</button></div>
         <div class="row2"><div><label class="fl">Nombre</label><input class="in" data-k="p.${i}.v.${j}.n" value="${esc(v.n)}"></div>
         <div><label class="fl">Debajo del nombre <i>(opcional)</i></label><input class="in" data-k="p.${i}.v.${j}.s" value="${esc(v.s)}"></div></div>
-        <label class="fl">Lo que incluye <i>(uno por línea · “× 2” para cantidad)</i></label><textarea class="in" rows="${Math.min(8,Math.max(3,v.items.length+1))}" data-k="p.${i}.v.${j}.items">${esc(lineas(v.items))}</textarea>
-        <label class="fl">Descripción <i>(opcional, en lugar de la lista)</i></label><textarea class="in" rows="2" data-k="p.${i}.v.${j}.desc">${esc(v.desc)}</textarea></div>`;
+        <label class="fl">Lo que incluye <i>(“× 2” para la cantidad · tocá la foto para cambiarla)</i></label>${listaItems(`p.${i}.v.${j}.items`)}
+        <label class="fl">Texto debajo <i>(opcional)</i></label><textarea class="in" rows="2" data-k="p.${i}.v.${j}.desc">${esc(v.desc)}</textarea></div>`;
     });
     h+=`</div><button class="btn ghost sm add" data-a="addV:${i}">＋ Versión</button>
-      <label class="fl" style="margin-top:16px">Lo que traen todas las versiones <i>(opcional, uno por línea)</i></label>
-      <textarea class="in" rows="${Math.min(6,Math.max(2,p.comun.length+1))}" data-k="p.${i}.comun">${esc(lineas(p.comun))}</textarea></div>`;
+      <label class="fl" style="margin-top:16px">Lo que traen todas las versiones <i>(opcional)</i></label>${listaItems(`p.${i}.comun`)}</div>`;
   });
   h+=`<div class="sec"><h3>⚙️ Opciones</h3><div class="opts">
       <div class="row2"><div><label class="fl">Categoría</label><select class="in" data-k="cat">${CATS.map(([c,n])=>`<option value="${c}" ${c===edit.cat?"selected":""}>${esc(n)}</option>`).join("")}</select></div><div></div></div>
@@ -562,17 +610,16 @@ function pintarEditor(){
 function poner(k, el){
   const v = el.type==="checkbox" ? el.checked : el.value;
   const num = s => { const t=S(s).replace(/[^\d.]/g,""); if(!t) return null; const n=parseFloat(t); return isFinite(n) ? n : null; };
-  const ls = s => S(s).split("\n").map(x=>x.trim()).filter(Boolean);
   const r=k.split(".");
   if(r[0]!=="p"){ edit[r[0]] = (r[0]==="banda"||r[0]==="ppOn") ? !!v : S(v); if(r[0]==="ppOn") $("ppBox").hidden=!v; return; }
   const p=edit.partes[+r[1]]; if(!p) return;
   if(r[2]==="titulo"||r[2]==="sub") p[r[2]]=S(v);
-  else if(r[2]==="comun") p.comun=ls(v);
+  else if(r[2]==="comun"){ const it=p.comun[+r[3]]; if(it){ it[1]=S(v); refrescarFotos(`p.${r[1]}.comun`); } }
   else if(r[2]==="f"){ const f=p.feats[+r[3]]; if(f){ f[1]=S(v); const b=el.closest(".ft").querySelector(".icb"); if(b && !f[0]) b.innerHTML=icono("", f[1]); } }
   else if(r[2]==="v"){
     const x=p.vers[+r[3]]; if(!x) return; const c=r[4];
     if(c==="p"||c==="pp") x[c]=num(v);
-    else if(c==="items") x.items=ls(v);
+    else if(c==="items"){ const it=x.items[+r[5]]; if(it){ it[1]=S(v); refrescarFotos(`p.${r[1]}.v.${r[3]}.items`); } }
     else { x[c]=S(v); if(c==="n"){ const l=document.querySelector(`[data-lbl="${r[1]}.${r[3]}"]`); if(l) l.textContent=x.n||"Sin nombre"; } }
   }
 }
@@ -587,10 +634,18 @@ $("editor").addEventListener("click", e=>{
   const [a, x, y] = b.dataset.a.split(":"), i=+x, j=+y, p=edit.partes[i];
   const mover=(arr,de,a2)=>{ if(a2<0||a2>=arr.length) return; const [el]=arr.splice(de,1); arr.splice(a2,0,el); };
   if(a==="ic"){ abrirPicker(b, i, j); return; }
+  if(a==="fo"){ abrirFotos(b.dataset.l, +b.dataset.n); return; }
+  if(a==="addIt"||a==="delIt"||a==="upIt"){
+    const l=listaDe(b.dataset.l), n=+b.dataset.n; if(!l) return;
+    if(a==="addIt") l.push(["",""]); else if(a==="delIt") l.splice(n,1); else mover(l, n, n-1);
+    const y0=window.scrollY; pintarEditor(); window.scrollTo(0,y0); cambio();
+    if(a==="addIt"){ const ins=document.querySelectorAll(`#editor [data-k^="${b.dataset.l}."]`); if(ins.length) ins[ins.length-1].focus(); }
+    return;
+  }
   if(a==="addF"){ p.feats.push(["",""]); }
   else if(a==="delF"){ p.feats.splice(j,1); }
   else if(a==="upF"){ mover(p.feats, j, j-1); }
-  else if(a==="addV"){ p.vers.push({n:"Versión "+(p.vers.length+1), s:"", p:null, pp:null, items:[], desc:""}); }
+  else if(a==="addV"){ p.vers.push({n:"Versión "+(p.vers.length+1), s:"", p:null, pp:null, items:[["",""]], desc:"", c:""}); }
   else if(a==="delV"){ if(!confirm(`¿Quitar la versión “${p.vers[j].n||"sin nombre"}” de esta tarjeta?`)) return; p.vers.splice(j,1); }
   else if(a==="upV"){ mover(p.vers, j, j-1); }
   else if(a==="downV"){ mover(p.vers, j, j+1); }
@@ -606,25 +661,53 @@ $("editor").addEventListener("click", e=>{
 let pk=null;
 function abrirPicker(btn, i, j){
   const f=edit.partes[i].feats[j]; if(!f) return;
-  pk={i,j};
-  const P=$("picker");
+  pk={modo:"icono", i, j};
+  const P=$("picker"); P.classList.remove("fotos");
   P.innerHTML=`<div class="pk-h"><span>Ícono</span><button class="lnk" data-pk="">Automático</button></div><div class="pk-g">${T.NOMBRES.map(n=>`<button class="pk" data-pk="${n}" title="${n}" aria-pressed="${f[0]===n}">${T.svg(n)}</button>`).join("")}</div>`;
   P.hidden=false;
   const r=btn.getBoundingClientRect(), w=P.offsetWidth, hh=P.offsetHeight;
   P.style.left=Math.max(10, Math.min(innerWidth-w-10, r.left))+"px";
   P.style.top=(r.bottom+6+hh>innerHeight ? Math.max(10, r.top-hh-6) : r.bottom+6)+"px";
 }
-function cerrarPicker(){ $("picker").hidden=true; pk=null; }
+function cerrarPicker(){ const P=$("picker"); P.hidden=true; P.classList.remove("fotos"); pk=null; }
+function abrirFotos(path, n){
+  const l=listaDe(path); if(!l || !l[n]) return;
+  pk={modo:"foto", l:path, n};
+  const P=$("picker"); P.classList.add("fotos"); P.style.left=""; P.style.top="";
+  P.innerHTML=`<div class="pk-top"><input class="in" id="pkQ" type="search" placeholder="Buscar foto… (batería, control, micrófono…)" autocomplete="off">
+      <button class="btn ghost sm" data-pk="">Automática</button><button class="btn ghost sm" data-pk="-">Sin foto</button><button class="ib" data-cerrar title="Cerrar">✕</button></div>
+    <div class="pk-scroll" id="pkLista"></div>`;
+  P.hidden=false; pintarFotosPicker("");
+  $("pkQ").addEventListener("input", e=>pintarFotosPicker(e.target.value));
+  if(matchMedia("(min-width:721px)").matches) $("pkQ").focus();
+}
+function pintarFotosPicker(q){
+  const F=T.fotos(), l=listaDe(pk.l), it=l && l[pk.n]; if(!it) return;
+  const deCombo=[]; idsLista(pk.l).forEach(id=>(F.cajas[id]||[]).forEach(h=>{ if(deCombo.indexOf(h)<0) deCombo.push(h); }));
+  const ws=T.sinAcentos(q).split(/\s+/).filter(Boolean), pasa=h=>{ const t=T.sinAcentos((F.nombres[h]||"")+" "+((F.de&&F.de[h])||"")); return ws.every(w=>t.includes(w)); };
+  const resto=Object.keys(F.fotos).filter(h=>deCombo.indexOf(h)<0).sort((a,b)=>(F.nombres[a]||"").localeCompare(F.nombres[b]||"","es"));
+  const de=h=>(F.de && F.de[h]) || "";
+  const btn=h=>`<button class="pkf" data-pk="${h}" title="${esc((F.nombres[h]||"")+(de(h)?" · "+de(h):""))}" aria-pressed="${it[0]===h}"><img src="${F.fotos[h]}" alt=""><span>${esc(F.nombres[h]||"")}</span>${de(h)?`<small>${esc(de(h))}</small>`:""}</button>`;
+  const a=deCombo.filter(pasa), b=resto.filter(pasa);
+  $("pkLista").innerHTML=(a.length?`<div class="pk-sub">De este combo</div><div class="pk-g">${a.map(btn).join("")}</div>`:"")
+    +(b.length?`<div class="pk-sub">${a.length?"Todas las demás":"Todas las fotos"}</div><div class="pk-g">${b.map(btn).join("")}</div>`:"")
+    +(!a.length && !b.length ? `<div class="vacio">No hay fotos con “${esc(q)}”.</div>` : "");
+}
 $("picker").addEventListener("click", e=>{
+  if(e.target.closest("[data-cerrar]")){ cerrarPicker(); return; }
   const b=e.target.closest("[data-pk]"); if(!b || !pk) return;
+  if(pk.modo==="foto"){
+    const l=listaDe(pk.l), it=l && l[pk.n]; if(it) it[0]=b.dataset.pk;
+    const path=pk.l; cerrarPicker(); refrescarFotos(path); cambio(); return;
+  }
   const f=edit.partes[pk.i].feats[pk.j]; if(f){ f[0]=b.dataset.pk; }
   const btn=document.querySelector(`[data-a="ic:${pk.i}:${pk.j}"]`);
   if(btn && f){ btn.innerHTML=icono(f[0], f[1]); btn.classList.toggle("auto", !f[0]); }
   cerrarPicker(); cambio();
 });
-document.addEventListener("mousedown", e=>{ if(pk && !e.target.closest("#picker") && !e.target.closest(".icb")) cerrarPicker(); });
+document.addEventListener("mousedown", e=>{ if(pk && !e.target.closest("#picker") && !e.target.closest(".icb") && !e.target.closest(".fob")) cerrarPicker(); });
 document.addEventListener("keydown", e=>{ if(e.key==="Escape" && pk) cerrarPicker(); });
-addEventListener("scroll", ()=>{ if(pk) cerrarPicker(); }, {passive:true});
+addEventListener("scroll", ()=>{ if(pk && pk.modo!=="foto") cerrarPicker(); }, {passive:true});
 
 // ---------- acciones ----------
 function nuevoId(){ return "c"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
@@ -634,7 +717,7 @@ function crear(t){
   return id;
 }
 $("btnNueva").addEventListener("click", ()=>{
-  const id=crear({cat:filtroCat!=="todas"?filtroCat:"accesorios", partes:[{titulo:"NUEVO MODELO", sub:"", feats:[["",""],["",""],["",""],["",""]], vers:[{n:"Estándar", s:"", p:null, pp:null, items:[], desc:""}], comun:[]}], banda:true, ppOn:false, ppTxt:TXT.pp||"", notas:TXT.notas||""});
+  const id=crear({cat:filtroCat!=="todas"?filtroCat:"accesorios", partes:[{titulo:"NUEVO MODELO", sub:"", feats:[["",""],["",""],["",""],["",""]], vers:[{n:"Estándar", s:"", p:null, pp:null, items:[["",""],["",""],["",""]], desc:"", c:""}], comun:[]}], banda:true, ppOn:false, ppTxt:TXT.pp||"", notas:TXT.notas||""});
   query=""; $("q").value=""; abrir(id, true);
   const ti=document.querySelector('[data-k="p.0.titulo"]'); if(ti){ ti.focus(); ti.select(); }
   toast("Tarjeta nueva: escribí el nombre, las versiones y el precio");
@@ -713,15 +796,15 @@ function unir3(b, aqui, alla){
 }
 // valor que corresponde a un campo del editor
 function valorDe(k){
-  const r=k.split("."), lineas=a=>(a||[]).join("\n");
+  const r=k.split(".");
   if(r[0]!=="p") return edit[r[0]];
   const p=edit.partes[+r[1]]; if(!p) return undefined;
-  if(r[2]==="comun") return lineas(p.comun);
+  if(r[2]==="comun") return (p.comun[+r[3]]||[])[1];
   if(r[2]==="f") return (p.feats[+r[3]]||[])[1];
-  if(r[2]==="v"){ const v=p.vers[+r[3]]; if(!v) return undefined; const c=r[4]; if(c==="items") return lineas(v.items); if(c==="p"||c==="pp") return v[c]==null?"":String(v[c]); return v[c]; }
+  if(r[2]==="v"){ const v=p.vers[+r[3]]; if(!v) return undefined; const c=r[4]; if(c==="items") return (v.items[+r[5]]||[])[1]; if(c==="p"||c==="pp") return v[c]==null?"":String(v[c]); return v[c]; }
   return p[r[2]];
 }
-const forma = t => t ? t.partes.map(p=>p.feats.length+"/"+p.vers.length).join("|") : "";
+const forma = t => t ? t.partes.map(p=>p.feats.length+"/"+p.vers.map(v=>v.items.length).join(",")+"/"+p.comun.length).join("|") : "";
 // cuando alguien está escribiendo: se actualizan los demás campos sin moverle el cursor
 function refrescarCampos(){
   if($("editor").dataset.forma!==forma(edit)){ remotoPendiente=true; return; }
@@ -733,6 +816,7 @@ function refrescarCampos(){
   });
   edit.partes.forEach((p,i)=>p.vers.forEach((v,j)=>{ const l=document.querySelector(`[data-lbl="${i}.${j}"]`); if(l) l.textContent=v.n||"Sin nombre"; }));
   const pb=$("ppBox"); if(pb) pb.hidden=!edit.ppOn;
+  document.querySelectorAll("#editor [data-lista]").forEach(x=>refrescarFotos(x.dataset.lista));
 }
 function aplicarRemoto(){
   remotoPendiente=false;
