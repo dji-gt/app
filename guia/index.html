@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía de atención · DJI</title>
+<style>
+  :root{
+    --bg:#f3f4f7; --card:#ffffff; --ink:#14171c; --ink-2:#3b424d; --muted:#8b93a1;
+    --line:#e9ebef; --line-2:#f1f3f6; --black:#111318;
+    --accent:#2563eb; --accent-d:#1d4ed8; --accent-bg:#eef3fe;
+    --ok:#0e9f6e; --ok-bg:#e7f7f0; --ok-br:#bfe9d7;
+    --warn:#b7791f; --warn-bg:#fdf6e6; --warn-br:#f0e0b8;
+    --err:#e02424; --err-bg:#fdecec; --err-br:#f6c9c9;
+    --pp:#6d28d9; --pp-bg:#f3edfe;
+    --shadow:0 1px 3px rgba(16,24,40,.06),0 10px 26px rgba(16,24,40,.05);
+    --r:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  [hidden]{display:none!important}
+  button{font-family:inherit}
+
+  .appbar{background:var(--black);color:#fff;padding:0 22px;display:flex;align-items:center;gap:12px;height:66px;position:sticky;top:0;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.16)}
+  .appbar b{font-size:17px;font-weight:750;white-space:nowrap}
+  .appbar .sub{font-size:13px;color:rgba(255,255,255,.6);font-weight:600}
+  .ab-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .ab-btn{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:8px 12px;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+  .ab-btn:hover{background:rgba(255,255,255,.18)}
+  .ab-btn[aria-pressed="true"]{background:#fff;color:var(--black)}
+  .appbar .logo{height:26px;opacity:.95}
+
+  .wrap{max-width:1320px;margin:0 auto;padding:20px 20px 48px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+
+  /* escenario */
+  .esc{padding:16px 18px}
+  .esc-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+  .esc-top h2{margin:0;font-size:16px;font-weight:850}
+  .esc-top #btnAzar{margin-left:auto}
+  #btnEsc{display:none}
+  .fila{display:grid;grid-template-columns:150px minmax(0,1fr);gap:10px;align-items:start;padding:8px 0;border-top:1px solid var(--line-2)}
+  .fila:first-of-type{border-top:none}
+  .fila>span{font-size:12px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);padding-top:7px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chips .g{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;align-self:center;margin:0 2px 0 6px}
+  .chips .g:first-child{margin-left:0}
+  .chip{border:1.5px solid var(--line);background:#fff;border-radius:20px;padding:6px 12px;font-size:13.5px;font-weight:700;color:var(--ink-2);cursor:pointer;line-height:1.2}
+  .chip:hover{border-color:#c9d6f5}
+  .chip[aria-pressed="true"]{border-color:var(--black);background:var(--black);color:#fff}
+  .salto{flex-basis:100%;height:0}
+  .historia{margin-top:12px;background:var(--accent-bg);border:1px solid #c9d6f5;border-radius:12px;padding:11px 14px;font-size:14.5px;color:#1e3a8a;font-weight:600}
+  .historia b{color:#1e3a8a}
+
+  .btn{border:none;border-radius:11px;padding:10px 14px;font-size:14px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
+  .btn.primary{background:var(--accent);color:#fff}.btn.primary:hover{background:var(--accent-d)}
+  .btn.ghost{background:var(--line-2);color:var(--ink-2)}.btn.ghost:hover{background:#e7eaef}
+  .btn.sm{padding:8px 11px;font-size:13px;border-radius:9px}
+
+  /* mapa */
+  .mapa{margin-top:16px;padding:18px 18px 16px;overflow-x:auto}
+  .mapa h2{margin:0 0 12px;font-size:16px;font-weight:850}
+  .ruta{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:26px;position:relative;min-width:860px}
+  .paso{position:relative;text-align:left;border:2px solid var(--line);background:#fff;border-radius:14px;padding:12px 12px 11px;cursor:pointer;font:inherit;color:inherit;display:flex;flex-direction:column;gap:6px;transition:.15s}
+  .paso:hover{border-color:#c9d6f5;transform:translateY(-1px)}
+  .paso[aria-current="true"]{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.14)}
+  .paso:not(:last-child)::after{content:"";position:absolute;right:-27px;top:30px;width:26px;height:2px;background:#b9c3d3}
+  .paso:not(:last-child)::before{content:"";position:absolute;right:-27px;top:26px;border:5px solid transparent;border-left:7px solid #b9c3d3;border-right:0}
+  .paso .num{display:flex;align-items:center;gap:8px}
+  .paso .num i{font-style:normal;width:28px;height:28px;border-radius:50%;background:var(--black);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:850;font-size:14px;flex:none}
+  .paso[aria-current="true"] .num i{background:var(--accent)}
+  .paso .num b{font-size:15px;font-weight:850;line-height:1.15}
+  .paso small{font-size:12.5px;color:var(--muted);font-weight:700;line-height:1.3}
+  .ramas{display:flex;flex-direction:column;gap:4px;margin-top:2px}
+  .rama{font-size:12px;font-weight:700;border-radius:8px;padding:4px 7px;background:var(--line-2);color:var(--ink-2);line-height:1.25;border-left:3px solid #cfd5df}
+  .rama.on{background:var(--accent-bg);color:var(--accent-d);border-left-color:var(--accent)}
+  .rama.off{opacity:.5}
+
+  /* detalle */
+  .cols{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;margin-top:16px;align-items:start}
+  .det{padding:20px 22px 22px}
+  .det-h{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+  .det-h i{font-style:normal;font-size:28px;line-height:1}
+  .det-h h2{margin:0;font-size:21px;font-weight:850;line-height:1.2}
+  .det-h small{display:block;font-size:12.5px;font-weight:800;color:var(--muted);letter-spacing:.4px;text-transform:uppercase}
+  .obj{margin:10px 0 0;background:var(--line-2);border-radius:12px;padding:10px 14px;font-weight:650;color:var(--ink-2)}
+  .obj b{color:var(--ink)}
+  .sec{margin-top:18px}
+  .sec h3{margin:0 0 8px;font-size:12.5px;font-weight:850;letter-spacing:.6px;text-transform:uppercase;color:#44546a;display:flex;align-items:center;gap:7px}
+  ul.lista{margin:0;padding:0;list-style:none;display:grid;gap:7px}
+  ul.lista li{position:relative;padding-left:24px}
+  ul.lista li::before{content:"";position:absolute;left:4px;top:.55em;width:9px;height:9px;border-radius:50%;background:var(--accent)}
+  ul.lista.mal li::before{content:"✕";background:none;color:var(--err);font-weight:900;font-size:13px;top:0;left:3px;width:auto;height:auto}
+  ul.lista.num{counter-reset:n}
+  ul.lista.num li{padding-left:32px}
+  ul.lista.num li::before{counter-increment:n;content:counter(n);background:var(--black);color:#fff;width:22px;height:22px;top:0;left:0;font-size:12px;font-weight:850;display:flex;align-items:center;justify-content:center}
+  .frases{display:grid;gap:8px}
+  .frase{background:#fff;border:1.5px solid #c9d6f5;border-radius:4px 16px 16px 16px;padding:9px 13px;font-weight:600;color:#1e3a8a;max-width:640px}
+  .frase::before{content:"💬 ";}
+  .rama-box{border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:10px}
+  .rama-box.on{border-color:var(--accent);background:#fbfcff}
+  .rama-box h4{margin:0 0 6px;font-size:15px;font-weight:850}
+  .rama-box p{margin:6px 0 0}
+  .rama-box .tag{display:inline-block;font-size:11px;font-weight:800;background:var(--accent);color:#fff;border-radius:20px;padding:2px 8px;margin-left:6px;vertical-align:2px}
+  .profs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .tabla{display:grid;gap:6px}
+  .tabla .tr{display:grid;grid-template-columns:minmax(0,1fr) 22px minmax(0,1fr);gap:8px;align-items:center;background:var(--line-2);border-radius:10px;padding:8px 12px;font-size:14px}
+  .tabla .tr b{font-weight:750}
+  .tabla .tr i{font-style:normal;color:var(--accent);font-weight:900;text-align:center}
+  .tabla .tr span{color:var(--ink-2);font-weight:600}
+  .obje{display:grid;gap:8px}
+  .obje details,.rev{border:1px solid var(--line);border-radius:12px;background:#fff}
+  .obje summary,.rev summary{cursor:pointer;padding:10px 13px;font-weight:750;list-style:none;display:flex;gap:8px;align-items:flex-start}
+  .obje summary::-webkit-details-marker,.rev summary::-webkit-details-marker{display:none}
+  .obje summary::before{content:"🗣️";}
+  .obje details[open] summary,.rev[open] summary{border-bottom:1px dashed var(--line)}
+  .obje .resp{padding:10px 13px 12px;color:var(--ink-2);font-weight:600}
+  .rev summary{color:var(--pp);font-size:13.5px}
+  .rev summary::before{content:"🤔";}
+  .rev .cont{padding:10px 13px 12px}
+  .pp-box{background:var(--pp-bg);border:1px solid #ddd0fb;border-radius:12px;padding:10px 14px;color:#4c1d95;font-weight:600}
+  .navp{display:flex;justify-content:space-between;gap:10px;margin-top:22px;padding-top:14px;border-top:1px solid var(--line-2)}
+  .vacio{color:var(--muted);font-weight:600;font-size:14px}
+
+  /* ficha y repaso */
+  .lado{display:grid;gap:16px;position:sticky;top:84px}
+  .ficha{padding:16px 16px 14px}
+  .ficha .foto{height:150px;display:flex;align-items:center;justify-content:center;background:#f6f7f9;border-radius:12px;margin-bottom:10px;overflow:hidden}
+  .ficha .foto img{max-width:100%;max-height:100%;object-fit:contain;mix-blend-mode:multiply}
+  .ficha .foto span{font-size:42px}
+  .ficha h3{margin:0;font-size:17px;font-weight:850}
+  .ficha .gancho{margin:6px 0 0;font-weight:650;color:var(--ink-2)}
+  .ficha .ideal{margin:8px 0 0;font-size:13.5px;color:var(--muted);font-weight:600}
+  .ficha .ideal b{color:var(--ink-2)}
+  .ficha ul{margin:10px 0 0;padding-left:18px;font-size:13.5px;display:grid;gap:4px}
+  .repaso{padding:16px}
+  .repaso h3{margin:0 0 4px;font-size:15px;font-weight:850}
+  .repaso p{margin:0 0 10px;font-size:13px;color:var(--muted);font-weight:600}
+  .repaso label{display:flex;gap:9px;align-items:flex-start;padding:6px 4px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600}
+  .repaso label:hover{background:var(--line-2)}
+  .repaso input{width:18px;height:18px;margin-top:1px;accent-color:var(--ok);flex:none}
+  .repaso .barra{height:8px;background:var(--line-2);border-radius:8px;overflow:hidden;margin:6px 0 10px}
+  .repaso .barra i{display:block;height:100%;background:var(--ok);width:0;transition:.2s}
+
+  @media(max-width:1100px){
+    .cols{grid-template-columns:minmax(0,1fr)}
+    .lado{position:static;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  }
+  @media(max-width:720px){
+    .appbar{padding:0 14px;height:60px}
+    .appbar .sub,.ab-btn span{display:none}
+    .wrap{padding:12px 10px 40px}
+    .esc,.mapa,.det{padding:14px 13px}
+    .fila{grid-template-columns:minmax(0,1fr);gap:6px}
+    .fila>span{padding-top:0}
+    #btnEsc{display:inline-flex;margin-left:auto}
+    .esc-top #btnAzar{margin-left:0}
+    .esc.cerrado .fila{display:none!important}
+    .esc.cerrado .historia{margin-top:6px}
+    .ruta{grid-template-columns:minmax(0,1fr);gap:22px;min-width:0}
+    .paso:not(:last-child)::after{right:auto;left:30px;top:auto;bottom:-22px;width:2px;height:20px}
+    .paso:not(:last-child)::before{right:auto;left:26px;top:auto;bottom:-23px;border:5px solid transparent;border-top:7px solid #b9c3d3;border-bottom:0}
+    .tabla .tr{grid-template-columns:minmax(0,1fr)}
+    .tabla .tr i{display:none}
+    .tabla .tr span::before{content:"→ ";color:var(--accent);font-weight:900}
+  }
+</style>
+</head>
+<body>
+<div class="appbar">
+  <b>🧭 Guía de atención</b><span class="sub">De la entrada del cliente al cierre de venta</span>
+  <div class="ab-right">
+    <button class="ab-btn" id="btnPractica" aria-pressed="false" title="Esconde las respuestas para practicar">📝<span>Modo práctica</span></button>
+    <img src="../recepcion/logo.png" class="logo" alt="DJI">
+  </div>
+</div>
+
+<div class="wrap">
+  <section class="card esc cerrado">
+    <div class="esc-top"><h2>🎬 Escenario</h2><button class="btn ghost sm" id="btnEsc" aria-expanded="false">✏️ Cambiar</button><button class="btn primary sm" id="btnAzar">🎲 Cliente al azar</button></div>
+    <div class="fila"><span>Producto</span><div class="chips" id="cProd"></div></div>
+    <div class="fila"><span>¿Para qué lo quiere?</span><div class="chips" id="cUso"></div></div>
+    <div class="fila" id="filaProf"><span>¿A qué se dedica?</span><div class="chips" id="cProf"></div></div>
+    <div class="fila"><span>¿Viene acompañado?</span><div class="chips" id="cAcomp"></div></div>
+    <div class="fila"><span>Experiencia</span><div class="chips" id="cNivel"></div></div>
+    <div class="historia" id="historia"></div>
+  </section>
+
+  <section class="card mapa">
+    <h2>🗺️ El camino de la venta <span style="font-size:13px;color:var(--muted);font-weight:700">· tocá un paso</span></h2>
+    <div class="ruta" id="ruta"></div>
+  </section>
+
+  <div class="cols">
+    <section class="card det" id="det"></section>
+    <aside class="lado">
+      <section class="card ficha" id="ficha"></section>
+      <section class="card repaso" id="repaso"></section>
+    </aside>
+  </div>
+</div>
+
+<script src="contenido.js?v=20261117a"></script>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const G = window.GUIA;
+const S = x => x==null ? "" : String(x);
+const esc = s => S(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const leer = (k,d) => { try{ const v=localStorage.getItem(k); return v==null ? d : JSON.parse(v); }catch(e){ return d; } };
+const escribir = (k,v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
+const LS_E="dji_guia_escenario", LS_R="dji_guia_repaso";
+
+const CATS_P = [["Drones","dron"],["Cámaras","camara"],["Otros",null]];
+const prodDe = id => G.PRODUCTOS.find(p=>p.id===id) || null;
+const def = {prod:"air3s", uso:"trabajo", prof:"inmobiliaria", acomp:"solo", nivel:"nuevo", paso:"bienvenida", practica:false, nombre:""};
+let E = Object.assign({}, def, leer(LS_E, {}));
+if(E.prod!=="general" && !prodDe(E.prod)) E.prod=def.prod;
+const guardarE = () => escribir(LS_E, E);
+
+// ---------- contexto del escenario ----------
+function ctx(){
+  const p=prodDe(E.prod), tipo=p ? p.tipo : "general", T=G.TIPO[tipo];
+  const profs=G.PROF[tipo] || G.PROF.camara;
+  let prof=profs.find(x=>x.id===E.prof) || profs[0];
+  return {p, tipo, T, profs, prof, uso:E.uso, acomp:E.acomp, nivel:E.nivel};
+}
+// "el DJI Air 3S" / "la Osmo Pocket 4P" / (grupos) "el estabilizador"
+function elP(c){ if(!c.p) return "el producto"; if(c.tipo==="estabilizador"||c.tipo==="microfono") return c.T.cosa; return (c.tipo==="camara"?"la ":"el ")+c.p.nombre; }
+const alP = c => { const e=elP(c); return e.indexOf("el ")===0 ? "al "+e.slice(3) : "a "+e; };
+const tx = (s, c) => S(s).replace(/\{elp\}/g, elP(c)).replace(/\{alp\}/g, alP(c)).replace(/\{p\}/g, c.p ? c.p.nombre : "el producto").replace(/\{cosa\}/g, c.T.cosa).replace(/\{lo\}/g, c.T.lo);
+const li = (arr, cls) => `<ul class="lista${cls?" "+cls:""}">${arr.filter(Boolean).map(x=>`<li>${x}</li>`).join("")}</ul>`;
+// en modo práctica, lo que diríamos queda escondido hasta tocarlo
+function respuesta(html, pista){
+  if(!E.practica) return html;
+  return `<details class="rev"><summary>${esc(pista||"Pensá qué dirías… y tocá para ver la sugerencia")}</summary><div class="cont">${html}</div></details>`;
+}
+const frases = (arr, c) => respuesta(`<div class="frases">${arr.filter(Boolean).map(f=>`<div class="frase">${esc(tx(f,c))}</div>`).join("")}</div>`);
+
+// ---------- escenario: chips ----------
+function chip(val, txt, sel, attr){ return `<button class="chip" data-${attr}="${esc(val)}" aria-pressed="${val===sel}">${esc(txt)}</button>`; }
+function pintarEscenario(){
+  const c=ctx();
+  let h=chip("general","🧩 General", E.prod, "prod")+`<span class="salto"></span>`;
+  CATS_P.forEach(([g,tipo])=>{
+    const ps=G.PRODUCTOS.filter(p=>tipo ? p.tipo===tipo : (p.tipo!=="dron" && p.tipo!=="camara"));
+    h+=`<span class="g">${g}</span>`+ps.map(p=>chip(p.id, p.nombre.replace(/^(DJI|Osmo) /,""), E.prod, "prod")).join("")+`<span class="salto"></span>`;
+  });
+  $("cProd").innerHTML=h;
+  $("cUso").innerHTML=G.USOS.map(([v,t])=>chip(v,t,E.uso,"uso")).join("");
+  $("filaProf").hidden=E.uso!=="trabajo";
+  $("cProf").innerHTML=c.profs.map(x=>chip(x.id, x.nombre, c.prof.id, "prof")).join("");
+  $("cAcomp").innerHTML=G.ACOMP.map(([v,t])=>chip(v,t,E.acomp,"acomp")).join("");
+  $("cNivel").innerHTML=G.NIVEL.map(([v,t])=>chip(v,t,E.nivel,"nivel")).join("");
+  $("historia").innerHTML="📖 "+historia(c);
+  $("btnPractica").setAttribute("aria-pressed", String(!!E.practica));
+}
+function historia(c){
+  const quien=E.nombre ? `<b>${esc(E.nombre)}</b>` : "El cliente";
+  const con={solo:"llega solo", pareja:"llega con su pareja", familia:"llega con su familia (vienen niños)", experto:`llega con un amigo que sabe de ${c.tipo==="dron"?"drones":"cámaras"}`, colega:"llega con un compañero de trabajo"}[c.acomp];
+  const para=c.uso==="trabajo" ? `Se dedica a <b>${esc(c.prof.nombre.toLowerCase())}</b>` : c.uso==="viaje" ? "Se va de <b>vacaciones</b> pronto" : "Lo quiere para <b>uso personal</b>";
+  const que = !c.p ? "" : (c.tipo==="estabilizador"||c.tipo==="microfono") ? ` y pregunta por un <b>${esc(c.T.cosa.replace(/^el /,""))}</b>` : ` y pregunta por ${c.tipo==="camara"?"la":"el"} <b>${esc(c.p.nombre)}</b>`;
+  const exp=c.nivel==="nuevo" ? `Es su primera vez con ${c.tipo==="dron"?"un dron":c.tipo==="general"?"un producto DJI":"un producto así"}.` : "Ya tiene uno y busca algo mejor.";
+  return `${quien} ${con}. ${para}${que}. ${exp}`;
+}
+document.querySelector(".esc").addEventListener("click", e=>{
+  const b=e.target.closest(".chip"); if(!b) return;
+  const d=b.dataset;
+  if(d.prod) E.prod=d.prod; else if(d.uso) E.uso=d.uso; else if(d.prof) E.prof=d.prof; else if(d.acomp) E.acomp=d.acomp; else if(d.nivel) E.nivel=d.nivel; else return;
+  E.nombre=""; guardarE(); todo();
+});
+
+// ---------- mapa ----------
+function pintarMapa(){
+  const c=ctx();
+  const ramas={
+    bienvenida:[`Saludar · presentarse`, c.p ? `Empezar por ${elP(c).replace(/ (DJI|Osmo) /," ")}` : `Pregunta abierta`],
+    acompanante:[c.acomp==="solo" ? "Hoy viene solo" : G.ACOMP_TXT[c.acomp].titulo],
+    indagar:[["trabajo","💼 Trabajo → ¿cómo lo usa en su trabajo?"],["viaje","✈️ Vacaciones → qué preguntar"],["personal","🏠 Uso personal → qué le interesa"]],
+    demo:c.tipo==="dron" ? ["Encenderlo · zoom · algo que llame la atención","¿Qué función le gustaría ver?"] : c.tipo==="camara" ? ["Ponerla en sus manos","¿Qué función le gustaría ver?"] : ["Que lo pruebe","¿Qué función le gustaría ver?"],
+    cierre:["Combo correcto","Protection Plus","Accesorios · formas de pago"]
+  };
+  $("ruta").innerHTML=G.PASOS.map(p=>{
+    let r="";
+    if(p.id==="indagar") r=ramas.indagar.map(([u,t])=>`<span class="rama ${u===c.uso?"on":"off"}">${esc(t)}${u==="trabajo"&&c.uso==="trabajo"?`<br><small>${esc(c.prof.nombre)}</small>`:""}</span>`).join("");
+    else r=ramas[p.id].map(t=>`<span class="rama${p.id==="acompanante"&&c.acomp==="solo"?" off":""}">${esc(t)}</span>`).join("");
+    return `<button class="paso" data-paso="${p.id}" aria-current="${p.id===E.paso}"><span class="num"><i>${p.n}</i><b>${esc(p.titulo)}</b></span><small>${esc(p.corto)}</small><span class="ramas">${r}</span></button>`;
+  }).join("");
+}
+$("ruta").addEventListener("click", e=>{ const b=e.target.closest(".paso"); if(!b) return; irPaso(b.dataset.paso, true); });
+function irPaso(id, mover){
+  E.paso=id; guardarE(); pintarMapa(); pintarDetalle();
+  if(mover) $("det").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+// ---------- detalle de cada paso ----------
+const SECCION = (icono, titulo, html) => html ? `<div class="sec"><h3>${icono} ${esc(titulo)}</h3>${html}</div>` : "";
+function pBienvenida(c){
+  const hacer=["Saludá en los primeros segundos: sonrisa, contacto visual y presentate por tu nombre.",
+    "Dale espacio para que vea unos segundos; no te lances a vender de una vez.",
+    "Hacé una pregunta abierta y suave para empezar la plática.",
+    "Preguntá su nombre y usalo durante la conversación.",
+    c.acomp!=="solo" ? "Saludá también a quien viene con él (mirá el paso 2)." : "",
+    c.p ? esc(tx("Si se acercó {alp}, empezá por ahí: es lo que le llamó la atención.", c)) : "",
+    c.nivel==="tiene" ? "Si ya tiene un producto DJI, preguntá cuál: les da confianza a los dos y te dice qué quiere mejorar." : ""];
+  const f=["¡Buenas tardes, bienvenido a DJI Store! Mi nombre es ___, ¿con quién tengo el gusto?",
+    "Con toda confianza vea; si quiere le muestro cómo funciona cualquiera.",
+    c.p ? "Veo que le llamó la atención {elp}. ¿Ya {lo} conocía?" : "¿Busca algo en especial o viene a conocer?",
+    c.nivel==="tiene" ? "¿Qué equipo tiene ahora? ¿Qué tal le ha funcionado?" : ""];
+  const evita=["Preguntar “¿le puedo ayudar en algo?” (casi siempre contestan “solo estoy viendo”).","Hablar de precio antes de saber qué necesita.","Estar en el celular o platicando mientras el cliente entra.","Seguirlo muy de cerca por la tienda: dale su espacio."];
+  return {obj:"Que el cliente se sienta cómodo y en confianza desde el primer momento, sin sentir presión.",
+    html:SECCION("✅","Qué hacer", li(hacer))+SECCION("💬","Decilo así", frases(f,c))+SECCION("⛔","Evitá", li(evita.map(esc),"mal"))};
+}
+function pAcompanante(c){
+  const a=G.ACOMP_TXT[c.acomp];
+  const otros=G.ACOMP.filter(([v])=>v!==c.acomp && v!=="solo").map(([v,t])=>`<b>${esc(t)}:</b> ${esc(tx(G.ACOMP_TXT[v].hacer[0],c))}`);
+  const evita=["Hablar solo con el que va a pagar.","Ignorar a los niños o al acompañante que se queda atrás.","Contradecir al “experto” frente al cliente."];
+  return {obj:"Quien viene con el cliente también decide (o puede frenar la compra): hacelo parte de la conversación.",
+    html:SECCION("👥", a.titulo, li(a.hacer.map(x=>esc(tx(x,c)))))+SECCION("💬","Decilo así", frases(a.frases,c))
+      +SECCION("🔁","Si viniera con otra persona", li(otros))+SECCION("⛔","Evitá", li(evita.map(esc),"mal"))};
+}
+function pIndagar(c){
+  const hacer=["Hacé preguntas abiertas y escuchá más de lo que hablás.",
+    "Repetí lo que entendiste: “Entonces lo que busca es…”.",
+    "Conectá cada respuesta con una función: <b>característica → para qué le sirve a él</b>.",
+    c.nivel==="nuevo" ? "Como es su primera vez, preguntá qué le preocupa (que sea difícil, que se dañe) para resolverlo en la demostración." : "Preguntá qué tiene ahora y qué le gustaría que hiciera mejor: ahí está la razón para cambiar."];
+  const preg=["¿A qué se dedica?", ...c.T.preguntas];
+  // ramas
+  const uso=c.uso;
+  const extra=c.p && c.p.trabajo && c.p.trabajo[c.prof.id];
+  const bTrabajo=`<div class="rama-box${uso==="trabajo"?" on":""}"><h4>💼 Si es para su trabajo${uso==="trabajo"?'<span class="tag">este cliente</span>':""}</h4>
+    <p><b>Pregunta clave:</b> ¿A qué se dedica? → y pensá: <i>¿cómo puede usar ${esc(c.T.cosa)} en su trabajo?</i></p>
+    <div class="profs">${c.profs.map(x=>chip(x.id, x.nombre, c.prof.id, "prof")).join("")}</div>
+    <p><b>${esc(c.prof.nombre)}:</b> ${esc(c.prof.pregunta)}</p>
+    ${respuesta(`<p style="margin:0">${esc(c.prof.como)}${extra?` <b>${esc(tx("Con {elp}:",c))}</b> ${esc(extra)}`:""}</p>`, "¿Cómo le ayudaría en su trabajo? Pensalo y tocá para ver")}</div>`;
+  const bViaje=`<div class="rama-box${uso==="viaje"?" on":""}"><h4>✈️ Si es para vacaciones${uso==="viaje"?'<span class="tag">este cliente</span>':""}</h4>
+    ${li(["¿A dónde va? ¿Cuándo sale?","¿Qué le gustaría llevarse de recuerdo: fotos, videos, las dos?","¿Va con familia o amigos?","¿Cuánto espacio tiene en la maleta o mochila?"].map(esc))}
+    ${respuesta(`<p style="margin:0"><b>Argumento:</b> ${esc(c.p&&c.p.viaje ? c.p.viaje : "Que sea fácil de llevar y de usar, para no perderse el viaje por estar configurando.")} <br><b>Tip:</b> si sale pronto, ofrecé que se ${esc(c.T.lo)} lleve hoy, ya configurado y con una práctica rápida.</p>`, "¿Qué argumento usarías? Tocá para ver")}</div>`;
+  const bPersonal=`<div class="rama-box${uso==="personal"?" on":""}"><h4>🏠 Si es para uso personal${uso==="personal"?'<span class="tag">este cliente</span>':""}</h4>
+    <p style="margin:0 0 6px"><b>Preguntas para que le interese:</b></p>
+    ${li(["¿Qué le gusta hacer en su tiempo libre?","¿Qué graba o fotografía más seguido?","¿Comparte sus fotos y videos en redes o con la familia?","¿Qué fue lo que lo animó a buscar uno?"].map(esc))}
+    ${respuesta(`<p style="margin:0"><b>Argumento:</b> ${esc(c.p&&c.p.personal ? c.p.personal : "Relacioná su pasatiempo con lo que el producto le permite hacer.")}</p>`, "¿Qué argumento usarías? Tocá para ver")}</div>`;
+  const orden = uso==="trabajo" ? [bTrabajo,bViaje,bPersonal] : uso==="viaje" ? [bViaje,bTrabajo,bPersonal] : [bPersonal,bTrabajo,bViaje];
+  const tabla = c.p ? `<div class="tabla">${c.p.claves.map(([a,b])=>`<div class="tr"><b>${esc(a)}</b><i>→</i><span>${esc(b)}</span></div>`).join("")}</div>` : `<p class="vacio">Elegí un producto arriba para ver sus características y para qué le sirven al cliente.</p>`;
+  const evita=["Hacer un interrogatorio sin conectar las respuestas con el producto.","Recomendar el más caro sin entender qué necesita.","Suponer: preguntá aunque creás saber la respuesta."];
+  return {obj:"Entender para qué lo quiere, para recomendarle lo correcto y que él mismo vea que le conviene.",
+    html:SECCION("✅","Cómo hacerlo", li(hacer))+SECCION("❓","Preguntas reveladoras", li(preg.map(x=>esc(tx(x,c)))))
+      +SECCION("🌿","Según lo que conteste", orden.join(""))
+      +SECCION("🔗", c.p ? `Característica → para qué le sirve (${c.p.nombre})` : "Característica → para qué le sirve", tabla)
+      +SECCION("⛔","Evitá", li(evita.map(esc),"mal"))};
+}
+function pDemo(c){
+  const hacer=[...c.T.demo, ...(c.p&&c.p.demo ? c.p.demo.map(x=>"<b>"+esc(c.p.nombre)+":</b> "+esc(x)) : [])].map(x=>x.indexOf("<b>")===0 ? x : esc(x));
+  hacer.push("Preguntale: <b>“¿Qué función le gustaría ver o probar?”</b> y mostrá esa.");
+  hacer.push("Relacioná lo que mostrás con lo que te contó en el paso 3"+(c.uso==="trabajo" ? ` (su trabajo: ${esc(c.prof.nombre.toLowerCase())}).` : "."));
+  if(c.acomp==="familia") hacer.push("Que los niños vean algo divertido y seguro; los papás compran cuando ven a los hijos emocionados.");
+  else if(c.acomp!=="solo") hacer.push("Que el acompañante también lo pruebe.");
+  const F={dron:["Mire, se lo enciendo para que vea la imagen en vivo en el control.","Fíjese en el detalle cuando hago zoom.","¿Qué le gustaría ver: el seguimiento, las tomas automáticas…?"],
+    camara:["Tómela y grábese usted mismo.","Camine con ella y después vemos el video.","¿Qué le gustaría probar: el seguimiento, la cámara lenta…?"],
+    estabilizador:["Pongamos su celular para que vea cómo queda su propio video.","Camine y vea cómo lo sigue solo."],
+    microfono:["Póngaselo y hable desde allá; después escuchamos.","Escuche la diferencia con y sin micrófono."],
+    general:["Tómelo y pruébelo usted mismo.","¿Qué le gustaría ver?"]}[c.tipo];
+  const evita=["Mostrar todas las funciones: abruma. Mostrá 2 o 3 que respondan a lo que necesita.","Hablar mientras el cliente prueba: dejalo descubrir.","Quitarle el producto de las manos rápido."];
+  return {obj:"Que lo pruebe con sus propias manos y se imagine usándolo: ahí se enamora del producto.",
+    html:SECCION("✋", c.tipo==="dron" ? "Si es un dron: encenderlo y mostrarle algo que le llame la atención" : c.tipo==="camara" ? "Si es una cámara: ponerla en sus manos" : "Qué hacer", li(hacer))
+      +SECCION("💬","Decilo así", frases(F,c))+SECCION("⛔","Evitá", li(evita.map(esc),"mal"))};
+}
+function pCierre(c){
+  const usoTxt = c.uso==="trabajo" ? `se dedica a ${c.prof.nombre.toLowerCase()}` : c.uso==="viaje" ? "lo quiere para sus viajes" : "lo quiere para su uso personal";
+  const min = x => x.charAt(0).toLowerCase()+x.slice(1);
+  const resumen = c.p && c.p.tipo!=="estabilizador" && c.p.tipo!=="microfono"
+    ? `Por lo que me contó, que ${usoTxt}, le recomiendo ${elP(c)}. Lo que más le va a servir: ${min(c.p.claves[0][1])}; y además, ${min(c.p.claves[1][1])}.`
+    : `Por lo que me contó, que ${usoTxt}, este es el que más le conviene porque…`;
+  const senales=["Pregunta el precio, las formas de pago o la garantía.","Vuelve a tomar el producto o pide verlo otra vez.","Le pregunta su opinión al acompañante.","Pregunta por accesorios o si hay en existencia."];
+  const pasos=[
+    `<b>Resumí</b> lo que te contó y por qué este producto le sirve.`,
+    `<b>Recomendá una versión</b>, no le des demasiadas opciones.${c.p ? ` <br><span style="color:var(--ink-2)">${esc(c.p.combo)}</span>` : ""}`,
+    `<b>Preguntá de forma que sea fácil decir que sí</b> (ver frases abajo).`,
+    `<b>Ofrecé DJI Protection Plus, siempre.</b>`,
+    `<b>Ofrecé accesorios</b> que necesita para su uso.`,
+    `<b>Explicá las formas de pago:</b> efectivo, tarjeta (Neonet, BAC, Compra Click), cuotas (NeoCuotas, BAC Cuotas) y transferencia.`];
+  const fr=[resumen,
+    c.tipo==="dron" ? "¿Se lo lleva con el combo estándar o con el Fly More, que trae más baterías?" : "¿Se lo preparo para que ya se lo lleve hoy?",
+    "¿Cómo prefiere pagar: efectivo, tarjeta o en cuotas?",
+    "Le recomiendo agregarle Protection Plus: si se le cae o se golpea, se lo reemplazan a precio reducido. Así lo usa sin miedo."];
+  const acc=[...c.T.accesorios];
+  const objs=[
+    ["Está muy caro", "Mostrá el valor: lo que le resuelve, la calidad y la garantía oficial. Ofrecé cuotas y compará: el combo sale mejor que comprar las cosas por separado"+(c.uso==="trabajo"?", y en su trabajo lo recupera con lo que le cobra a sus clientes.":".")],
+    ["Lo voy a pensar", "Preguntá con amabilidad: “¿Qué es lo que lo hace dudar?” y resolvé esa duda. Si igual se va, tomá su nombre y número para avisarle de ofertas o existencias."],
+    ["En internet está más barato", "Aquí tiene garantía oficial, se lo configuramos, le enseñamos a usarlo y, si algo pasa, nos tiene cerca. Además puede agregar Protection Plus y pagar en cuotas."],
+    ["Mejor lo compro después", c.uso==="viaje" ? "Si es para su viaje, lléveselo ya para practicar antes de salir y llegar sabiendo usarlo." : "Preguntá qué lo detiene hoy; si es el pago, mostrale las cuotas. Si es existencia, ofrecé apartarlo."],
+    ...c.T.objeciones, ...(c.p&&c.p.objeciones ? c.p.objeciones : [])
+  ].map(([q,a])=>[tx(q,c), tx(a,c)]);
+  const objHtml=`<div class="obje">${objs.map(([q,a])=>`<details><summary>${esc(q)}</summary><div class="resp">${esc(a)}</div></details>`).join("")}</div>`;
+  const despues=["Configuralo y activalo con él; enseñale lo básico (cargar, encender, pasar los videos).","Explicale la garantía y cómo usar Protection Plus.","Agradecé, invitalo a regresar y a etiquetarnos en redes.","Ofrecé ayuda por WhatsApp si le surgen dudas."];
+  const noCompra=["Dejá la puerta abierta: agradecé la visita, sin presión.","Tomá su nombre y número; si está esperando un producto, anotalo en <b>Clientes</b>.","Ofrecé avisarle de ofertas o cuando llegue lo que busca."];
+  const evita=["Presionar o apurarlo.","Dar demasiadas opciones al final: confunde.","Olvidar Protection Plus y los accesorios.","Descuidar al cliente después de que pagó."];
+  return {obj:"Ayudarle a decidir y que se lleve todo lo que necesita para disfrutarlo desde el primer día.",
+    html:SECCION("👀","Señales de que ya quiere comprar", li(senales.map(esc)))
+      +SECCION("🪜","Pasos del cierre", li(pasos,"num"))
+      +SECCION("💬","Decilo así", frases(fr,c))
+      +SECCION("🛡️","Protection Plus", `<div class="pp-box">Sustitución a precio reducido si tiene un accidente, DJI Care Express, asistencia y servicio global, envío gratuito y servicio técnico exclusivo. <b>Ofrecelo siempre</b>: el cliente se va tranquilo y suma a tu venta.</div>`)
+      +SECCION("🎒","Accesorios para ofrecer", li(acc.map(esc)))
+      +SECCION("🗣️","Si el cliente dice… (tocá para ver qué contestar)", objHtml)
+      +SECCION("🎉","Después de la venta", li(despues.map(esc)))
+      +SECCION("🚪","Si no compra hoy", li(noCompra))
+      +SECCION("⛔","Evitá", li(evita.map(esc),"mal"))};
+}
+const PINTA = {bienvenida:pBienvenida, acompanante:pAcompanante, indagar:pIndagar, demo:pDemo, cierre:pCierre};
+function pintarDetalle(){
+  const c=ctx(), i=G.PASOS.findIndex(p=>p.id===E.paso), paso=G.PASOS[i<0?0:i], r=PINTA[paso.id](c);
+  const ant=G.PASOS[i-1], sig=G.PASOS[i+1];
+  $("det").innerHTML=`<div class="det-h"><i>${paso.icono}</i><div><small>Paso ${paso.n} de 5</small><h2>${esc(paso.titulo)}</h2></div></div>
+    <div class="obj"><b>Objetivo:</b> ${esc(r.obj)}</div>${r.html}
+    <div class="navp">${ant?`<button class="btn ghost" data-ir="${ant.id}">← ${esc(ant.titulo)}</button>`:"<span></span>"}${sig?`<button class="btn primary" data-ir="${sig.id}">${esc(sig.titulo)} →</button>`:`<button class="btn ghost" data-ir="bienvenida">↺ Volver al inicio</button>`}</div>`;
+}
+$("det").addEventListener("click", e=>{
+  const b=e.target.closest("[data-ir]"); if(b){ irPaso(b.dataset.ir, true); return; }
+  const p=e.target.closest(".chip[data-prof]"); if(p){ E.prof=p.dataset.prof; E.nombre=""; guardarE(); todo(); }
+});
+
+// ---------- ficha del producto ----------
+function pintarFicha(){
+  const c=ctx(), F=window.TARJETAS_FOTOS;
+  if(!c.p){ $("ficha").innerHTML=`<div class="foto"><span>🧩</span></div><h3>Guía general</h3><p class="gancho">Elegí un producto arriba para ver qué decir, qué mostrar y qué ofrecer con ese modelo.</p>`; return; }
+  const clave={estabilizadores:"p-om8", microfonos:"p-micmini2"}[c.p.id] || "p-"+c.p.id, src=F && F.fotos && F.fotos[clave];
+  $("ficha").innerHTML=`<div class="foto">${src?`<img src="${src}" alt="">`:`<span>${c.tipo==="dron"?"🚁":c.tipo==="camara"?"🎥":c.tipo==="microfono"?"🎙️":"📱"}</span>`}</div>
+    <h3>${esc(c.p.nombre)}</h3><p class="gancho">“${esc(c.p.gancho)}”</p><p class="ideal"><b>Ideal para:</b> ${esc(c.p.ideal)}</p>
+    <ul>${c.p.claves.slice(0,4).map(([a])=>`<li>${esc(a)}</li>`).join("")}</ul>`;
+}
+// fotos de Mensajes (las mismas de las tarjetas de precio): se cargan después, sin frenar la página
+(function(){ const s=document.createElement("script"); s.src="../precios/fotos.js?v=20261117a"; s.onload=pintarFicha; document.body.appendChild(s); })();
+
+// ---------- repaso ----------
+const REPASO=["Saludé en los primeros segundos y me presenté","Incluí al acompañante en la conversación","Le pregunté a qué se dedica y para qué lo quiere","Conecté lo que me dijo con funciones del producto","Le puse el producto en las manos o lo encendí","Le pregunté qué función quería ver","Recomendé el combo adecuado","Ofrecí Protection Plus","Ofrecí accesorios (microSD, baterías, micrófono…)","Expliqué las formas de pago","Si no compró: tomé su número o lo anoté en Clientes"];
+let rep=leer(LS_R, []); if(!Array.isArray(rep)) rep=[];
+function pintarRepaso(){
+  const n=REPASO.filter((x,i)=>rep.includes(i)).length;
+  $("repaso").innerHTML=`<h3>✅ Después de atender: ¿lo hice?</h3><p>Repasalo después de cada cliente (solo se guarda en este equipo).</p>
+    <div class="barra"><i style="width:${Math.round(n/REPASO.length*100)}%"></i></div>
+    ${REPASO.map((t,i)=>`<label><input type="checkbox" data-r="${i}" ${rep.includes(i)?"checked":""}> ${esc(t)}</label>`).join("")}
+    <button class="btn ghost sm" id="btnLimpiar" style="margin-top:8px">↺ Empezar de nuevo (${n}/${REPASO.length})</button>`;
+}
+$("repaso").addEventListener("change", e=>{ const i=+e.target.dataset.r; if(!Number.isInteger(i)) return; rep=rep.filter(x=>x!==i); if(e.target.checked) rep.push(i); escribir(LS_R, rep); pintarRepaso(); });
+$("repaso").addEventListener("click", e=>{ if(e.target.id==="btnLimpiar"){ rep=[]; escribir(LS_R, rep); pintarRepaso(); } });
+
+// ---------- práctica y cliente al azar ----------
+$("btnEsc").addEventListener("click", ()=>{ const e=document.querySelector(".esc"), ab=e.classList.toggle("cerrado"); $("btnEsc").setAttribute("aria-expanded", String(!ab)); $("btnEsc").textContent=ab ? "✏️ Cambiar" : "✓ Listo"; });
+$("btnPractica").addEventListener("click", ()=>{ E.practica=!E.practica; guardarE(); todo(); });
+const NOMBRES=["Ana","Carlos","María","José","Sofía","Luis","Andrea","Diego","Gabriela","Fernando","Lucía","Roberto","Valeria","Pablo","Daniela","Javier"];
+const azar = a => a[Math.floor(Math.random()*a.length)];
+$("btnAzar").addEventListener("click", ()=>{
+  // casi siempre drones o cámaras (lo que más vendemos)
+  const r=Math.random(), pool=G.PRODUCTOS.filter(p=> r<0.5 ? p.tipo==="dron" : r<0.88 ? p.tipo==="camara" : (p.tipo!=="dron"&&p.tipo!=="camara"));
+  const p=azar(pool); E.prod=p.id;
+  E.uso=azar(G.USOS)[0]; E.prof=azar(G.PROF[p.tipo]||G.PROF.camara).id;
+  E.acomp=azar(G.ACOMP)[0]; E.nivel=azar(G.NIVEL)[0]; E.nombre=azar(NOMBRES);
+  E.paso="bienvenida"; guardarE(); todo();
+  document.querySelector(".mapa").scrollIntoView({behavior:"smooth", block:"start"});
+});
+
+function todo(){ pintarEscenario(); pintarMapa(); pintarDetalle(); pintarFicha(); }
+todo(); pintarRepaso();
+</script>
+</body>
+</html>
