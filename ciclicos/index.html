@@ -39,6 +39,20 @@
   .btn.ghost{background:var(--line-2);color:var(--ink-2)}.btn.ghost:hover{background:#e7eaef}
   .btn.sm{padding:7px 11px;font-size:13px;border-radius:9px}
 
+  /* ===== inventario del sistema ===== */
+  .sisbar{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--ok);border-radius:14px;box-shadow:var(--shadow-sm);padding:11px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap}
+  .sisbar.viejo{border-left-color:var(--warn);background:#fffdf7}
+  .sisbar.nada{border-left-color:var(--accent);background:var(--accent-bg)}
+  .sb-t{flex:1 1 320px;min-width:0;font-size:13.5px;color:var(--ink-2);font-weight:600;line-height:1.4}
+  .sb-t>.sb-h{display:block;font-size:14.5px;color:var(--ink);margin-bottom:1px}
+  .sb-a{display:flex;gap:8px;flex-wrap:wrap}
+  .sb-det{flex-basis:100%;border-top:1px solid var(--line);padding-top:10px;max-height:420px;overflow:auto}
+  .sb-det h4{margin:10px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+  .sb-det h4:first-child{margin-top:0}
+  .sb-det ul{margin:0;padding-left:18px;font-size:13px;color:var(--ink-2);font-weight:600}
+  .apart{color:#8a5b12;font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-weight:700}
+  .sis-in.auto{background:var(--ok-bg);border-color:var(--ok-br)}
+
   /* ===== hoy ===== */
   .aviso{background:var(--accent-bg);border:1px solid #cfdcfb;color:#1e3a8a;border-radius:12px;padding:10px 14px;font-weight:650;font-size:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
   .aviso .btn{margin-left:auto}
@@ -178,13 +192,16 @@
     <button class="tab" data-tab="hist">🕘 Historial</button>
   </div>
 
+  <div class="sisbar" id="sisbar"></div>
+  <input type="file" id="archivo" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
+
   <section id="vHoy">
     <div class="aviso" id="aviso" hidden></div>
     <div class="cab" id="cab"></div>
     <div class="sbox"><span>▮▯▮</span><input id="scan" type="search" placeholder="Escaneá el código de barras para sumar 1 (o escribilo y Enter)…" autocomplete="off" spellcheck="false" enterkeyhint="done"></div>
     <div class="modelos" id="modelos"></div>
     <div class="otro"><select id="selOtro" aria-label="Contar otro modelo"></select></div>
-    <div class="ayuda">Contá lo que hay en la tienda y poné lo que dice el sistema. Todo se guarda solo en el historial y no se borra.</div>
+    <div class="ayuda">Contá lo que hay en la tienda. Lo del sistema sale del último Excel cargado (si hace falta, se puede cambiar a mano). Todo se guarda solo en el historial y no se borra.</div>
   </section>
 
   <section id="vHist" hidden>
@@ -199,8 +216,8 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261124a"></script>
-<script src="../recepcion/catalog.js?v=20261124a"></script>
+<script src="../nube.js?v=20261124b"></script>
+<script src="../recepcion/catalog.js?v=20261124b"></script>
 <script>
 /* ============================================================
    CÍCLICOS: cada día se cuentan 4 modelos elegidos al azar
@@ -208,12 +225,16 @@
    dando prioridad a los que hace más tiempo no se cuentan.
    Nube: colección "ciclicos", un documento por día (AAAA-MM-DD), un campo por dato:
      m0..mN    modelo de cada lugar {k, cat, nombre, items:[[código, descripción]]}
-     c:CÓDIGO  lo contado      s:CÓDIGO  lo que dice el sistema      notaN  nota del modelo
+     c:CÓDIGO  lo contado      s:CÓDIGO  sistema puesto a mano      notaN  nota del modelo
+     sx:CÓDIGO sistema según el Excel (solo el día de hoy se actualiza)   sxc  cuándo se cargó ese Excel
+     base      "sistema" si los modelos se eligieron entre lo que hay en el inventario del sistema
+   Inventario del sistema (el Excel "Variante de producto"): sistema/inventario
+     cargado, archivo, cargas (últimas cargas), p:CÓDIGO = [en tienda, libres, nombre, EAN]
    Nada se borra: el historial es la lista de días.
    ============================================================ */
 "use strict";
 
-const LS_DIAS = "dji_ciclicos_v1", LS_TAB = "dji_ciclicos_tab", LS_VISTA = "dji_ciclicos_vista";
+const LS_DIAS = "dji_ciclicos_v1", LS_TAB = "dji_ciclicos_tab", LS_VISTA = "dji_ciclicos_vista", LS_SIS = "dji_ciclicos_sistema";
 const RX_FECHA = /^\d{4}-\d{2}-\d{2}$/;
 const CATS = {dron:["🚁","Dron","Drones"], camara:["📷","Cámara","Cámaras"], estabilizador:["🤳","Estabilizador","Estabilizadores"], microfono:["🎙️","Micrófono","Micrófonos"], accesorio:["🧩","Accesorio","Accesorios"]};
 const ORDEN_CATS = ["dron","camara","estabilizador","microfono","accesorio"];
@@ -235,6 +256,13 @@ function haceDias(f){
   return n<=0?"hoy":n===1?"ayer":n<7?`hace ${n} días`:n<14?"hace 1 semana":n<60?`hace ${Math.floor(n/7)} semanas`:`hace ${Math.floor(n/30)} meses`;
 }
 const plural = (n,a,b) => n+" "+(n===1?a:b);
+const fmt = n => Number(n||0).toLocaleString("es-GT");
+function cuando(iso){ const d=new Date(iso); if(isNaN(d)) return ""; const t=d.toLocaleString("es-GT",{weekday:"long", day:"numeric", month:"numeric", year:"numeric", hour:"numeric", minute:"2-digit"}); return t.charAt(0).toUpperCase()+t.slice(1); }
+function haceTiempo(iso){
+  const ms=Date.now()-new Date(iso); if(!(ms>=0)) return "recién";
+  const min=Math.floor(ms/6e4), h=Math.floor(min/60), d=Math.floor(h/24);
+  return min<1?"recién":min<60?`hace ${min} min`:h<24?`hace ${plural(h,"hora","horas")}`:d===1?"hace 1 día":`hace ${d} días`;
+}
 let tToast;
 function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tToast); tToast=setTimeout(()=>t.classList.remove("show"),2800); }
 let actx=null;
@@ -257,7 +285,6 @@ function armarCatalogo(delta){
     (Array.isArray(delta.added)?delta.added:[]).forEach(a=>{ if(a && a.codigo && !catalogo[a.codigo]) catalogo[a.codigo]={descripcion:S(a.descripcion), ean:S(a.ean).replace(/\D/g,""), img:""}; });
   }
   const up={}; for(const c in catalogo){ const k=S(c).toUpperCase().slice(0,30); if(k && !up[k]) up[k]=catalogo[c]; } catalogo=up;
-  for(const c in catalogo){ if(catalogo[c].ean) porEan[catalogo[c].ean]=c; }
   armarModelos();
 }
 function categoria(d){
@@ -272,7 +299,7 @@ function categoria(d){
 function nombreModelo(d){
   let t=S(d).replace(/^\(L\)\s*/i,"");
   const i=t.search(/\bDJI\b/i); if(i>=0) t=t.slice(i+3).trim();
-  t=t.replace(/\s+(fly\b|motion\b|creator\b|standard\b|adventure\b|advanced\b|device only|on the go|combo\b|con\b|\d+\s*gb\b|\d\s*tx\b|\(|\+).*$/i,"").trim();
+  t=t.replace(/\s+(fly\b|motion\b|creator\b|standard\b|adventure\b|advanced\b|vlog\b|explorer\b|essentials?\b|basic\b|device only|on the go|combo\b|con\b|\d+\s*gb\b|\d\s*tx\b|\(|（|\+).*$/i,"").trim();
   t=t.split(/\s+/).map(w=>/^[a-z]/.test(w)?w[0].toUpperCase()+w.slice(1):w.replace(/^(\d+)([a-z])$/,(x,a,b)=>a+b.toUpperCase())).join(" ");
   return t ? "DJI "+t : S(d);
 }
@@ -282,20 +309,33 @@ function modeloDe(cod, d){
   const nombre=nombreModelo(d);
   return {cat, k:cat+"-"+fold(nombre).replace(/ /g,"-"), nombre};
 }
+// los modelos salen del catálogo de Recepción y del inventario del sistema (por si hay productos nuevos)
 function armarModelos(){
-  modelos={};
-  Object.keys(catalogo).sort().forEach(c=>{
-    const p=catalogo[c]; if(!p.descripcion) return;
-    const m=modeloDe(c, p.descripcion);
+  modelos={}; porEan={};
+  const P=sistema?sistema.p:{};
+  new Set([...Object.keys(catalogo), ...Object.keys(P)]).forEach(c=>{
+    const d=(catalogo[c]&&catalogo[c].descripcion) || (P[c]&&P[c].d) || ""; if(!d) return;
+    const m=modeloDe(c, d);
     const x=modelos[m.k]||(modelos[m.k]={k:m.k, cat:m.cat, nombre:m.nombre, items:[]});
-    x.items.push([c, p.descripcion]);
+    x.items.push([c, d]);
   });
+  for(const k in modelos) modelos[k].items.sort((a,b)=>a[0]<b[0]?-1:1);
+  for(const c in catalogo){ if(catalogo[c].ean) porEan[catalogo[c].ean]=c; }
+  for(const c in P){ if(P[c].e && !porEan[P[c].e]) porEan[P[c].e]=c; }
 }
+// lo que dice el sistema (null si no se ha cargado; 0 si el producto no viene en el Excel)
+const stockDe = c => !sistema ? null : (sistema.p[c] ? sistema.p[c].n : 0);
+const disponible = m => !sistema || m.items.some(([c])=>stockDe(c)>0);
 // descripción corta dentro del modelo: "Drone DJI Neo 2 fly more combo" → "Neo 2 fly more combo"
 function corto(d, cat){ return cat==="accesorio" ? S(d) : S(d).replace(/^\(L\)\s*/i,"").replace(/^.*?\bDJI\s+/i,"") || S(d); }
 const imgDe = cod => (catalogo[cod]||{}).img || "";
 const fotoModelo = m => { for(const [c] of m.items){ const i=imgDe(c); if(i) return i; } return ""; };
-const comoLugar = m => ({k:m.k, cat:m.cat, nombre:m.nombre, items:m.items.map(x=>[x[0],x[1]])});
+// al poner un modelo en el cíclico, van solo sus productos que hay en el sistema
+function comoLugar(m){
+  let items=m.items;
+  if(sistema){ const hay=items.filter(([c])=>stockDe(c)>0); if(hay.length) items=hay; }
+  return {k:m.k, cat:m.cat, nombre:m.nombre, items:items.map(x=>[x[0],x[1]])};
+}
 
 // ============================================================
 //  DATOS
@@ -311,7 +351,11 @@ function limpiarPlano(o){
         const items=v.items.filter(x=>Array.isArray(x) && S(x[0])).slice(0,40).map(x=>[S(x[0]).toUpperCase().slice(0,30), S(x[1]).slice(0,160)]);
         if(items.length) out[k]={k:v.k.slice(0,90), cat:CATS[v.cat]?v.cat:"accesorio", nombre:S(v.nombre).slice(0,140)||v.k, items};
       }
-    } else if(/^[cs]:.{1,30}$/.test(k)){
+    } else if(/^sx:.{1,30}$/.test(k)){
+      if(typeof v==="number" && Number.isInteger(v) && Math.abs(v)<=99999) out[k]=v;
+    } else if(k==="sxc"){ const t=S(v).slice(0,40); if(t) out[k]=t; }
+    else if(k==="base"){ if(v==="sistema") out[k]=v; }
+    else if(/^[cs]:.{1,30}$/.test(k)){
       const n=typeof v==="number"?v:typeof v==="string"&&v.trim()!==""?Number(v):NaN;
       if(Number.isInteger(n) && n>=0 && n<=99999) out[k]=n;
     } else if(/^nota\d{1,2}$/.test(k)){ const t=S(v).slice(0,300); if(t) out[k]=t; }
@@ -331,6 +375,8 @@ function lugares(f){
   return L.sort((a,b)=>a.i-b.i);
 }
 const val = (f, campo) => { const d=dias[f]; return d && Object.prototype.hasOwnProperty.call(d,campo) ? d[campo] : null; };
+// lo del sistema: lo puesto a mano, o si no, lo del Excel
+const sisDe = (f, c) => { const s=val(f,"s:"+c); return s!=null ? s : val(f,"sx:"+c); };
 function estado(n, s){
   if(n==null) return ["pend","Por contar"];
   if(s==null) return ["sis","Falta el sistema"];
@@ -340,7 +386,7 @@ function estado(n, s){
 }
 // resumen de un modelo en un día
 function resumen(f, l){
-  const filas=l.m.items.map(([c,d])=>({c, d, n:val(f,"c:"+c), s:val(f,"s:"+c)}));
+  const filas=l.m.items.map(([c,d])=>({c, d, n:val(f,"c:"+c), s:sisDe(f,c), auto:val(f,"s:"+c)==null && val(f,"sx:"+c)!=null}));
   const contados=filas.filter(x=>x.n!=null), conSis=filas.filter(x=>x.s!=null);
   const cnt=contados.reduce((a,x)=>a+x.n,0), sis=conSis.reduce((a,x)=>a+x.s,0);
   const completo=contados.length===filas.length, sisCompleto=conSis.length===filas.length;
@@ -379,7 +425,7 @@ function azar(txt){
 function escoger(cats, fuera, rnd, antesDe){
   const reg=registro(), ult={};
   for(const k in reg){ const L=reg[k].filter(x=>x.f<antesDe); if(L.length) ult[k]=L[L.length-1].f; }
-  const L=Object.values(modelos).filter(m=>cats.includes(m.cat) && !fuera.has(m.k)).sort((a,b)=>a.k<b.k?-1:1).map(m=>({m, u:ult[m.k]||"", r:rnd()}));
+  const L=Object.values(modelos).filter(m=>cats.includes(m.cat) && !fuera.has(m.k) && disponible(m)).sort((a,b)=>a.k<b.k?-1:1).map(m=>({m, u:ult[m.k]||"", r:rnd()}));
   if(!L.length) return null;
   L.sort((a,b)=>a.u<b.u?-1:a.u>b.u?1:a.r-b.r);
   const pool=L.slice(0, Math.max(1, Math.ceil(L.length/2)));
@@ -397,6 +443,7 @@ function elegirDia(f){
 // si este equipo tiene la clave de la tienda, lo que se cambie antes de conectar espera a la foto de la nube
 let nubeOn=!!(window.Nube && Nube.conectado()), nubeCol={}, colServidor=false;
 let desMapa=null, nubeMapa={}, fotoAbierta=!nubeOn, servidorAbierta=!nubeOn, mapaDe=nubeOn?abierta:null;
+let sistema=null, nubeSis={}, sisServidor=!nubeOn, sisMio="", verSis=false;
 const pend = {};   // fecha -> {campo: valor} cambios hechos antes de tener la foto de la nube
 function subirCampo(f, campo, v){
   if(!nubeOn) return;
@@ -430,9 +477,9 @@ function escucharAbierta(){
 }
 async function conectarNube(){
   Nube.pintar($("nubeEstado"));
-  const locales=JSON.parse(JSON.stringify(dias));
+  const locales=JSON.parse(JSON.stringify(dias)), sisLocal=sistema;
   if(!nubeOn || !await Nube.iniciar()){
-    nubeOn=false; mapaDe=null; fotoAbierta=true; servidorAbierta=true; catListo=true;
+    nubeOn=false; mapaDe=null; fotoAbierta=true; servidorAbierta=true; sisServidor=true; catListo=true;
     for(const f in pend) delete pend[f];
     render(); elegirSiFalta(); return;
   }
@@ -440,6 +487,16 @@ async function conectarNube(){
   Nube.unirUnaVez("ciclicos", async()=>{
     const enNube=await Nube.leerColeccion("ciclicos");
     for(const f in locales){ if(!RX_FECHA.test(f)) continue; const n=leerDoc(enNube[f]); await Nube.guardarMapa("ciclicos", f, Object.assign({}, locales[f], n), n); }
+    if(sisLocal){ const r=await Nube.leerMapa("sistema","inventario"), ns=leerSistema(r.mapa); if(!ns || ns.cargado<sisLocal.cargado) await Nube.guardarMapa("sistema","inventario", aMapa(sisLocal), r.mapa); }
+  });
+  Nube.escucharMapa("sistema","inventario", (m, existe, meta)=>{
+    const antes=sistema, s=leerSistema(m);
+    nubeSis=m; sistema=s;
+    // aviso cuando otra computadora carga un Excel (no al abrir la página)
+    if(sisServidor && s && (!antes || antes.cargado!==s.cargado) && s.cargado!==sisMio) toast("📦 Se actualizó el inventario del sistema");
+    if(meta && !meta.fromCache) sisServidor=true;
+    if(!antes!==!s || (antes && s && antes.cargado!==s.cargado)){ armarModelos(); firma=""; }
+    guardarSisLocal(); render(); elegirSiFalta();
   });
   Nube.escucharColeccion("ciclicos", (raw, meta)=>{
     const n={}; for(const f in raw) if(RX_FECHA.test(f)) n[f]=leerDoc(raw[f]);
@@ -453,19 +510,141 @@ async function conectarNube(){
   setTimeout(()=>{ catListo=true; sinServidor=true; elegirSiFalta(); }, 7000);
 }
 
+// ============================================================
+//  INVENTARIO DEL SISTEMA (Excel "Variante de producto": Nombre mostrado + Cantidad disponible)
+// ============================================================
+function leerSistema(m){
+  if(!m || !S(m.cargado)) return null;
+  const p={};
+  for(const k in m){
+    const r=k.match(/^p:(.{1,30})$/); if(!r || !Array.isArray(m[k])) continue;
+    const [n,l,d,e]=m[k], N=Math.round(Number(n)), L=Math.round(Number(l));
+    if(Number.isFinite(N) && Math.abs(N)<=99999) p[r[1].toUpperCase()]={n:N, l:Number.isFinite(L)?Math.min(L,N):N, d:S(d).slice(0,160), e:S(e).replace(/\D/g,"").slice(0,20)};
+  }
+  const cargas=(Array.isArray(m.cargas)?m.cargas:[]).filter(x=>x && typeof x==="object" && S(x.t)).slice(-30).map(x=>({t:S(x.t).slice(0,40), a:S(x.a).slice(0,120), p:Math.round(Number(x.p))||0, u:Math.round(Number(x.u))||0}));
+  return {cargado:S(m.cargado).slice(0,40), archivo:S(m.archivo).slice(0,120), p, cargas};
+}
+function aMapa(s){ const o={cargado:s.cargado, archivo:s.archivo, cargas:s.cargas}; for(const c in s.p){ const x=s.p[c]; o["p:"+c]=[x.n, x.l, x.d, x.e]; } return o; }
+function cargarSisLocal(){ try{ sistema=leerSistema(aMapaSeguro(JSON.parse(localStorage.getItem(LS_SIS)||"null"))); }catch(e){ sistema=null; } }
+const aMapaSeguro = o => o && typeof o==="object" ? o : null;
+function guardarSisLocal(){ try{ if(sistema) localStorage.setItem(LS_SIS, JSON.stringify(aMapa(sistema))); else localStorage.removeItem(LS_SIS); }catch(e){} }
+function cargarExcelJS(){
+  if(window.ExcelJS) return Promise.resolve();
+  return new Promise((ok,mal)=>{ const s=document.createElement("script"); s.src="../recepcion/lib/exceljs.min.js"; s.onload=ok; s.onerror=()=>mal(new Error("no cargó el lector de Excel (¿hay internet?)")); document.head.appendChild(s); });
+}
+async function leerExcelSistema(file){
+  await cargarExcelJS();
+  const wb=new ExcelJS.Workbook(); await wb.xlsx.load(await file.arrayBuffer());
+  const ws=wb.worksheets[0]; if(!ws) throw new Error("el archivo no tiene hojas");
+  const txt=v=>{ if(v==null) return ""; if(typeof v==="object"){ if(v.richText) return v.richText.map(r=>r.text).join(""); if("result" in v) return String(v.result??""); if(v.text) return String(v.text); } return String(v); };
+  let fila=0, col=null;
+  for(let r=1;r<=Math.min(20,ws.rowCount)&&!fila;r++){
+    const c={cant:[]};
+    ws.getRow(r).eachCell((cell,i)=>{ const t=fold(txt(cell.value));
+      if(/^(nombre mostrado|nombre|producto|descripcion|articulo)\b/.test(t) && !c.nom) c.nom=i;
+      else if(/^(codigo|referencia interna|referencia|ref interna|sku)$/.test(t) && !c.cod) c.cod=i;
+      else if(/^(ean|codigo de barras)$/.test(t) && !c.ean) c.ean=i;
+      else if(/(disponible|a mano|existencia|stock)/.test(t)) c.cant.push(i); });
+    if((c.nom||c.cod) && c.cant.length){ fila=r; col=c; }
+  }
+  if(!fila) throw new Error('no encontré las columnas "Nombre mostrado" y "Cantidad disponible"');
+  const p={};
+  for(let r=fila+1;r<=ws.rowCount;r++){
+    const row=ws.getRow(r);
+    let nom=col.nom?S(txt(row.getCell(col.nom).value)):"", cod=col.cod?S(txt(row.getCell(col.cod).value)):"";
+    const m=nom.match(/^\[([^\]]{1,30})\]\s*(.*)$/); if(m){ if(!cod) cod=m[1]; nom=m[2]; }
+    cod=S(cod).toUpperCase().slice(0,30); if(!cod) continue;
+    // si trae 2 columnas de cantidad: la mayor es lo que hay en la tienda y la otra lo libre (lo demás está apartado)
+    const qs=col.cant.map(i=>{ const t=S(txt(row.getCell(i).value)).replace(/,/g,""); return t===""?NaN:Math.round(Number(t)); }).filter(Number.isFinite);
+    if(!qs.length) continue;
+    const n=Math.max(...qs), l=Math.min(...qs), e=col.ean?txt(row.getCell(col.ean).value).replace(/\D/g,"").slice(0,20):"";
+    if(p[cod]){ p[cod].n+=n; p[cod].l+=l; } else p[cod]={n, l, d:S(nom).slice(0,160), e};
+  }
+  if(!Object.keys(p).length) throw new Error("no encontré productos con código y cantidad");
+  return p;
+}
+async function cargarExcel(file){
+  let p;
+  try{ p=await leerExcelSistema(file); }catch(err){ alert("No se pudo leer el Excel: "+(err && err.message || err)); return; }
+  const L=Object.entries(p), con=L.filter(([,x])=>x.n>0), uni=con.reduce((a,[,x])=>a+x.n,0);
+  let cambios="";
+  if(sistema){
+    const A=sistema.p, nom=c=>(p[c]||A[c]||{}).d||c;
+    const cambian=[...new Set([...Object.keys(A),...Object.keys(p)])].filter(c=>(A[c]?A[c].n:0)!==(p[c]?p[c].n:0));
+    cambios = cambian.length ? `\n\nCambia lo del sistema en ${plural(cambian.length,"producto","productos")}:\n`+cambian.slice(0,8).map(c=>`• ${nom(c)}: ${A[c]?A[c].n:0} → ${p[c]?p[c].n:0}`).join("\n")+(cambian.length>8?`\n… y ${cambian.length-8} más`:"") : "\n\nLas cantidades son iguales a las de la carga anterior.";
+    cambios+=`\n\n(Carga anterior: ${cuando(sistema.cargado)})`;
+  }
+  if(!confirm(`¿Actualizar el inventario del sistema con este Excel?\n\n${plural(con.length,"producto","productos")} con existencia · ${fmt(uni)} unidades`+cambios+`\n\nEl cíclico de hoy toma estas cantidades; los días anteriores no cambian.`)) return;
+  guardarSistema(p, S(file.name).slice(0,120));
+}
+function guardarSistema(p, archivo){
+  const t=new Date().toISOString(), P=Object.values(p).filter(x=>x.n>0);
+  const cargas=((sistema&&sistema.cargas)||[]).concat([{t, a:archivo, p:P.length, u:P.reduce((a,x)=>a+x.n,0)}]).slice(-30);
+  sistema={cargado:t, archivo, p, cargas}; sisMio=t;
+  guardarSisLocal(); armarModelos(); firma="";
+  if(nubeOn){ const m=aMapa(sistema); Nube.guardarMapa("sistema","inventario", m, nubeSis||{}); nubeSis=m; }
+  render(); elegirSiFalta();
+  toast("✔ Inventario del sistema actualizado");
+}
+function renderSis(){
+  const el=$("sisbar");
+  if(!sistema){
+    el.className="sisbar nada";
+    el.innerHTML=`<div class="sb-t"><b class="sb-h">📦 Inventario del sistema</b>Todavía no se ha cargado. Cargá el Excel del sistema (Nombre mostrado y Cantidad disponible) para que la casilla <b>Sistema</b> se llene sola y el cíclico salga solo de los productos que hay.</div><div class="sb-a"><button class="btn primary sm" data-a="excel">⬆️ Cargar Excel</button></div>`;
+    return;
+  }
+  const P=Object.entries(sistema.p), con=P.filter(([,x])=>x.n>0), uni=con.reduce((a,[,x])=>a+x.n,0);
+  const viejo=(Date.now()-new Date(sistema.cargado))/864e5>=3;
+  el.className="sisbar"+(viejo?" viejo":"");
+  let det="";
+  if(verSis){
+    const orden=c=>{ const d=(catalogo[c]&&catalogo[c].descripcion)||sistema.p[c].d; return ORDEN_CATS.indexOf(categoria(d))+"|"+d; };
+    const filas=con.sort((a,b)=>orden(a[0]).localeCompare(orden(b[0]),"es")).map(([c,x])=>`<tr><td>${esc((catalogo[c]&&catalogo[c].descripcion)||x.d||c)}<small>${esc(c)}</small></td><td class="num">${fmt(x.n)}</td><td class="num">${x.l<x.n?fmt(x.n-x.l):`<span class="d-nada">—</span>`}</td></tr>`).join("");
+    det=`<div class="sb-det"><h4>Lo que dice el sistema (${plural(con.length,"producto","productos")} con existencia)</h4>
+      <table class="t"><thead><tr><th>Producto</th><th>En sistema</th><th>Apartados</th></tr></thead><tbody>${filas}</tbody></table>
+      <h4>Últimas actualizaciones</h4><ul>${sistema.cargas.slice().reverse().slice(0,10).map(x=>`<li>${esc(cuando(x.t))} · ${plural(x.p,"producto","productos")} · ${fmt(x.u)} unidades${x.a?` · ${esc(x.a)}`:""}</li>`).join("")}</ul></div>`;
+  }
+  el.innerHTML=`<div class="sb-t"><b class="sb-h">📦 Inventario del sistema</b>Actualizado el <b>${esc(cuando(sistema.cargado))}</b> (${haceTiempo(sistema.cargado)}) · ${plural(con.length,"producto","productos")} con existencia · ${fmt(uni)} unidades${viejo?" · ⚠️ conviene actualizarlo":""}</div>
+    <div class="sb-a"><button class="btn ghost sm" data-a="ver">${verSis?"Ocultar":"👁️ Ver"}</button><button class="btn primary sm" data-a="excel">⬆️ Actualizar con Excel</button></div>${det}`;
+}
+
 // el cíclico de hoy se elige solo, cuando ya se sabe lo que hay en la nube (para no pisar lo de otra computadora)
 let catListo=false, sinServidor=false;
-const elegidos = {};
+// y con el inventario del sistema: lo del Excel va en la casilla Sistema (solo hoy)
+const elegidos = {}, rehechos = {};
 function elegirSiFalta(){
   const f=hoyISO();
-  if(abierta!==f || elegidos[f] || lugares(f).length) return;
-  if(!catListo || !fotoAbierta) return;
-  if(nubeOn && !sinServidor && !(servidorAbierta && colServidor)) return;
+  if(abierta!==f || !catListo || !fotoAbierta) return;
+  if(nubeOn && !sinServidor && !(servidorAbierta && colServidor && sisServidor)) return;
   if(!Object.keys(modelos).length) return;
-  elegidos[f]=true;
-  const nuevos=elegirDia(f);
-  for(const k in nuevos) poner(f, k, nuevos[k], true);
-  render();
+  let cambio=false;
+  const L=lugares(f);
+  if(!L.length){
+    if(elegidos[f]) return;
+    elegidos[f]=true;
+    const nuevos=elegirDia(f);
+    for(const k in nuevos){ poner(f, k, nuevos[k], true); cambio=true; }
+  } else if(sistema && val(f,"base")!=="sistema" && !rehechos[f]){
+    // los modelos de hoy se eligieron antes de cargar el inventario del sistema:
+    // lo que todavía no se ha contado se vuelve a elegir entre lo que hay
+    rehechos[f]=true;
+    const fuera=new Set(L.filter(l=>l.i>=FIJOS || tieneDatos(f,l)).map(l=>l.m.k)), rnd=azar("ciclico|"+f+"|sistema");
+    LUGARES.forEach((cats,i)=>{
+      const l=L.find(x=>x.i===i); if(l && tieneDatos(f,l)) return;
+      const ya=l && modelos[l.m.k];
+      const m = ya && disponible(ya) && !fuera.has(ya.k) ? ya : escoger(cats, fuera, rnd, f);
+      if(!m) return;
+      fuera.add(m.k);
+      const nuevo=comoLugar(m);
+      if(!l || Nube.estable(nuevo)!==Nube.estable(l.m)){ poner(f, "m"+i, nuevo, true); cambio=true; }
+    });
+  }
+  if(sistema){
+    if(val(f,"base")!=="sistema") poner(f, "base", "sistema", true);
+    lugares(f).forEach(l=>l.m.items.forEach(([c])=>{ const s=stockDe(c); if(val(f,"sx:"+c)!==s){ poner(f, "sx:"+c, s, true); cambio=true; } }));
+    if(val(f,"sxc")!==sistema.cargado) poner(f, "sxc", sistema.cargado, true);
+  }
+  if(cambio) render();
 }
 
 // ============================================================
@@ -531,14 +710,14 @@ async function copiarResumen(){
 // ============================================================
 let tab="hoy", vistaH="dia", qh="", firma="";
 function htmlFila(c, d, cat){
-  const img=imgDe(c);
+  const img=imgDe(c), x=sistema && abierta===hoyISO() ? sistema.p[c] : null, apart=x && x.l<x.n ? x.n-x.l : 0;
   return `<div class="fila" data-c="${esc(c)}">
     ${img?`<img src="${esc(img)}" alt="" loading="lazy" onerror="this.outerHTML='<span class=&quot;sf&quot;>📦</span>'">`:`<span class="sf">📦</span>`}
-    <div><div class="f-n" title="${esc(d)}">${esc(corto(d,cat))}</div><div class="f-c">${esc(c)}</div></div>
+    <div><div class="f-n" title="${esc(d)}">${esc(corto(d,cat))}</div><div class="f-c">${esc(c)}${apart?` · <span class="apart">${plural(apart,"apartado","apartados")} en el sistema</span>`:""}</div></div>
     <span class="est pend">Por contar</span>
     <div class="nums">
       <label class="campo"><small>Conté</small><span class="cnt"><button type="button" data-a="menos" aria-label="Uno menos">−</button><input type="number" inputmode="numeric" min="0" max="99999" placeholder="—" data-k="c:${esc(c)}" aria-label="Lo que conté"><button type="button" data-a="mas" aria-label="Uno más">+</button></span></label>
-      <label class="campo"><small>Sistema</small><input class="sis-in" type="number" inputmode="numeric" min="0" max="99999" placeholder="—" data-k="s:${esc(c)}" aria-label="Lo que dice el sistema"></label>
+      <label class="campo"><small class="lbl-s">Sistema</small><input class="sis-in" type="number" inputmode="numeric" min="0" max="99999" placeholder="—" data-k="s:${esc(c)}" aria-label="Lo que dice el sistema"></label>
     </div>
   </div>`;
 }
@@ -562,7 +741,7 @@ function renderHoy(){
   const av=$("aviso");
   av.hidden=esHoy;
   if(!esHoy) av.innerHTML=`📅 Estás viendo el cíclico del <b>${esc(fechaLarga(f))}</b>. Si cambiás algo, se corrige en el historial.<button class="btn primary sm" onclick="abrirDia(hoyISO())">← Volver a hoy</button>`;
-  const sig=f+"|"+L.map(l=>l.i+":"+l.m.k).join(",")+"|"+Object.keys(modelos).length;
+  const sig=f+"|"+L.map(l=>l.i+":"+l.m.k+":"+l.m.items.length).join(",")+"|"+Object.keys(modelos).length+"|"+(sistema?sistema.cargado:"");
   if(sig!==firma){
     const foco=document.activeElement, kf=foco && foco.dataset ? foco.dataset.k : null;
     firma=sig;
@@ -572,11 +751,12 @@ function renderHoy(){
     if(L.length) $("btnCopiar").onclick=copiarResumen;
     $("modelos").innerHTML = L.length ? L.map(l=>htmlModelo(f,l)).join("") :
       `<div class="vacio">${esHoy ? (nubeOn && !(servidorAbierta && colServidor) && !sinServidor ? "<b>⏳ Revisando la nube…</b>En un momento salen los modelos de hoy." : Object.keys(modelos).length ? "<b>⏳ Eligiendo los modelos de hoy…</b>" : "<b>No hay productos en el catálogo</b>Agregalos en Recepción.") : "<b>Ese día no hubo cíclico</b>Podés agregar un modelo abajo si querés registrarlo."}</div>`;
-    const usados=new Set(L.map(l=>l.m.k));
+    const usados=new Set(L.map(l=>l.m.k)), opc=m=>`<option value="${esc(m.k)}">${esc(m.nombre)}</option>`;
+    const sinStock=Object.values(modelos).filter(m=>!usados.has(m.k) && !disponible(m)).sort((a,b)=>a.nombre.localeCompare(b.nombre,"es"));
     $("selOtro").innerHTML=`<option value="">＋ Contar otro modelo…</option>`+ORDEN_CATS.map(cat=>{
-      const ms=Object.values(modelos).filter(m=>m.cat===cat && !usados.has(m.k)).sort((a,b)=>a.nombre.localeCompare(b.nombre,"es"));
-      return ms.length?`<optgroup label="${CATS[cat][0]} ${CATS[cat][2]}">${ms.map(m=>`<option value="${esc(m.k)}">${esc(m.nombre)}</option>`).join("")}</optgroup>`:"";
-    }).join("");
+      const ms=Object.values(modelos).filter(m=>m.cat===cat && !usados.has(m.k) && disponible(m)).sort((a,b)=>a.nombre.localeCompare(b.nombre,"es"));
+      return ms.length?`<optgroup label="${CATS[cat][0]} ${CATS[cat][2]}">${ms.map(opc).join("")}</optgroup>`:"";
+    }).join("")+(sinStock.length?`<optgroup label="Sin existencias en el sistema">${sinStock.map(opc).join("")}</optgroup>`:"");
     if(kf){ const el=document.querySelector(`#vHoy [data-k="${CSS.escape(kf)}"]`); if(el) el.focus(); }
   }
   pintarValores();
@@ -592,7 +772,9 @@ function pintarValores(){
       const e=estado(x.n,x.s); if(e[0]==="ok") ok++; else if(e[0]==="falta"||e[0]==="sobra") dif++; else if(e[0]==="sis") sinSis++;
       const row=card.querySelector(`.fila[data-c="${CSS.escape(x.c)}"]`); if(!row) return;
       const b=row.querySelector(".est"); b.className="est "+e[0]; b.textContent=e[1];
-      row.querySelectorAll("input[data-k]").forEach(inp=>{ if(inp===foco) return; const v=val(f,inp.dataset.k); inp.value=v==null?"":v; });
+      row.querySelectorAll("input[data-k]").forEach(inp=>{ if(inp===foco) return; const v=/^s:/.test(inp.dataset.k)?x.s:val(f,inp.dataset.k); inp.value=v==null?"":v; });
+      const si=row.querySelector(".sis-in"); si.classList.toggle("auto", x.auto); si.title = x.auto ? "Según el Excel del sistema. Si escribís otro número, queda puesto a mano." : "";
+      row.querySelector(".lbl-s").textContent = x.auto ? "Sistema · Excel" : val(f,"s:"+x.c)!=null && val(f,"sx:"+x.c)!=null ? "Sistema · a mano" : "Sistema";
     });
     card.querySelector(".tot").innerHTML = r.contados ? `Total: conté <b>${r.cnt}</b>${r.sis!=null?` · sistema <b>${r.sis}</b>`:""}<span class="est ${r.est[0]}">${esc(r.est[1])}</span>` : `<span class="est pend">${esc(r.est[1])}</span>`;
     const n=card.querySelector(".nota"); if(n!==foco) n.value=r.nota;
@@ -661,6 +843,7 @@ function renderHist(){
 }
 
 function render(){
+  renderSis();
   if(tab==="hoy") renderHoy(); else renderHist();
 }
 function ponerTab(t){
@@ -696,15 +879,22 @@ $("modelos").addEventListener("change", e=>{
 });
 $("modelos").addEventListener("keydown", e=>{ if(e.key==="Enter" && e.target.matches("input")){ e.preventDefault(); e.target.blur(); } });
 $("modelos").addEventListener("focusout", ()=>setTimeout(pintarValores, 0));
+$("sisbar").addEventListener("click", e=>{
+  const b=e.target.closest("[data-a]"); if(!b) return;
+  if(b.dataset.a==="excel") $("archivo").click();
+  else if(b.dataset.a==="ver"){ verSis=!verSis; renderSis(); }
+});
+$("archivo").addEventListener("change", e=>{ const f=e.target.files[0]; e.target.value=""; if(f) cargarExcel(f); });
 $("selOtro").addEventListener("change", e=>{ const k=e.target.value; e.target.value=""; if(k) agregarModelo(k); });
 $("scan").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); escanear(e.target.value); } });
 // si la página queda abierta, al cambiar de día pasa sola al cíclico nuevo
 let hoyVisto=hoyISO();
 function revisarDia(){ const h=hoyISO(); if(h===hoyVisto) return; const eraHoy=abierta===hoyVisto; hoyVisto=h; if(eraHoy){ abierta=h; escucharAbierta(); firma=""; } render(); elegirSiFalta(); }
-setInterval(revisarDia, 30000);
+setInterval(()=>{ revisarDia(); renderSis(); }, 30000);
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) revisarDia(); });
 
 // ---------- inicio ----------
+cargarSisLocal();
 armarCatalogo(null);
 cargarLocal();
 try{ vistaH=localStorage.getItem(LS_VISTA)==="modelo"?"modelo":"dia"; }catch(e){}
