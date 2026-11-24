@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cíclicos · DJI</title>
+<style>
+  :root{
+    --bg:#f3f4f7; --card:#ffffff; --ink:#14171c; --ink-2:#3b424d; --muted:#8b93a1;
+    --line:#e9ebef; --line-2:#f1f3f6;
+    --black:#111318; --black-2:#1b1e26;
+    --accent:#2563eb; --accent-d:#1d4ed8; --accent-bg:#eef3fe;
+    --ok:#0e9f6e; --ok-bg:#e7f7f0; --ok-br:#bfe9d7;
+    --warn:#b7791f; --warn-bg:#fdf6e6; --warn-br:#f0e0b8;
+    --err:#e02424; --err-bg:#fdecec; --err-br:#f6c9c9;
+    --shadow-sm:0 1px 2px rgba(16,24,40,.06);
+    --shadow:0 1px 3px rgba(16,24,40,.06),0 10px 26px rgba(16,24,40,.05);
+    --r:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  [hidden]{display:none!important}
+  input,button,select,textarea{font-family:inherit}
+
+  .appbar{background:var(--black);color:#fff;padding:0 22px;display:flex;align-items:center;gap:12px;height:66px;position:sticky;top:0;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.16)}
+  .appbar b{font-size:17px;font-weight:750;white-space:nowrap}
+  .appbar .sub{font-size:13px;color:rgba(255,255,255,.6);font-weight:600}
+  .ab-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .appbar .logo{height:26px;opacity:.95;margin-left:4px}
+
+  .wrap{max-width:1240px;margin:0 auto;padding:16px 20px 40px}
+  .tabs{display:flex;gap:8px;margin-bottom:14px}
+  .tab{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 16px;font-size:14.5px;font-weight:800;color:var(--ink-2);cursor:pointer;box-shadow:var(--shadow-sm)}
+  .tab[aria-pressed="true"]{background:var(--black);border-color:var(--black);color:#fff}
+
+  .btn{border:none;border-radius:10px;padding:11px 16px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;color:inherit}
+  .btn.primary{background:var(--accent);color:#fff}.btn.primary:hover{background:var(--accent-d)}
+  .btn.ghost{background:var(--line-2);color:var(--ink-2)}.btn.ghost:hover{background:#e7eaef}
+  .btn.sm{padding:7px 11px;font-size:13px;border-radius:9px}
+
+  /* ===== hoy ===== */
+  .aviso{background:var(--accent-bg);border:1px solid #cfdcfb;color:#1e3a8a;border-radius:12px;padding:10px 14px;font-weight:650;font-size:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .aviso .btn{margin-left:auto}
+  .cab{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:12px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .cab h2{margin:0;font-size:19px;letter-spacing:-.2px}
+  .cab .que{font-size:13px;color:var(--muted);font-weight:650;margin-top:2px}
+  .cab .der{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .prog{flex-basis:100%;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .barra{flex:1 1 200px;height:9px;background:var(--line-2);border-radius:9px;overflow:hidden;min-width:120px}
+  .barra i{display:block;height:100%;width:0;background:var(--ok);border-radius:9px;transition:width .3s}
+  .pills{display:flex;gap:6px;flex-wrap:wrap}
+  .pill{font-size:12.5px;font-weight:800;border-radius:20px;padding:4px 10px;background:var(--line-2);color:var(--ink-2);white-space:nowrap}
+  .pill.ok{background:var(--ok-bg);color:#0b7a53}.pill.dif{background:var(--err-bg);color:#b71c1c}.pill.sis{background:var(--warn-bg);color:#8a5b12}
+
+  .sbox{position:relative;margin-bottom:12px}
+  .sbox span{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.6}
+  .sbox input{width:100%;padding:12px 12px 12px 40px;border:2px solid var(--line);border-radius:12px;font-size:15px;outline:none;background:#fff;font-weight:600}
+  .sbox input:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+
+  .modelos{display:grid;grid-template-columns:1fr;gap:12px;align-items:start}
+  @media(min-width:1000px){ .modelos{grid-template-columns:1fr 1fr} }
+  .mod{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-width:0}
+  .mod-h{display:grid;grid-template-columns:60px 1fr auto;gap:12px;align-items:center;padding:13px 14px;border-bottom:1px solid var(--line);background:#fbfcfd}
+  .mod-h img,.mod-h .sf{width:60px;height:60px;border-radius:12px;object-fit:contain;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:26px}
+  .tag{display:inline-block;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--accent);background:var(--accent-bg);border-radius:6px;padding:2px 7px;margin-bottom:3px}
+  .mod-t b{display:block;font-size:16.5px;line-height:1.2}
+  .ult{font-size:12.5px;color:var(--muted);font-weight:650;margin-top:3px}
+  .ult b{display:inline;font-size:inherit;color:var(--ink-2)}
+  .filas{padding:4px 14px}
+  .fila{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:6px 10px;align-items:center;padding:10px 0;border-bottom:1px dashed var(--line)}
+  .fila:last-child{border-bottom:none}
+  .fila.brilla{background:var(--accent-bg);border-radius:10px}
+  .fila img,.fila .sf{width:44px;height:44px;border-radius:9px;object-fit:contain;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:19px}
+  .f-n{font-weight:750;font-size:14px;line-height:1.25;overflow-wrap:anywhere}
+  .f-c{font-size:12px;color:var(--muted);font-weight:600;font-family:"Consolas","SF Mono",monospace}
+  .nums{grid-column:2/4;display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+  .campo{display:flex;flex-direction:column;gap:3px}
+  .campo>small{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+  .cnt{display:inline-flex;align-items:center;border:2px solid var(--line);border-radius:11px;overflow:hidden;background:#fff}
+  .cnt button{width:38px;height:38px;border:none;background:var(--line-2);font-size:20px;font-weight:800;color:var(--ink-2);cursor:pointer}
+  .cnt button:hover{background:#e3e7ee}
+  .cnt input,.sis-in{width:58px;height:38px;border:none;text-align:center;font-size:18px;font-weight:800;outline:none;-moz-appearance:textfield;background:#fff;color:var(--ink)}
+  .sis-in{width:76px;border:2px solid var(--line);border-radius:11px;height:42px;background:#fafbfc}
+  .sis-in:focus{border-color:var(--warn);background:#fff;box-shadow:0 0 0 3px rgba(183,121,31,.12)}
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .cnt:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .est{font-size:12.5px;font-weight:800;border-radius:20px;padding:5px 11px;white-space:nowrap;align-self:center}
+  .est.pend{background:var(--line-2);color:var(--muted)}
+  .est.ok{background:var(--ok-bg);color:#0b7a53}
+  .est.falta{background:var(--err-bg);color:#b71c1c}
+  .est.sobra{background:var(--warn-bg);color:#8a5b12}
+  .est.sis{background:#fff7e0;color:#8a5b12;border:1px dashed var(--warn-br)}
+  .mod-pie{padding:10px 14px 13px;border-top:1px solid var(--line);background:#fbfcfd;display:flex;flex-direction:column;gap:8px;margin-top:auto}
+  .tot{font-size:13.5px;font-weight:750;color:var(--ink-2)}
+  .tot .est{margin-left:6px}
+  .nota{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;font-size:14px;outline:none;background:#fff}
+  .nota:focus{border-color:var(--accent)}
+  .otro{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;justify-content:center}
+  .otro select{max-width:100%;border:1.5px dashed #c5ccd8;background:#fff;border-radius:11px;padding:10px 12px;font-size:14px;font-weight:700;color:var(--ink-2);cursor:pointer}
+  .vacio{background:var(--card);border:1.5px dashed var(--line);border-radius:var(--r);padding:34px 22px;text-align:center;color:var(--muted);font-weight:600}
+  .vacio b{color:var(--ink);display:block;font-size:16px;margin-bottom:5px}
+  .ayuda{font-size:12.5px;color:var(--muted);font-weight:600;text-align:center;margin-top:14px}
+
+  /* ===== historial ===== */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:13px 15px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .kpi i{position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}
+  .kpi.ok i{background:var(--ok)}.kpi.dif i{background:var(--err)}.kpi.n i{background:var(--black)}
+  .kpi-n{font-size:26px;font-weight:850;letter-spacing:-.5px;line-height:1}
+  .kpi-n small{font-size:14px;color:var(--muted);font-weight:700;letter-spacing:0}
+  .kpi-l{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:6px;font-weight:750}
+  .htools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .htools .sbox{flex:1;min-width:220px;margin:0}
+  .seg{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
+  .seg button{border:none;background:transparent;border-radius:9px;padding:9px 13px;font-size:13.5px;font-weight:800;color:var(--ink-2);cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--black);color:#fff}
+  .hlista{display:flex;flex-direction:column;gap:12px}
+  .hd{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+  .hd-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 15px;border-bottom:1px solid var(--line);background:#fbfcfd}
+  .hd-h b{font-size:15.5px}
+  .hd-h .btn{margin-left:auto}
+  .hoytag{font-size:11px;font-weight:800;background:var(--accent);color:#fff;border-radius:6px;padding:2px 7px}
+  .hm{padding:10px 15px;border-bottom:1px dashed var(--line)}
+  .hm:last-child{border-bottom:none}
+  .hm-t{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:800;font-size:14.5px;margin-bottom:6px}
+  .hm-t .est{font-size:11.5px;padding:3px 9px}
+  .hm-t .cuando{font-weight:650;color:var(--muted);font-size:12.5px}
+  table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.t th{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:800;text-align:right;padding:4px 6px;border-bottom:1px solid var(--line)}
+  table.t th:first-child,table.t td:first-child{text-align:left;padding-left:0}
+  table.t td{padding:6px;text-align:right;border-bottom:1px solid var(--line-2);font-weight:700;vertical-align:top}
+  table.t tr:last-child td{border-bottom:none}
+  table.t td small{display:block;font-weight:600;color:var(--muted);font-size:11.5px}
+  table.t .num{font-variant-numeric:tabular-nums;white-space:nowrap}
+  .d-ok{color:#0b7a53}.d-falta{color:#b71c1c}.d-sobra{color:#8a5b12}.d-nada{color:var(--muted)}
+  .hnota{font-size:13px;color:var(--ink-2);background:var(--line-2);border-radius:8px;padding:6px 9px;margin-top:6px;font-weight:600}
+  .nunca{margin-top:12px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 15px;font-size:13.5px;color:var(--ink-2)}
+  .nunca summary{cursor:pointer;font-weight:800}
+  .nunca p{margin:8px 0 0;line-height:1.6}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--black);color:#fff;padding:11px 16px;border-radius:11px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:300;box-shadow:0 12px 30px rgba(0,0,0,.25);max-width:calc(100vw - 32px);text-align:center}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:720px){
+    .appbar{padding:0 14px;height:60px}
+    .appbar .sub{display:none}
+    .wrap{padding:12px 12px 40px}
+    .tab{flex:1;padding:10px 8px;font-size:14px}
+    .cab{padding:14px}
+    .cab h2{font-size:17px}
+    .kpis{grid-template-columns:repeat(2,1fr);gap:10px}
+    .kpi-n{font-size:23px}
+    .mod-h{grid-template-columns:52px 1fr;padding:12px}
+    .mod-h img,.mod-h .sf{width:52px;height:52px}
+    .mod-a{grid-column:1/-1;display:flex;justify-content:flex-end}
+    .mod-a:empty{display:none}
+    .filas{padding:2px 12px}
+    .mod-pie{padding:10px 12px 12px}
+    .hd-h,.hm{padding-left:12px;padding-right:12px}
+    table.t{font-size:13px}
+    table.t th,table.t td{padding-left:4px;padding-right:4px}
+  }
+</style>
+</head>
+<body>
+<div class="appbar">
+  <b>🔄 Cíclicos</b><span class="sub">Conteo diario de 4 modelos al azar</span>
+  <div class="ab-right">
+    <span id="nubeEstado"></span>
+    <img src="../recepcion/logo.png" class="logo" alt="DJI">
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab" data-tab="hoy">📋 Cíclico de hoy</button>
+    <button class="tab" data-tab="hist">🕘 Historial</button>
+  </div>
+
+  <section id="vHoy">
+    <div class="aviso" id="aviso" hidden></div>
+    <div class="cab" id="cab"></div>
+    <div class="sbox"><span>▮▯▮</span><input id="scan" type="search" placeholder="Escaneá el código de barras para sumar 1 (o escribilo y Enter)…" autocomplete="off" spellcheck="false" enterkeyhint="done"></div>
+    <div class="modelos" id="modelos"></div>
+    <div class="otro"><select id="selOtro" aria-label="Contar otro modelo"></select></div>
+    <div class="ayuda">Contá lo que hay en la tienda y poné lo que dice el sistema. Todo se guarda solo en el historial y no se borra.</div>
+  </section>
+
+  <section id="vHist" hidden>
+    <div class="kpis" id="kpis"></div>
+    <div class="htools">
+      <div class="seg" id="seg"><button data-v="dia">📅 Por día</button><button data-v="modelo">📦 Por modelo</button></div>
+      <div class="sbox"><span>🔎</span><input id="qh" type="search" placeholder="Buscá un modelo o código…" autocomplete="off" spellcheck="false"></div>
+    </div>
+    <div class="hlista" id="hist"></div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../nube.js?v=20261124a"></script>
+<script src="../recepcion/catalog.js?v=20261124a"></script>
+<script>
+/* ============================================================
+   CÍCLICOS: cada día se cuentan 4 modelos elegidos al azar
+   (un dron, una cámara, un estabilizador y un micrófono o accesorio),
+   dando prioridad a los que hace más tiempo no se cuentan.
+   Nube: colección "ciclicos", un documento por día (AAAA-MM-DD), un campo por dato:
+     m0..mN    modelo de cada lugar {k, cat, nombre, items:[[código, descripción]]}
+     c:CÓDIGO  lo contado      s:CÓDIGO  lo que dice el sistema      notaN  nota del modelo
+   Nada se borra: el historial es la lista de días.
+   ============================================================ */
+"use strict";
+
+const LS_DIAS = "dji_ciclicos_v1", LS_TAB = "dji_ciclicos_tab", LS_VISTA = "dji_ciclicos_vista";
+const RX_FECHA = /^\d{4}-\d{2}-\d{2}$/;
+const CATS = {dron:["🚁","Dron","Drones"], camara:["📷","Cámara","Cámaras"], estabilizador:["🤳","Estabilizador","Estabilizadores"], microfono:["🎙️","Micrófono","Micrófonos"], accesorio:["🧩","Accesorio","Accesorios"]};
+const ORDEN_CATS = ["dron","camara","estabilizador","microfono","accesorio"];
+// los 4 lugares de cada día
+const LUGARES = [["dron"],["camara"],["estabilizador"],["microfono","accesorio"]];
+const FIJOS = LUGARES.length;
+
+const $ = id => document.getElementById(id);
+const S = v => String(v ?? "").trim();
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function fold(s){return (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g," ").trim();}
+const dos = n => String(n).padStart(2,"0");
+function hoyISO(){ const d=new Date(); return d.getFullYear()+"-"+dos(d.getMonth()+1)+"-"+dos(d.getDate()); }
+const aFecha = f => { const [y,m,d]=f.split("-").map(Number); return new Date(y,m-1,d); };
+const fechaCorta = f => { const [y,m,d]=f.split("-"); return d+"/"+m+"/"+y; };
+function fechaLarga(f){ const t=aFecha(f).toLocaleDateString("es-GT",{weekday:"long", day:"numeric", month:"long", year:"numeric"}); return t.charAt(0).toUpperCase()+t.slice(1); }
+function haceDias(f){
+  const n=Math.round((aFecha(hoyISO())-aFecha(f))/864e5);
+  return n<=0?"hoy":n===1?"ayer":n<7?`hace ${n} días`:n<14?"hace 1 semana":n<60?`hace ${Math.floor(n/7)} semanas`:`hace ${Math.floor(n/30)} meses`;
+}
+const plural = (n,a,b) => n+" "+(n===1?a:b);
+let tToast;
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tToast); tToast=setTimeout(()=>t.classList.remove("show"),2800); }
+let actx=null;
+function bip(bien){
+  try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); const o=actx.createOscillator(), g=actx.createGain(); o.frequency.value=bien?1320:330; o.type="square"; g.gain.setValueAtTime(.06,actx.currentTime); g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+(bien?.09:.25)); o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime+.3); }catch(e){}
+}
+
+// ============================================================
+//  CATÁLOGO (el de Recepción) → modelos
+// ============================================================
+let catalogo = {};   // código -> {descripcion, ean, img}
+let porEan = {};     // código de barras -> código
+let modelos = {};    // llave -> {k, cat, nombre, img, items:[[código, descripción]]}
+function armarCatalogo(delta){
+  catalogo={}; porEan={};
+  (window.CATALOGO_BASE||[]).forEach(b=>{ catalogo[b.codigo]={descripcion:b.descripcion, ean:S(b.ean).replace(/\D/g,""), img:b.img?"../recepcion/"+b.img:""}; });
+  if(delta){
+    const ov=delta.overrides&&typeof delta.overrides==="object"?delta.overrides:{};
+    for(const orig in ov){ const o=ov[orig], b=catalogo[orig]; if(!o) continue; const nuevo={descripcion:S(o.descripcion)||(b&&b.descripcion)||"", ean:o.ean!==undefined?S(o.ean).replace(/\D/g,""):(b&&b.ean)||"", img:(b&&b.img)||""}; if(o.codigo && o.codigo!==orig) delete catalogo[orig]; catalogo[S(o.codigo)||orig]=nuevo; }
+    (Array.isArray(delta.added)?delta.added:[]).forEach(a=>{ if(a && a.codigo && !catalogo[a.codigo]) catalogo[a.codigo]={descripcion:S(a.descripcion), ean:S(a.ean).replace(/\D/g,""), img:""}; });
+  }
+  const up={}; for(const c in catalogo){ const k=S(c).toUpperCase().slice(0,30); if(k && !up[k]) up[k]=catalogo[c]; } catalogo=up;
+  for(const c in catalogo){ if(catalogo[c].ean) porEan[catalogo[c].ean]=c; }
+  armarModelos();
+}
+function categoria(d){
+  const t=fold(d).replace(/^l (?=drone)/,"");
+  if(/^drones?\b/.test(t)) return "dron";
+  if(/^camara\b/.test(t)) return "camara";
+  if(/^(base estabilizadora|estabilizador)\b/.test(t)) return "estabilizador";
+  if(/^grabadora\b/.test(t)) return "microfono";
+  return "accesorio";
+}
+// "Drone DJI Neo 2 fly more combo" → "DJI Neo 2"   ·   "Camara DJI Osmo action 6 adventure combo" → "DJI Osmo Action 6"
+function nombreModelo(d){
+  let t=S(d).replace(/^\(L\)\s*/i,"");
+  const i=t.search(/\bDJI\b/i); if(i>=0) t=t.slice(i+3).trim();
+  t=t.replace(/\s+(fly\b|motion\b|creator\b|standard\b|adventure\b|advanced\b|device only|on the go|combo\b|con\b|\d+\s*gb\b|\d\s*tx\b|\(|\+).*$/i,"").trim();
+  t=t.split(/\s+/).map(w=>/^[a-z]/.test(w)?w[0].toUpperCase()+w.slice(1):w.replace(/^(\d+)([a-z])$/,(x,a,b)=>a+b.toUpperCase())).join(" ");
+  return t ? "DJI "+t : S(d);
+}
+function modeloDe(cod, d){
+  const cat=categoria(d);
+  if(cat==="accesorio") return {cat, k:"accesorio-"+fold(cod).replace(/ /g,"-"), nombre:S(d)||cod};
+  const nombre=nombreModelo(d);
+  return {cat, k:cat+"-"+fold(nombre).replace(/ /g,"-"), nombre};
+}
+function armarModelos(){
+  modelos={};
+  Object.keys(catalogo).sort().forEach(c=>{
+    const p=catalogo[c]; if(!p.descripcion) return;
+    const m=modeloDe(c, p.descripcion);
+    const x=modelos[m.k]||(modelos[m.k]={k:m.k, cat:m.cat, nombre:m.nombre, items:[]});
+    x.items.push([c, p.descripcion]);
+  });
+}
+// descripción corta dentro del modelo: "Drone DJI Neo 2 fly more combo" → "Neo 2 fly more combo"
+function corto(d, cat){ return cat==="accesorio" ? S(d) : S(d).replace(/^\(L\)\s*/i,"").replace(/^.*?\bDJI\s+/i,"") || S(d); }
+const imgDe = cod => (catalogo[cod]||{}).img || "";
+const fotoModelo = m => { for(const [c] of m.items){ const i=imgDe(c); if(i) return i; } return ""; };
+const comoLugar = m => ({k:m.k, cat:m.cat, nombre:m.nombre, items:m.items.map(x=>[x[0],x[1]])});
+
+// ============================================================
+//  DATOS
+// ============================================================
+let dias = {};      // fecha -> {m0:{…}, "c:COD":n, "s:COD":n, nota0:"…"}
+let abierta = hoyISO();
+function limpiarPlano(o){
+  const out={};
+  for(const k in (o||{})){
+    const v=o[k];
+    if(/^m\d{1,2}$/.test(k)){
+      if(v && typeof v==="object" && typeof v.k==="string" && v.k && Array.isArray(v.items)){
+        const items=v.items.filter(x=>Array.isArray(x) && S(x[0])).slice(0,40).map(x=>[S(x[0]).toUpperCase().slice(0,30), S(x[1]).slice(0,160)]);
+        if(items.length) out[k]={k:v.k.slice(0,90), cat:CATS[v.cat]?v.cat:"accesorio", nombre:S(v.nombre).slice(0,140)||v.k, items};
+      }
+    } else if(/^[cs]:.{1,30}$/.test(k)){
+      const n=typeof v==="number"?v:typeof v==="string"&&v.trim()!==""?Number(v):NaN;
+      if(Number.isInteger(n) && n>=0 && n<=99999) out[k]=n;
+    } else if(/^nota\d{1,2}$/.test(k)){ const t=S(v).slice(0,300); if(t) out[k]=t; }
+  }
+  return out;
+}
+function leerDoc(raw){ const o={}; for(const k in (raw||{})){ try{ o[k]=JSON.parse(raw[k]); }catch(e){} } return limpiarPlano(o); }
+function cargarLocal(){
+  try{ const d=JSON.parse(localStorage.getItem(LS_DIAS)||"{}"); for(const f in d) if(RX_FECHA.test(f)) dias[f]=limpiarPlano(d[f]); }catch(e){}
+}
+function guardarLocal(){ try{ localStorage.setItem(LS_DIAS, JSON.stringify(dias)); }catch(e){} }
+
+// los modelos de un día, en orden: [{i, m}]
+function lugares(f){
+  const d=dias[f]||{}, L=[];
+  for(const k in d){ const r=k.match(/^m(\d{1,2})$/); if(r) L.push({i:+r[1], m:d[k]}); }
+  return L.sort((a,b)=>a.i-b.i);
+}
+const val = (f, campo) => { const d=dias[f]; return d && Object.prototype.hasOwnProperty.call(d,campo) ? d[campo] : null; };
+function estado(n, s){
+  if(n==null) return ["pend","Por contar"];
+  if(s==null) return ["sis","Falta el sistema"];
+  if(n===s) return ["ok","✓ Cuadra"];
+  const d=Math.abs(n-s);
+  return n<s ? ["falta", d===1?"Falta 1":`Faltan ${d}`] : ["sobra", d===1?"Sobra 1":`Sobran ${d}`];
+}
+// resumen de un modelo en un día
+function resumen(f, l){
+  const filas=l.m.items.map(([c,d])=>({c, d, n:val(f,"c:"+c), s:val(f,"s:"+c)}));
+  const contados=filas.filter(x=>x.n!=null), conSis=filas.filter(x=>x.s!=null);
+  const cnt=contados.reduce((a,x)=>a+x.n,0), sis=conSis.reduce((a,x)=>a+x.s,0);
+  const completo=contados.length===filas.length, sisCompleto=conSis.length===filas.length;
+  const difs=filas.filter(x=>x.n!=null && x.s!=null && x.n!==x.s).length;
+  let est;
+  if(!contados.length) est=["pend","Por contar"];
+  else if(!completo) est=["pend",`${contados.length} de ${filas.length} contados`];
+  else if(!sisCompleto) est=["sis","Falta el sistema"];
+  else if(difs) est=cnt===sis?["falta",plural(difs,"diferencia","diferencias")]:estado(cnt,sis);
+  else est=["ok","✓ Cuadra"];
+  return {filas, contados:contados.length, cnt, sis:conSis.length?sis:null, completo, sisCompleto, difs, est, nota:val(f,"nota"+l.i)||""};
+}
+const tieneDatos = (f, l) => l.m.items.some(([c])=>val(f,"c:"+c)!=null || val(f,"s:"+c)!=null) || !!val(f,"nota"+l.i);
+// todas las veces que se contó cada modelo: k -> [{f, l, r}] (de la más vieja a la más nueva)
+function registro(){
+  const out={};
+  Object.keys(dias).filter(f=>RX_FECHA.test(f)).sort().forEach(f=>lugares(f).forEach(l=>{
+    const r=resumen(f,l); if(r.contados) (out[l.m.k]||(out[l.m.k]=[])).push({f, l, r});
+  }));
+  return out;
+}
+function ultimaVez(k, antesDe){
+  const L=(registro()[k]||[]).filter(x=>x.f<antesDe);
+  return L.length ? L[L.length-1] : null;
+}
+
+// ============================================================
+//  ELEGIR AL AZAR (el mismo resultado en todas las computadoras para el mismo día)
+// ============================================================
+function azar(txt){
+  let h=2166136261; for(let i=0;i<txt.length;i++){ h^=txt.charCodeAt(i); h=Math.imul(h,16777619); }
+  let a=h>>>0;
+  return ()=>{ a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
+}
+// entre los de esas categorías: primero los que hace más tiempo no se cuentan (la mitad), y de esos uno al azar
+function escoger(cats, fuera, rnd, antesDe){
+  const reg=registro(), ult={};
+  for(const k in reg){ const L=reg[k].filter(x=>x.f<antesDe); if(L.length) ult[k]=L[L.length-1].f; }
+  const L=Object.values(modelos).filter(m=>cats.includes(m.cat) && !fuera.has(m.k)).sort((a,b)=>a.k<b.k?-1:1).map(m=>({m, u:ult[m.k]||"", r:rnd()}));
+  if(!L.length) return null;
+  L.sort((a,b)=>a.u<b.u?-1:a.u>b.u?1:a.r-b.r);
+  const pool=L.slice(0, Math.max(1, Math.ceil(L.length/2)));
+  return pool[Math.floor(rnd()*pool.length)].m;
+}
+function elegirDia(f){
+  const rnd=azar("ciclico|"+f), fuera=new Set(), out={};
+  LUGARES.forEach((cats,i)=>{ const m=escoger(cats, fuera, rnd, f); if(m){ fuera.add(m.k); out["m"+i]=comoLugar(m); } });
+  return out;
+}
+
+// ============================================================
+//  NUBE
+// ============================================================
+// si este equipo tiene la clave de la tienda, lo que se cambie antes de conectar espera a la foto de la nube
+let nubeOn=!!(window.Nube && Nube.conectado()), nubeCol={}, colServidor=false;
+let desMapa=null, nubeMapa={}, fotoAbierta=!nubeOn, servidorAbierta=!nubeOn, mapaDe=nubeOn?abierta:null;
+const pend = {};   // fecha -> {campo: valor} cambios hechos antes de tener la foto de la nube
+function subirCampo(f, campo, v){
+  if(!nubeOn) return;
+  if(f===abierta && !fotoAbierta){ (pend[f]||(pend[f]={}))[campo]=v; return; }
+  const antes = f===abierta ? nubeMapa : (nubeCol[f]||{});
+  const ahora = Object.assign({}, antes);
+  if(v==null) delete ahora[campo]; else ahora[campo]=v;
+  Nube.guardarMapa("ciclicos", f, ahora, antes);
+  if(f===abierta) nubeMapa=ahora; else nubeCol[f]=ahora;
+}
+function poner(f, campo, v, sinPintar){
+  const d=dias[f]||(dias[f]={});
+  if(v==null) delete d[campo]; else d[campo]=v;
+  guardarLocal(); subirCampo(f, campo, v);
+  if(!sinPintar) render();
+}
+function escucharAbierta(){
+  if(desMapa){ try{ desMapa(); }catch(e){} desMapa=null; }
+  if(!nubeOn){ fotoAbierta=true; servidorAbierta=true; return; }
+  const f=abierta; mapaDe=f; fotoAbierta=false; servidorAbierta=false; nubeMapa={};
+  desMapa=Nube.escucharMapa("ciclicos", f, (m, existe, meta)=>{
+    if(f!==abierta) return;
+    nubeMapa=limpiarPlano(m);
+    const d=Object.assign({}, nubeMapa), p=pend[f];
+    if(p) for(const c in p){ if(p[c]==null) delete d[c]; else d[c]=p[c]; }
+    if(Object.keys(d).length || dias[f]) dias[f]=d;
+    if(meta && !meta.fromCache) servidorAbierta=true;
+    if(!fotoAbierta){ fotoAbierta=true; if(p){ delete pend[f]; for(const c in p) subirCampo(f, c, p[c]); } }
+    guardarLocal(); render(); elegirSiFalta();
+  });
+}
+async function conectarNube(){
+  Nube.pintar($("nubeEstado"));
+  const locales=JSON.parse(JSON.stringify(dias));
+  if(!nubeOn || !await Nube.iniciar()){
+    nubeOn=false; mapaDe=null; fotoAbierta=true; servidorAbierta=true; catListo=true;
+    for(const f in pend) delete pend[f];
+    render(); elegirSiFalta(); return;
+  }
+  // lo que este equipo tenía antes de conectarse se sube una sola vez (sin pisar lo de la nube)
+  Nube.unirUnaVez("ciclicos", async()=>{
+    const enNube=await Nube.leerColeccion("ciclicos");
+    for(const f in locales){ if(!RX_FECHA.test(f)) continue; const n=leerDoc(enNube[f]); await Nube.guardarMapa("ciclicos", f, Object.assign({}, locales[f], n), n); }
+  });
+  Nube.escucharColeccion("ciclicos", (raw, meta)=>{
+    const n={}; for(const f in raw) if(RX_FECHA.test(f)) n[f]=leerDoc(raw[f]);
+    nubeCol=n;
+    for(const f in n) if(f!==mapaDe) dias[f]=n[f];
+    if(meta && !meta.fromCache) colServidor=true;
+    guardarLocal(); render(); elegirSiFalta();
+  });
+  escucharAbierta();
+  Nube.escucharMapa("recepcion","catalogo",(m,existe)=>{ armarCatalogo(existe?m:null); catListo=true; render(); elegirSiFalta(); });
+  setTimeout(()=>{ catListo=true; sinServidor=true; elegirSiFalta(); }, 7000);
+}
+
+// el cíclico de hoy se elige solo, cuando ya se sabe lo que hay en la nube (para no pisar lo de otra computadora)
+let catListo=false, sinServidor=false;
+const elegidos = {};
+function elegirSiFalta(){
+  const f=hoyISO();
+  if(abierta!==f || elegidos[f] || lugares(f).length) return;
+  if(!catListo || !fotoAbierta) return;
+  if(nubeOn && !sinServidor && !(servidorAbierta && colServidor)) return;
+  if(!Object.keys(modelos).length) return;
+  elegidos[f]=true;
+  const nuevos=elegirDia(f);
+  for(const k in nuevos) poner(f, k, nuevos[k], true);
+  render();
+}
+
+// ============================================================
+//  ACCIONES
+// ============================================================
+function sumar(c, d){ const n=Math.max(0,(val(abierta,"c:"+c)||0)+d); poner(abierta,"c:"+c,n); }
+function otroAlAzar(i){
+  const f=abierta, l=lugares(f).find(x=>x.i===i); if(!l || tieneDatos(f,l)) return;
+  const fuera=new Set(lugares(f).map(x=>x.m.k));
+  const cats = i<FIJOS ? LUGARES[i] : [l.m.cat];
+  const m=escoger(cats, fuera, Math.random, f);
+  if(!m){ toast("No hay otro modelo de ese tipo en el catálogo"); return; }
+  poner(f, "m"+i, comoLugar(m));
+  toast(`🎲 Ahora toca: ${m.nombre}`);
+}
+function quitarLugar(i){
+  const f=abierta, l=lugares(f).find(x=>x.i===i); if(!l || tieneDatos(f,l)) return;
+  poner(f, "m"+i, null);
+}
+function agregarModelo(k){
+  const m=modelos[k], f=abierta; if(!m) return;
+  if(lugares(f).some(l=>l.m.k===k)){ toast("Ese modelo ya está en el cíclico"); return; }
+  const i=Math.max(FIJOS-1, ...lugares(f).map(l=>l.i))+1;
+  if(i>99){ toast("Ya hay demasiados modelos en este día"); return; }
+  poner(f, "m"+i, comoLugar(m));
+  setTimeout(()=>{ const el=document.querySelector(`.mod[data-i="${i}"]`); if(el) el.scrollIntoView({behavior:"smooth", block:"center"}); }, 50);
+}
+function escanear(txt){
+  const t=S(txt), dig=t.replace(/\D/g,""), cod=t.toUpperCase();
+  const enDia=new Set(); lugares(abierta).forEach(l=>l.m.items.forEach(([c])=>enDia.add(c)));
+  let c = enDia.has(cod) ? cod : (dig.length>=8 && porEan[dig]) || null;
+  if(!c){ if(dig.length>=8){ bip(false); toast("No encontré ese código de barras en el catálogo"); } return; }
+  if(!enDia.has(c)){ bip(false); toast(`Ese producto no está en el cíclico (${(catalogo[c]||{}).descripcion||c})`); return; }
+  sumar(c,1); bip(true);
+  $("scan").value="";
+  const el=document.querySelector(`.fila[data-c="${CSS.escape(c)}"]`);
+  if(el){ el.scrollIntoView({behavior:"smooth", block:"center"}); el.classList.add("brilla"); setTimeout(()=>el.classList.remove("brilla"),900); }
+  toast(`+1 · ${corto((catalogo[c]||{}).descripcion||c)} (van ${val(abierta,"c:"+c)})`);
+}
+function abrirDia(f){
+  if(!RX_FECHA.test(f)) return;
+  abierta=f; escucharAbierta(); ponerTab("hoy"); firma=""; render(); elegirSiFalta();
+  scrollTo({top:0, behavior:"smooth"});
+}
+function textoResumen(f){
+  const L=lugares(f); let t=`🔄 Cíclico · ${fechaLarga(f)}\n`;
+  L.forEach(l=>{
+    const r=resumen(f,l);
+    t+=`\n${CATS[l.m.cat][0]} ${l.m.nombre}: ${r.est[1].replace("✓ ","")}\n`;
+    r.filas.forEach(x=>{ t+=`• ${corto(x.d,l.m.cat)}: ${x.n==null?"sin contar":"conté "+x.n}${x.s!=null?" · sistema "+x.s:""}${x.n!=null&&x.s!=null?(x.n===x.s?" ✅":" ⚠️ "+estado(x.n,x.s)[1]):""}\n`; });
+    if(r.nota) t+=`📝 ${r.nota}\n`;
+  });
+  return t;
+}
+async function copiarResumen(){
+  const t=textoResumen(abierta);
+  try{ await navigator.clipboard.writeText(t); toast("📋 Resumen copiado: pegalo en WhatsApp"); }
+  catch(e){ const a=document.createElement("textarea"); a.value=t; document.body.appendChild(a); a.select(); try{ document.execCommand("copy"); toast("📋 Resumen copiado"); }catch(_){ toast("No se pudo copiar"); } a.remove(); }
+}
+
+// ============================================================
+//  PINTAR · HOY
+// ============================================================
+let tab="hoy", vistaH="dia", qh="", firma="";
+function htmlFila(c, d, cat){
+  const img=imgDe(c);
+  return `<div class="fila" data-c="${esc(c)}">
+    ${img?`<img src="${esc(img)}" alt="" loading="lazy" onerror="this.outerHTML='<span class=&quot;sf&quot;>📦</span>'">`:`<span class="sf">📦</span>`}
+    <div><div class="f-n" title="${esc(d)}">${esc(corto(d,cat))}</div><div class="f-c">${esc(c)}</div></div>
+    <span class="est pend">Por contar</span>
+    <div class="nums">
+      <label class="campo"><small>Conté</small><span class="cnt"><button type="button" data-a="menos" aria-label="Uno menos">−</button><input type="number" inputmode="numeric" min="0" max="99999" placeholder="—" data-k="c:${esc(c)}" aria-label="Lo que conté"><button type="button" data-a="mas" aria-label="Uno más">+</button></span></label>
+      <label class="campo"><small>Sistema</small><input class="sis-in" type="number" inputmode="numeric" min="0" max="99999" placeholder="—" data-k="s:${esc(c)}" aria-label="Lo que dice el sistema"></label>
+    </div>
+  </div>`;
+}
+function htmlModelo(f, l){
+  const m=l.m, [ic,cn]=CATS[m.cat]||CATS.accesorio, img=fotoModelo(m), u=ultimaVez(m.k, f);
+  const ult = u ? `Última vez: ${fechaCorta(u.f)} (${haceDias(u.f)}) · conté <b>${u.r.cnt}</b>${u.r.sis!=null?` · sistema <b>${u.r.sis}</b>`:""}` : "Primera vez que se cuenta en un cíclico";
+  return `<div class="mod" data-i="${l.i}">
+    <div class="mod-h">
+      ${img?`<img src="${esc(img)}" alt="" onerror="this.outerHTML='<span class=&quot;sf&quot;>📦</span>'">`:`<span class="sf">📦</span>`}
+      <div class="mod-t"><span class="tag">${ic} ${cn}${l.i>=FIJOS?" · extra":""}</span><b>${esc(m.nombre)}</b><div class="ult">${ult}</div></div>
+      <div class="mod-a">${l.i<FIJOS
+        ? `<button class="btn ghost sm" data-a="dado" title="Cambiar por otro modelo al azar (solo si todavía no se contó)">🎲 Otro</button>`
+        : `<button class="btn ghost sm" data-a="quitar" title="Quitar este modelo (solo si todavía no se contó)">✕ Quitar</button>`}</div>
+    </div>
+    <div class="filas">${m.items.map(([c,d])=>htmlFila(c,d,m.cat)).join("")}</div>
+    <div class="mod-pie"><div class="tot"></div><input class="nota" data-k="nota${l.i}" maxlength="300" placeholder="Nota (opcional): por qué hay diferencia, dónde estaba…" aria-label="Nota"></div>
+  </div>`;
+}
+function renderHoy(){
+  const f=abierta, esHoy=f===hoyISO(), L=lugares(f);
+  const av=$("aviso");
+  av.hidden=esHoy;
+  if(!esHoy) av.innerHTML=`📅 Estás viendo el cíclico del <b>${esc(fechaLarga(f))}</b>. Si cambiás algo, se corrige en el historial.<button class="btn primary sm" onclick="abrirDia(hoyISO())">← Volver a hoy</button>`;
+  const sig=f+"|"+L.map(l=>l.i+":"+l.m.k).join(",")+"|"+Object.keys(modelos).length;
+  if(sig!==firma){
+    const foco=document.activeElement, kf=foco && foco.dataset ? foco.dataset.k : null;
+    firma=sig;
+    $("cab").innerHTML=`<div><h2>${esHoy?"Cíclico de hoy":"Cíclico"} · ${esc(fechaLarga(f))}</h2><div class="que">${L.length?`${plural(L.length,"modelo","modelos")}: ${esc(L.map(l=>l.m.nombre).join(" · "))}`:""}</div></div>
+      <div class="der">${L.length?`<button class="btn ghost sm" id="btnCopiar">📋 Copiar resumen</button>`:""}</div>
+      <div class="prog" id="prog"></div>`;
+    if(L.length) $("btnCopiar").onclick=copiarResumen;
+    $("modelos").innerHTML = L.length ? L.map(l=>htmlModelo(f,l)).join("") :
+      `<div class="vacio">${esHoy ? (nubeOn && !(servidorAbierta && colServidor) && !sinServidor ? "<b>⏳ Revisando la nube…</b>En un momento salen los modelos de hoy." : Object.keys(modelos).length ? "<b>⏳ Eligiendo los modelos de hoy…</b>" : "<b>No hay productos en el catálogo</b>Agregalos en Recepción.") : "<b>Ese día no hubo cíclico</b>Podés agregar un modelo abajo si querés registrarlo."}</div>`;
+    const usados=new Set(L.map(l=>l.m.k));
+    $("selOtro").innerHTML=`<option value="">＋ Contar otro modelo…</option>`+ORDEN_CATS.map(cat=>{
+      const ms=Object.values(modelos).filter(m=>m.cat===cat && !usados.has(m.k)).sort((a,b)=>a.nombre.localeCompare(b.nombre,"es"));
+      return ms.length?`<optgroup label="${CATS[cat][0]} ${CATS[cat][2]}">${ms.map(m=>`<option value="${esc(m.k)}">${esc(m.nombre)}</option>`).join("")}</optgroup>`:"";
+    }).join("");
+    if(kf){ const el=document.querySelector(`#vHoy [data-k="${CSS.escape(kf)}"]`); if(el) el.focus(); }
+  }
+  pintarValores();
+}
+// solo los números y estados (no se rehace nada mientras alguien escribe)
+function pintarValores(){
+  const f=abierta, L=lugares(f), foco=document.activeElement;
+  let total=0, contados=0, ok=0, dif=0, sinSis=0;
+  L.forEach(l=>{
+    const r=resumen(f,l), card=document.querySelector(`.mod[data-i="${l.i}"]`); if(!card) return;
+    r.filas.forEach(x=>{
+      total++; if(x.n!=null) contados++;
+      const e=estado(x.n,x.s); if(e[0]==="ok") ok++; else if(e[0]==="falta"||e[0]==="sobra") dif++; else if(e[0]==="sis") sinSis++;
+      const row=card.querySelector(`.fila[data-c="${CSS.escape(x.c)}"]`); if(!row) return;
+      const b=row.querySelector(".est"); b.className="est "+e[0]; b.textContent=e[1];
+      row.querySelectorAll("input[data-k]").forEach(inp=>{ if(inp===foco) return; const v=val(f,inp.dataset.k); inp.value=v==null?"":v; });
+    });
+    card.querySelector(".tot").innerHTML = r.contados ? `Total: conté <b>${r.cnt}</b>${r.sis!=null?` · sistema <b>${r.sis}</b>`:""}<span class="est ${r.est[0]}">${esc(r.est[1])}</span>` : `<span class="est pend">${esc(r.est[1])}</span>`;
+    const n=card.querySelector(".nota"); if(n!==foco) n.value=r.nota;
+    const a=card.querySelector(".mod-a"); if(a) a.hidden = tieneDatos(f,l);
+  });
+  const p=$("prog");
+  if(p) p.innerHTML = total ? `<div class="barra"><i style="width:${Math.round(contados/total*100)}%"></i></div>
+    <div class="pills"><span class="pill">${contados} de ${plural(total,"producto contado","productos contados")}</span>${ok?`<span class="pill ok">✓ ${ok} ${ok===1?"cuadra":"cuadran"}</span>`:""}${dif?`<span class="pill dif">⚠ ${plural(dif,"con diferencia","con diferencia")}</span>`:""}${sinSis?`<span class="pill sis">${sinSis} sin sistema</span>`:""}</div>` : "";
+}
+
+// ============================================================
+//  PINTAR · HISTORIAL
+// ============================================================
+function coincide(l, q){ if(!q) return true; const t=fold(l.m.nombre+" "+l.m.items.map(x=>x[0]+" "+x[1]).join(" ")); return q.split(" ").every(w=>t.includes(w)); }
+const difTxt = (n,s) => n==null||s==null ? `<span class="d-nada">—</span>` : n===s ? `<span class="d-ok">✓ 0</span>` : `<span class="${n<s?"d-falta":"d-sobra"}">${n<s?"−":"+"}${Math.abs(n-s)}</span>`;
+const numTxt = v => v==null ? `<span class="d-nada">—</span>` : v;
+function renderHist(){
+  const reg=registro(), hoy=hoyISO(), q=fold(qh);
+  const fechas=Object.keys(dias).filter(f=>RX_FECHA.test(f)).sort().reverse();
+  // números de arriba
+  let ciclicos=0, prods=0, okN=0, conSis=0, difN=0;
+  fechas.forEach(f=>{ let alguno=false; lugares(f).forEach(l=>resumen(f,l).filas.forEach(x=>{ if(x.n==null) return; alguno=true; prods++; if(x.s!=null){ conSis++; if(x.n===x.s) okN++; else difN++; } })); if(alguno) ciclicos++; });
+  $("kpis").innerHTML=`<div class="kpi n"><i></i><div class="kpi-n">${ciclicos}</div><div class="kpi-l">Días con cíclico</div></div>
+    <div class="kpi"><i></i><div class="kpi-n">${prods}</div><div class="kpi-l">Productos contados</div></div>
+    <div class="kpi ok"><i></i><div class="kpi-n">${conSis?Math.round(okN/conSis*100):0}<small>%</small></div><div class="kpi-l">Cuadraron (${okN} de ${conSis})</div></div>
+    <div class="kpi dif"><i></i><div class="kpi-n">${difN}</div><div class="kpi-l">Con diferencia</div></div>`;
+  document.querySelectorAll("#seg button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===vistaH));
+  let html="";
+  if(vistaH==="dia"){
+    fechas.forEach(f=>{
+      const L=lugares(f).filter(l=>tieneDatos(f,l) || f===hoy);
+      if(!L.some(l=>tieneDatos(f,l))) return;
+      const Lq=L.filter(l=>coincide(l,q)); if(!Lq.length) return;
+      html+=`<div class="hd"><div class="hd-h"><b>📅 ${esc(fechaLarga(f))}</b>${f===hoy?`<span class="hoytag">HOY</span>`:""}<button class="btn ghost sm" onclick="abrirDia('${f}')">${f===hoy?"📋 Abrir":"✏️ Abrir / corregir"}</button></div>`;
+      Lq.forEach(l=>{
+        const r=resumen(f,l);
+        html+=`<div class="hm"><div class="hm-t">${CATS[l.m.cat][0]} ${esc(l.m.nombre)} <span class="est ${r.est[0]}">${esc(r.est[1])}</span></div>
+          <table class="t"><thead><tr><th>Producto</th><th>Conté</th><th>Sistema</th><th>Dif.</th></tr></thead><tbody>
+          ${r.filas.map(x=>`<tr><td>${esc(corto(x.d,l.m.cat))}<small>${esc(x.c)}</small></td><td class="num">${numTxt(x.n)}</td><td class="num">${numTxt(x.s)}</td><td class="num">${difTxt(x.n,x.s)}</td></tr>`).join("")}
+          ${r.filas.length>1&&r.contados?`<tr><td><b>Total</b></td><td class="num"><b>${r.cnt}</b></td><td class="num"><b>${numTxt(r.sis)}</b></td><td class="num">${r.completo&&r.sisCompleto?difTxt(r.cnt,r.sis):""}</td></tr>`:""}
+          </tbody></table>${r.nota?`<div class="hnota">📝 ${esc(r.nota)}</div>`:""}</div>`;
+      });
+      html+=`</div>`;
+    });
+    if(!html) html=`<div class="vacio">${q?"<b>No hay cíclicos con ese modelo</b>":"<b>Todavía no hay cíclicos guardados</b>Cuando cuenten el de hoy, aquí va a quedar el registro de cada día."}</div>`;
+  } else {
+    const ks=Object.keys(reg).filter(k=>coincide(reg[k][reg[k].length-1].l, q))
+      .sort((a,b)=>{ const fa=reg[a][reg[a].length-1].f, fb=reg[b][reg[b].length-1].f; return fa<fb?1:fa>fb?-1:0; });
+    ks.forEach(k=>{
+      const L=reg[k], m=L[L.length-1].l.m;
+      html+=`<div class="hd"><div class="hd-h"><b>${CATS[m.cat][0]} ${esc(m.nombre)}</b><span class="pill">${plural(L.length,"vez","veces")} · última ${haceDias(L[L.length-1].f)}</span></div><div class="hm">
+        <table class="t"><thead><tr><th>Día</th><th>Conté</th><th>Sistema</th><th>Dif.</th></tr></thead><tbody>
+        ${L.slice().reverse().map(x=>{
+          const det = x.r.filas.length>1 ? x.r.filas.map(y=>`${esc(corto(y.d,m.cat))}: ${y.n==null?"—":y.n}${y.s!=null?"/"+y.s:""}`).join(" · ") : "";
+          return `<tr><td><a href="#" onclick="abrirDia('${x.f}');return false" title="Abrir ese día">${fechaCorta(x.f)}</a><small>${haceDias(x.f)}${det?" · "+det:""}</small>${x.r.nota?`<small>📝 ${esc(x.r.nota)}</small>`:""}</td><td class="num">${x.r.cnt}${x.r.completo?"":"<small>incompleto</small>"}</td><td class="num">${numTxt(x.r.sis)}</td><td class="num">${x.r.completo&&x.r.sisCompleto?difTxt(x.r.cnt,x.r.sis):`<span class="d-nada">—</span>`}</td></tr>`;
+        }).join("")}
+        </tbody></table></div></div>`;
+    });
+    if(!html) html=`<div class="vacio">${q?"<b>Ese modelo todavía no se ha contado</b>":"<b>Todavía no hay modelos contados</b>"}</div>`;
+    if(!q){
+      const nunca=Object.values(modelos).filter(m=>!reg[m.k]).sort((a,b)=>ORDEN_CATS.indexOf(a.cat)-ORDEN_CATS.indexOf(b.cat)||a.nombre.localeCompare(b.nombre,"es"));
+      if(nunca.length) html+=`<details class="nunca"><summary>${plural(nunca.length,"modelo que todavía no se ha contado","modelos que todavía no se han contado")}</summary><p>${nunca.map(m=>CATS[m.cat][0]+" "+esc(m.nombre)).join(" · ")}</p></details>`;
+    }
+  }
+  $("hist").innerHTML=html;
+}
+
+function render(){
+  if(tab==="hoy") renderHoy(); else renderHist();
+}
+function ponerTab(t){
+  tab=t==="hist"?"hist":"hoy";
+  document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-pressed", b.dataset.tab===tab));
+  $("vHoy").hidden=tab!=="hoy"; $("vHist").hidden=tab!=="hist";
+  try{ localStorage.setItem(LS_TAB, tab); }catch(e){}
+  render();
+}
+
+// ============================================================
+//  EVENTOS
+// ============================================================
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click", ()=>{ if(b.dataset.tab==="hoy" && abierta!==hoyISO()) abrirDia(hoyISO()); else ponerTab(b.dataset.tab); }));
+$("seg").addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b) return; vistaH=b.dataset.v; try{ localStorage.setItem(LS_VISTA, vistaH); }catch(_){} renderHist(); });
+$("qh").addEventListener("input", e=>{ qh=e.target.value; renderHist(); });
+$("modelos").addEventListener("click", e=>{
+  const b=e.target.closest("[data-a]"); if(!b) return;
+  const fila=b.closest(".fila"), card=b.closest(".mod"), a=b.dataset.a;
+  if(a==="mas" && fila) sumar(fila.dataset.c, 1);
+  else if(a==="menos" && fila) sumar(fila.dataset.c, -1);
+  else if(a==="dado" && card) otroAlAzar(+card.dataset.i);
+  else if(a==="quitar" && card) quitarLugar(+card.dataset.i);
+});
+$("modelos").addEventListener("change", e=>{
+  const inp=e.target.closest("[data-k]"); if(!inp) return;
+  const k=inp.dataset.k;
+  if(/^nota/.test(k)){ poner(abierta, k, S(inp.value).slice(0,300)||null); return; }
+  const t=S(inp.value), n=Math.round(Number(t));
+  if(t==="" ) poner(abierta, k, null);
+  else if(Number.isFinite(n) && n>=0 && n<=99999) poner(abierta, k, n);
+  else { toast("Poné un número"); render(); }
+});
+$("modelos").addEventListener("keydown", e=>{ if(e.key==="Enter" && e.target.matches("input")){ e.preventDefault(); e.target.blur(); } });
+$("modelos").addEventListener("focusout", ()=>setTimeout(pintarValores, 0));
+$("selOtro").addEventListener("change", e=>{ const k=e.target.value; e.target.value=""; if(k) agregarModelo(k); });
+$("scan").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); escanear(e.target.value); } });
+// si la página queda abierta, al cambiar de día pasa sola al cíclico nuevo
+let hoyVisto=hoyISO();
+function revisarDia(){ const h=hoyISO(); if(h===hoyVisto) return; const eraHoy=abierta===hoyVisto; hoyVisto=h; if(eraHoy){ abierta=h; escucharAbierta(); firma=""; } render(); elegirSiFalta(); }
+setInterval(revisarDia, 30000);
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) revisarDia(); });
+
+// ---------- inicio ----------
+armarCatalogo(null);
+cargarLocal();
+try{ vistaH=localStorage.getItem(LS_VISTA)==="modelo"?"modelo":"dia"; }catch(e){}
+let tabInicial="hoy"; try{ tabInicial=localStorage.getItem(LS_TAB)||"hoy"; }catch(e){}
+ponerTab(tabInicial);
+conectarNube();
+</script>
+</body>
+</html>
