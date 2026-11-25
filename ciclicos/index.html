@@ -116,6 +116,17 @@
   .vacio b{color:var(--ink);display:block;font-size:16px;margin-bottom:5px}
   .ayuda{font-size:12.5px;color:var(--muted);font-weight:600;text-align:center;margin-top:14px}
 
+  /* ===== finalizar ===== */
+  .finbox{flex-basis:100%;display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap}
+  .finbox:empty{display:none}
+  #finAbajo{margin-top:14px;justify-content:center}
+  .btn.fin{background:var(--ok);color:#fff;padding:12px 20px;font-size:15px}.btn.fin:hover{background:#0b8a5f}
+  .fin-ayuda{font-size:12.5px;color:var(--muted);font-weight:600}
+  .fin-ok{flex:1;display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;background:var(--ok-bg);border:1px solid var(--ok-br);color:#0b5e40;border-radius:12px;padding:10px 13px;font-weight:650;font-size:14px}
+  .fin-ok .btn{margin-left:auto}
+  .cerrado .cnt button{display:none}
+  .cerrado input:disabled{opacity:1;-webkit-text-fill-color:var(--ink);background:#f7f8fa}
+
   /* ===== historial ===== */
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
   .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:13px 15px;box-shadow:var(--shadow);position:relative;overflow:hidden}
@@ -200,6 +211,7 @@
     <div class="cab" id="cab"></div>
     <div class="sbox"><span>▮▯▮</span><input id="scan" type="search" placeholder="Escaneá el código de barras para sumar 1 (o escribilo y Enter)…" autocomplete="off" spellcheck="false" enterkeyhint="done"></div>
     <div class="modelos" id="modelos"></div>
+    <div class="finbox" id="finAbajo"></div>
     <div class="otro"><select id="selOtro" aria-label="Contar otro modelo"></select></div>
     <div class="ayuda">Contá lo que hay en la tienda. Lo del sistema sale del último Excel cargado (si hace falta, se puede cambiar a mano). Todo se guarda solo en el historial y no se borra.</div>
   </section>
@@ -216,8 +228,8 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261125a"></script>
-<script src="../recepcion/catalog.js?v=20261125a"></script>
+<script src="../nube.js?v=20261125b"></script>
+<script src="../recepcion/catalog.js?v=20261125b"></script>
 <script>
 /* ============================================================
    CÍCLICOS: cada día se cuentan 4 modelos elegidos al azar
@@ -355,6 +367,8 @@ function limpiarPlano(o){
       if(typeof v==="number" && Number.isInteger(v) && Math.abs(v)<=99999) out[k]=v;
     } else if(k==="sxc"){ const t=S(v).slice(0,40); if(t) out[k]=t; }
     else if(k==="base"){ if(v==="sistema") out[k]=v; }
+    else if(k==="fin"){ const t=S(v).slice(0,40); if(t && !isNaN(new Date(t))) out[k]=t; }
+    else if(k==="fijo"){ if(v===true) out[k]=true; }
     else if(/^[cs]:.{1,30}$/.test(k)){
       const n=typeof v==="number"?v:typeof v==="string"&&v.trim()!==""?Number(v):NaN;
       if(Number.isInteger(n) && n>=0 && n<=99999) out[k]=n;
@@ -647,12 +661,13 @@ function elegirSiFalta(){
   if(!Object.keys(modelos).length) return;
   let cambio=false;
   const L=lugares(f);
+  if(L.length && val(f,"fin")) return;   // ya finalizado: queda como está
   if(!L.length){
     if(elegidos[f]) return;
     elegidos[f]=true;
     const nuevos=elegirDia(f);
     for(const k in nuevos){ poner(f, k, nuevos[k], true); cambio=true; }
-  } else if(sistema && val(f,"base")!=="sistema" && !rehechos[f]){
+  } else if(sistema && val(f,"base")!=="sistema" && !val(f,"fijo") && !rehechos[f]){
     // los modelos de hoy se eligieron antes de cargar el inventario del sistema:
     // lo que todavía no se ha contado se vuelve a elegir entre lo que hay
     rehechos[f]=true;
@@ -669,8 +684,10 @@ function elegirSiFalta(){
   }
   if(sistema){
     if(val(f,"base")!=="sistema") poner(f, "base", "sistema", true);
-    lugares(f).forEach(l=>l.m.items.forEach(([c])=>{ const s=stockDe(c); if(val(f,"sx:"+c)!==s){ poner(f, "sx:"+c, s, true); cambio=true; } }));
-    if(val(f,"sxc")!==sistema.cargado) poner(f, "sxc", sistema.cargado, true);
+    // si ya se finalizó una vez (y se reabrió), solo se llena lo que falte: no se cambia con lo que se contó
+    const fijo=!!val(f,"fijo");
+    lugares(f).forEach(l=>l.m.items.forEach(([c])=>{ const s=stockDe(c), a=val(f,"sx:"+c); if(a!==s && !(fijo && a!=null)){ poner(f, "sx:"+c, s, true); cambio=true; } }));
+    if(!fijo && val(f,"sxc")!==sistema.cargado) poner(f, "sxc", sistema.cargado, true);
   }
   if(cambio) render();
 }
@@ -678,8 +695,10 @@ function elegirSiFalta(){
 // ============================================================
 //  ACCIONES
 // ============================================================
-function sumar(c, d){ const n=Math.max(0,(val(abierta,"c:"+c)||0)+d); poner(abierta,"c:"+c,n); }
+const cerrado = () => !!val(abierta,"fin");
+function sumar(c, d){ if(cerrado()) return; const n=Math.max(0,(val(abierta,"c:"+c)||0)+d); poner(abierta,"c:"+c,n); }
 function otroAlAzar(i){
+  if(cerrado()) return;
   const f=abierta, l=lugares(f).find(x=>x.i===i); if(!l || tieneDatos(f,l)) return;
   const fuera=new Set(lugares(f).map(x=>x.m.k));
   const cats = i<FIJOS ? LUGARES[i] : [l.m.cat];
@@ -689,11 +708,12 @@ function otroAlAzar(i){
   toast(`🎲 Ahora toca: ${m.nombre}`);
 }
 function quitarLugar(i){
+  if(cerrado()) return;
   const f=abierta, l=lugares(f).find(x=>x.i===i); if(!l || tieneDatos(f,l)) return;
   poner(f, "m"+i, null);
 }
 function agregarModelo(k){
-  const m=modelos[k], f=abierta; if(!m) return;
+  const m=modelos[k], f=abierta; if(!m || cerrado()) return;
   if(lugares(f).some(l=>l.m.k===k)){ toast("Ese modelo ya está en el cíclico"); return; }
   const i=Math.max(FIJOS-1, ...lugares(f).map(l=>l.i))+1;
   if(i>99){ toast("Ya hay demasiados modelos en este día"); return; }
@@ -701,6 +721,7 @@ function agregarModelo(k){
   setTimeout(()=>{ const el=document.querySelector(`.mod[data-i="${i}"]`); if(el) el.scrollIntoView({behavior:"smooth", block:"center"}); }, 50);
 }
 function escanear(txt){
+  if(cerrado()){ toast("El cíclico ya está finalizado"); return; }
   const t=S(txt), dig=t.replace(/\D/g,""), cod=t.toUpperCase();
   const enDia=new Set(); lugares(abierta).forEach(l=>l.m.items.forEach(([c])=>enDia.add(c)));
   let c = enDia.has(cod) ? cod : (dig.length>=8 && porEan[dig]) || null;
@@ -711,6 +732,26 @@ function escanear(txt){
   const el=document.querySelector(`.fila[data-c="${CSS.escape(c)}"]`);
   if(el){ el.scrollIntoView({behavior:"smooth", block:"center"}); el.classList.add("brilla"); setTimeout(()=>el.classList.remove("brilla"),900); }
   toast(`+1 · ${corto((catalogo[c]||{}).descripcion||c)} (van ${val(abierta,"c:"+c)})`);
+}
+// finalizar: el cíclico queda guardado en el historial tal como está (se puede reabrir para corregir)
+function finalizar(){
+  const f=abierta, L=lugares(f); if(!L.length || val(f,"fin")) return;
+  let total=0, cont=0; const sinNota=[];
+  L.forEach(l=>{ const r=resumen(f,l); r.filas.forEach(x=>{ total++; if(x.n!=null) cont++; }); if(r.difs && !r.nota) sinNota.push(l.m.nombre); });
+  if(!cont){ alert("Todavía no han contado nada en este cíclico."); return; }
+  let msg=`¿Finalizar el cíclico del ${fechaLarga(f)}?\n\n${cont} de ${plural(total,"producto contado","productos contados")}.`;
+  if(cont<total) msg+=`\n⚠️ Faltan ${total-cont} por contar.`;
+  if(sinNota.length) msg+=`\n⚠️ Hay diferencias sin nota en: ${sinNota.join(", ")}.`;
+  if(!confirm(msg+`\n\nQueda guardado en el historial tal como está.`)) return;
+  if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  if(!val(f,"fijo")) poner(f, "fijo", true, true);
+  poner(f, "fin", new Date().toISOString());
+  toast("✅ Cíclico finalizado y guardado en el historial");
+}
+function reabrir(){
+  const f=abierta; if(!val(f,"fin")) return;
+  if(!confirm("¿Reabrir este cíclico para corregir algo?\n\nDespués lo podés volver a finalizar.")) return;
+  poner(f, "fin", null);
 }
 function abrirDia(f){
   if(!RX_FECHA.test(f)) return;
@@ -725,6 +766,7 @@ function textoResumen(f){
     r.filas.forEach(x=>{ t+=`• ${corto(x.d,l.m.cat)}: ${x.n==null?"sin contar":"conté "+x.n}${x.s!=null?" · sistema "+x.s:""}${x.n!=null&&x.s!=null?(x.n===x.s?" ✅":" ⚠️ "+estado(x.n,x.s)[1]):""}\n`; });
     if(r.nota) t+=`📝 ${r.nota}\n`;
   });
+  if(val(f,"fin")) t+=`\n✅ Finalizado: ${cuando(val(f,"fin"))}\n`;
   return t;
 }
 async function copiarResumen(){
@@ -750,12 +792,11 @@ function htmlFila(c, d, cat){
   </div>`;
 }
 function htmlModelo(f, l){
-  const m=l.m, [ic,cn]=CATS[m.cat]||CATS.accesorio, img=fotoModelo(m), u=ultimaVez(m.k, f);
-  const ult = u ? `Última vez: ${fechaCorta(u.f)} (${haceDias(u.f)}) · conté <b>${u.r.cnt}</b>${u.r.sis!=null?` · sistema <b>${u.r.sis}</b>`:""}` : "Primera vez que se cuenta en un cíclico";
+  const m=l.m, [ic,cn]=CATS[m.cat]||CATS.accesorio, img=fotoModelo(m);
   return `<div class="mod" data-i="${l.i}">
     <div class="mod-h">
       ${img?`<img src="${esc(img)}" alt="" onerror="this.outerHTML='<span class=&quot;sf&quot;>📦</span>'">`:`<span class="sf">📦</span>`}
-      <div class="mod-t"><span class="tag">${ic} ${cn}${l.i>=FIJOS?" · extra":""}</span><b>${esc(m.nombre)}</b><div class="ult">${ult}</div></div>
+      <div class="mod-t"><span class="tag">${ic} ${cn}${l.i>=FIJOS?" · extra":""}</span><b>${esc(m.nombre)}</b><div class="ult"></div></div>
       <div class="mod-a">${l.i<FIJOS
         ? `<button class="btn ghost sm" data-a="dado" title="Cambiar por otro modelo al azar (solo si todavía no se contó)">🎲 Otro</button>`
         : `<button class="btn ghost sm" data-a="quitar" title="Quitar este modelo (solo si todavía no se contó)">✕ Quitar</button>`}</div>
@@ -775,7 +816,8 @@ function renderHoy(){
     firma=sig;
     $("cab").innerHTML=`<div><h2>${esHoy?"Cíclico de hoy":"Cíclico"} · ${esc(fechaLarga(f))}</h2><div class="que">${L.length?`${plural(L.length,"modelo","modelos")}: ${esc(L.map(l=>l.m.nombre).join(" · "))}`:""}</div></div>
       <div class="der">${L.length?`<button class="btn ghost sm" id="btnCopiar">📋 Copiar resumen</button>`:""}</div>
-      <div class="prog" id="prog"></div>`;
+      <div class="prog" id="prog"></div>
+      <div class="finbox" id="finArriba"></div>`;
     if(L.length) $("btnCopiar").onclick=copiarResumen;
     $("modelos").innerHTML = L.length ? L.map(l=>htmlModelo(f,l)).join("") :
       `<div class="vacio">${esHoy ? (nubeOn && !(servidorAbierta && colServidor) && !sinServidor ? "<b>⏳ Revisando la nube…</b>En un momento salen los modelos de hoy." : Object.keys(modelos).length ? "<b>⏳ Eligiendo los modelos de hoy…</b>" : "<b>No hay productos en el catálogo</b>Agregalos en Recepción.") : "<b>Ese día no hubo cíclico</b>Podés agregar un modelo abajo si querés registrarlo."}</div>`;
@@ -806,11 +848,23 @@ function pintarValores(){
     });
     card.querySelector(".tot").innerHTML = r.contados ? `Total: conté <b>${r.cnt}</b>${r.sis!=null?` · sistema <b>${r.sis}</b>`:""}<span class="est ${r.est[0]}">${esc(r.est[1])}</span>` : `<span class="est pend">${esc(r.est[1])}</span>`;
     const n=card.querySelector(".nota"); if(n!==foco) n.value=r.nota;
-    const a=card.querySelector(".mod-a"); if(a) a.hidden = tieneDatos(f,l);
+    const u=ultimaVez(l.m.k, f), ue=card.querySelector(".ult");
+    const ut = u ? `Última vez: ${fechaCorta(u.f)} (${haceDias(u.f)}) · conté <b>${u.r.cnt}</b>${u.r.sis!=null?` · sistema <b>${u.r.sis}</b>`:""}` : "Primera vez que se cuenta en un cíclico";
+    if(ue && ue.innerHTML!==ut) ue.innerHTML=ut;
+    const a=card.querySelector(".mod-a"); if(a) a.hidden = tieneDatos(f,l) || !!val(f,"fin");
   });
   const p=$("prog");
   if(p) p.innerHTML = total ? `<div class="barra"><i style="width:${Math.round(contados/total*100)}%"></i></div>
     <div class="pills"><span class="pill">${contados} de ${plural(total,"producto contado","productos contados")}</span>${ok?`<span class="pill ok">✓ ${ok} ${ok===1?"cuadra":"cuadran"}</span>`:""}${dif?`<span class="pill dif">⚠ ${plural(dif,"con diferencia","con diferencia")}</span>`:""}${sinSis?`<span class="pill sis">${sinSis} sin sistema</span>`:""}</div>` : "";
+  // finalizar
+  const fin=val(f,"fin"), hayL=L.length>0;
+  $("modelos").classList.toggle("cerrado", !!fin);
+  document.querySelectorAll("#modelos input, #modelos button").forEach(el=>{ el.disabled=!!fin; });
+  $("scan").closest(".sbox").hidden=!!fin || !hayL; $("selOtro").closest(".otro").hidden=!!fin;
+  const caja = !hayL ? "" : fin
+    ? `<div class="fin-ok"><span>✅ <b>Cíclico finalizado</b> el ${esc(cuando(fin))} · ${contados} de ${plural(total,"producto contado","productos contados")}${ok?` · ${ok} ${ok===1?"cuadra":"cuadran"}`:""}${dif?` · ${plural(dif,"con diferencia","con diferencia")}`:""}</span><button class="btn ghost sm" onclick="reabrir()">↩️ Reabrir para corregir</button></div>`
+    : `<button class="btn fin" onclick="finalizar()">✅ Finalizar cíclico</button><span class="fin-ayuda">Cuando terminen de contar, tóquenlo para darlo por terminado y guardarlo en el historial.</span>`;
+  ["finArriba","finAbajo"].forEach(id=>{ const el=$(id); if(el && el.innerHTML!==caja) el.innerHTML=caja; });
 }
 
 // ============================================================
@@ -836,7 +890,7 @@ function renderHist(){
       const L=lugares(f).filter(l=>tieneDatos(f,l) || f===hoy);
       if(!L.some(l=>tieneDatos(f,l))) return;
       const Lq=L.filter(l=>coincide(l,q)); if(!Lq.length) return;
-      html+=`<div class="hd"><div class="hd-h"><b>📅 ${esc(fechaLarga(f))}</b>${f===hoy?`<span class="hoytag">HOY</span>`:""}<button class="btn ghost sm" onclick="abrirDia('${f}')">${f===hoy?"📋 Abrir":"✏️ Abrir / corregir"}</button></div>`;
+      html+=`<div class="hd"><div class="hd-h"><b>📅 ${esc(fechaLarga(f))}</b>${f===hoy?`<span class="hoytag">HOY</span>`:""}${val(f,"fin")?`<span class="pill ok">✅ Finalizado ${esc(new Date(val(f,"fin")).toLocaleTimeString("es-GT",{hour:"numeric", minute:"2-digit"}))}</span>`:`<span class="pill${f===hoy?"":" sis"}">${f===hoy?"En curso":"Sin finalizar"}</span>`}<button class="btn ghost sm" onclick="abrirDia('${f}')">${f===hoy?"📋 Abrir":"✏️ Abrir / corregir"}</button></div>`;
       Lq.forEach(l=>{
         const r=resumen(f,l);
         html+=`<div class="hm"><div class="hm-t">${CATS[l.m.cat][0]} ${esc(l.m.nombre)} <span class="est ${r.est[0]}">${esc(r.est[1])}</span></div>

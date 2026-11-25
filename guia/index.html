@@ -201,7 +201,7 @@
   </div>
 </div>
 
-<script src="contenido.js?v=20261125a"></script>
+<script src="contenido.js?v=20261125b"></script>
 <script>
 "use strict";
 const $ = id => document.getElementById(id);
@@ -430,7 +430,7 @@ function pintarFicha(){
     <ul>${c.p.claves.slice(0,4).map(([a])=>`<li>${esc(a)}</li>`).join("")}</ul>`;
 }
 // fotos de Mensajes (las mismas de las tarjetas de precio): se cargan después, sin frenar la página
-(function(){ const s=document.createElement("script"); s.src="../precios/fotos.js?v=20261125a"; s.onload=pintarFicha; document.body.appendChild(s); })();
+(function(){ const s=document.createElement("script"); s.src="../precios/fotos.js?v=20261125b"; s.onload=pintarFicha; document.body.appendChild(s); })();
 
 // ---------- repaso ----------
 const REPASO=["Saludé en los primeros segundos y me presenté","Incluí al acompañante en la conversación","Le pregunté a qué se dedica y para qué lo quiere","Conecté lo que me dijo con funciones del producto","Le puse el producto en las manos o lo encendí","Le pregunté qué función quería ver","Recomendé el combo adecuado","Ofrecí Protection Plus","Ofrecí accesorios (microSD, baterías, micrófono…)","Expliqué las formas de pago","Si no compró: tomé su número o lo anoté en Clientes"];
