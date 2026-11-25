@@ -42,7 +42,7 @@
   /* ===== inventario del sistema ===== */
   .sisbar{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--ok);border-radius:14px;box-shadow:var(--shadow-sm);padding:11px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap}
   .sisbar.viejo{border-left-color:var(--warn);background:#fffdf7}
-  .sisbar.nada{border-left-color:var(--accent);background:var(--accent-bg)}
+  .sisbar.nada{border-left-color:var(--warn);background:var(--warn-bg);border-color:var(--warn-br)}
   .sb-t{flex:1 1 320px;min-width:0;font-size:13.5px;color:var(--ink-2);font-weight:600;line-height:1.4}
   .sb-t>.sb-h{display:block;font-size:14.5px;color:var(--ink);margin-bottom:1px}
   .sb-a{display:flex;gap:8px;flex-wrap:wrap}
@@ -216,8 +216,8 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261124b"></script>
-<script src="../recepcion/catalog.js?v=20261124b"></script>
+<script src="../nube.js?v=20261125a"></script>
+<script src="../recepcion/catalog.js?v=20261125a"></script>
 <script>
 /* ============================================================
    CÍCLICOS: cada día se cuentan 4 modelos elegidos al azar
@@ -481,7 +481,7 @@ async function conectarNube(){
   if(!nubeOn || !await Nube.iniciar()){
     nubeOn=false; mapaDe=null; fotoAbierta=true; servidorAbierta=true; sisServidor=true; catListo=true;
     for(const f in pend) delete pend[f];
-    render(); elegirSiFalta(); return;
+    render(); elegirSiFalta(); aplicarLink(); return;
   }
   // lo que este equipo tenía antes de conectarse se sube una sola vez (sin pisar lo de la nube)
   Nube.unirUnaVez("ciclicos", async()=>{
@@ -496,7 +496,7 @@ async function conectarNube(){
     if(sisServidor && s && (!antes || antes.cargado!==s.cargado) && s.cargado!==sisMio) toast("📦 Se actualizó el inventario del sistema");
     if(meta && !meta.fromCache) sisServidor=true;
     if(!antes!==!s || (antes && s && antes.cargado!==s.cargado)){ armarModelos(); firma=""; }
-    guardarSisLocal(); render(); elegirSiFalta();
+    guardarSisLocal(); render(); elegirSiFalta(); aplicarLink();
   });
   Nube.escucharColeccion("ciclicos", (raw, meta)=>{
     const n={}; for(const f in raw) if(RX_FECHA.test(f)) n[f]=leerDoc(raw[f]);
@@ -507,7 +507,7 @@ async function conectarNube(){
   });
   escucharAbierta();
   Nube.escucharMapa("recepcion","catalogo",(m,existe)=>{ armarCatalogo(existe?m:null); catListo=true; render(); elegirSiFalta(); });
-  setTimeout(()=>{ catListo=true; sinServidor=true; elegirSiFalta(); }, 7000);
+  setTimeout(()=>{ catListo=true; sinServidor=true; elegirSiFalta(); aplicarLink(); }, 7000);
 }
 
 // ============================================================
@@ -566,6 +566,9 @@ async function leerExcelSistema(file){
 async function cargarExcel(file){
   let p;
   try{ p=await leerExcelSistema(file); }catch(err){ alert("No se pudo leer el Excel: "+(err && err.message || err)); return; }
+  confirmarCarga(p, S(file.name).slice(0,120));
+}
+function confirmarCarga(p, archivo){
   const L=Object.entries(p), con=L.filter(([,x])=>x.n>0), uni=con.reduce((a,[,x])=>a+x.n,0);
   let cambios="";
   if(sistema){
@@ -574,8 +577,33 @@ async function cargarExcel(file){
     cambios = cambian.length ? `\n\nCambia lo del sistema en ${plural(cambian.length,"producto","productos")}:\n`+cambian.slice(0,8).map(c=>`• ${nom(c)}: ${A[c]?A[c].n:0} → ${p[c]?p[c].n:0}`).join("\n")+(cambian.length>8?`\n… y ${cambian.length-8} más`:"") : "\n\nLas cantidades son iguales a las de la carga anterior.";
     cambios+=`\n\n(Carga anterior: ${cuando(sistema.cargado)})`;
   }
-  if(!confirm(`¿Actualizar el inventario del sistema con este Excel?\n\n${plural(con.length,"producto","productos")} con existencia · ${fmt(uni)} unidades`+cambios+`\n\nEl cíclico de hoy toma estas cantidades; los días anteriores no cambian.`)) return;
-  guardarSistema(p, S(file.name).slice(0,120));
+  if(!confirm(`¿Actualizar el inventario del sistema con este Excel?\n\n${plural(con.length,"producto","productos")} con existencia · ${fmt(uni)} unidades`+cambios+`\n\nEl cíclico de hoy toma estas cantidades; los días anteriores no cambian.`+(nubeOn?"":"\n\n⚠️ Este equipo NO está conectado a la nube de la tienda: solo se va a ver aquí."))) return;
+  guardarSistema(p, archivo);
+}
+// link de carga: …#ciclicos&sistema=… (las cantidades van dentro del link; no se mandan a ningún lado)
+let cargaLink=null;
+function leerLink(){
+  const m=location.hash.match(/(?:^#|&)sistema=([A-Za-z0-9_-]+)/); if(!m) return;
+  try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){}
+  try{
+    const bin=atob(m[1].replace(/-/g,"+").replace(/_/g,"/"));
+    const o=JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, c=>c.charCodeAt(0))));
+    const p={};
+    for(const k in (o && o.p || {})){
+      const x=o.p[k]; if(!Array.isArray(x)) continue;
+      const c=S(k).toUpperCase().slice(0,30), n=Math.round(Number(x[0])), l=Math.round(Number(x[1]));
+      if(!c || !Number.isFinite(n) || Math.abs(n)>99999) continue;
+      p[c]={n, l:Number.isFinite(l)?Math.min(l,n):n, d:S(x[2]||(catalogo[c]||{}).descripcion||"").slice(0,160), e:S(x[3]||"").replace(/\D/g,"").slice(0,20)};
+    }
+    if(!Object.keys(p).length) throw new Error("vacío");
+    cargaLink={p, a:S(o.a).slice(0,120)};
+  }catch(e){ alert("Ese link de carga del inventario no se pudo leer. Copiá el link completo."); }
+  aplicarLink();
+}
+function aplicarLink(){
+  if(!cargaLink || (nubeOn && !sisServidor && !sinServidor)) return;   // primero saber qué hay en la nube
+  const c=cargaLink; cargaLink=null;
+  setTimeout(()=>confirmarCarga(c.p, c.a), 50);
 }
 function guardarSistema(p, archivo){
   const t=new Date().toISOString(), P=Object.values(p).filter(x=>x.n>0);
@@ -590,7 +618,7 @@ function renderSis(){
   const el=$("sisbar");
   if(!sistema){
     el.className="sisbar nada";
-    el.innerHTML=`<div class="sb-t"><b class="sb-h">📦 Inventario del sistema</b>Todavía no se ha cargado. Cargá el Excel del sistema (Nombre mostrado y Cantidad disponible) para que la casilla <b>Sistema</b> se llene sola y el cíclico salga solo de los productos que hay.</div><div class="sb-a"><button class="btn primary sm" data-a="excel">⬆️ Cargar Excel</button></div>`;
+    el.innerHTML=`<div class="sb-t"><b class="sb-h">⚠️ Falta cargar el inventario del sistema</b>Por eso la casilla <b>Sistema</b> está vacía. Tocá <b>Cargar Excel</b> y elegí el Excel del sistema (Nombre mostrado y Cantidad disponible): se llena sola y el cíclico sale solo de los productos que hay.${nubeOn?"":" <b>Este equipo no está conectado a la nube de la tienda</b>, así que solo se vería aquí."}</div><div class="sb-a"><button class="btn primary sm" data-a="excel">⬆️ Cargar Excel</button></div>`;
     return;
   }
   const P=Object.entries(sistema.p), con=P.filter(([,x])=>x.n>0), uni=con.reduce((a,[,x])=>a+x.n,0);
@@ -774,7 +802,7 @@ function pintarValores(){
       const b=row.querySelector(".est"); b.className="est "+e[0]; b.textContent=e[1];
       row.querySelectorAll("input[data-k]").forEach(inp=>{ if(inp===foco) return; const v=/^s:/.test(inp.dataset.k)?x.s:val(f,inp.dataset.k); inp.value=v==null?"":v; });
       const si=row.querySelector(".sis-in"); si.classList.toggle("auto", x.auto); si.title = x.auto ? "Según el Excel del sistema. Si escribís otro número, queda puesto a mano." : "";
-      row.querySelector(".lbl-s").textContent = x.auto ? "Sistema · Excel" : val(f,"s:"+x.c)!=null && val(f,"sx:"+x.c)!=null ? "Sistema · a mano" : "Sistema";
+      row.querySelector(".lbl-s").textContent = x.auto ? "Sistema · Excel" : val(f,"s:"+x.c)!=null ? (val(f,"sx:"+x.c)!=null ? "Sistema · a mano" : "Sistema") : !sistema && f===hoyISO() ? "Sistema · falta Excel" : "Sistema";
     });
     card.querySelector(".tot").innerHTML = r.contados ? `Total: conté <b>${r.cnt}</b>${r.sis!=null?` · sistema <b>${r.sis}</b>`:""}<span class="est ${r.est[0]}">${esc(r.est[1])}</span>` : `<span class="est pend">${esc(r.est[1])}</span>`;
     const n=card.querySelector(".nota"); if(n!==foco) n.value=r.nota;
@@ -892,6 +920,7 @@ let hoyVisto=hoyISO();
 function revisarDia(){ const h=hoyISO(); if(h===hoyVisto) return; const eraHoy=abierta===hoyVisto; hoyVisto=h; if(eraHoy){ abierta=h; escucharAbierta(); firma=""; } render(); elegirSiFalta(); }
 setInterval(()=>{ revisarDia(); renderSis(); }, 30000);
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) revisarDia(); });
+addEventListener("hashchange", leerLink);
 
 // ---------- inicio ----------
 cargarSisLocal();
@@ -900,6 +929,7 @@ cargarLocal();
 try{ vistaH=localStorage.getItem(LS_VISTA)==="modelo"?"modelo":"dia"; }catch(e){}
 let tabInicial="hoy"; try{ tabInicial=localStorage.getItem(LS_TAB)||"hoy"; }catch(e){}
 ponerTab(tabInicial);
+leerLink();
 conectarNube();
 </script>
 </body>
