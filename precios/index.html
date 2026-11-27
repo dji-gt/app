@@ -60,6 +60,8 @@
   .badge.oc{background:var(--line-2);color:var(--muted);border:1px solid var(--line)}
   .fila.oculta .ab{opacity:.55}
   .vacio{padding:24px 12px;text-align:center;color:var(--muted);font-size:13.5px}
+  .promo-bar{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap;background:#111318;color:#fff;border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:13.5px;font-weight:600}
+  .promo-bar .chk{color:rgba(255,255,255,.85);margin-left:auto}
   .lc-pie{border-top:1px solid var(--line-2);padding:10px 12px;display:grid;gap:8px}
   .lc-pie .r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .lc-pie .r.sp{justify-content:space-between}
@@ -206,6 +208,7 @@
 </div>
 
 <div class="wrap">
+  <div class="promo-bar" id="promoBar" hidden></div>
   <div class="grid">
     <aside class="card lcard">
       <div class="lc-top">
@@ -258,10 +261,11 @@
 <div class="picker" id="picker" hidden></div>
 <div class="toast" id="toast"></div>
 
-<script src="../nube.js?v=20261125b"></script>
-<script src="fotos.js?v=20261125b"></script>
-<script src="tarjeta.js?v=20261125b"></script>
-<script src="tarjetas-base.js?v=20261125b"></script>
+<script src="../nube.js?v=20261127a"></script>
+<script src="../promos.js?v=20261127a"></script>
+<script src="fotos.js?v=20261127a"></script>
+<script src="tarjeta.js?v=20261127a"></script>
+<script src="tarjetas-base.js?v=20261127a"></script>
 <script>
 "use strict";
 /* ============================================================
@@ -391,6 +395,28 @@ function ladoVisto(p){
   q.vers=q.vers.filter((v,j)=>p.oc.indexOf(j)<0);
   if(p.sinF) q.feats=[];
   return q;
+}
+// ---------- promociones con fecha (../promos.js): "Antes" y "Ahora" solo al ver e imprimir ----------
+// (los precios guardados no se tocan; al terminar la promoción las tarjetas vuelven solas)
+let sinPromo=false;   // ver/imprimir sin la promoción (solo en este equipo, mientras está abierta la página)
+function conPromo(id, t){
+  const r=resuelta(t), P=window.Promo && !sinPromo ? Promo.actual() : null;
+  if(!r || !P) return r;
+  const c=JSON.parse(JSON.stringify(r)); let hay=false;
+  c.partes.forEach((p,i)=>{
+    const orig=(t.partes||[])[i]||{}; let tid=id, k=i;
+    if(orig.ref){ const o=origen(orig.ref); if(!o) return; tid=o.id; k=o.k; }
+    (p.vers||[]).forEach(v=>{ const x=Promo.tarjeta(tid, k, v.n); if(x){ v.antes=x.antes; v.p=x.ahora; v.promo=x.nombre; hay=true; } });
+  });
+  if(hay) c.promo={nombre:P.nombre, hasta:P.hasta};
+  return c;
+}
+function pintarPromo(){
+  const el=$("promoBar"), P=window.Promo ? Promo.actual() : null;
+  el.hidden=!P; if(!P) return;
+  el.innerHTML=`<span>🖤 <b>${esc(P.nombre)}</b> hasta el ${esc(Promo.fechaTexto(P.hasta))}: las tarjetas con promoción salen con <b>Antes</b> y <b>Ahora</b>. Después vuelven solas a su precio normal.</span>
+    <label class="chk"><input type="checkbox" id="sinPromo" ${sinPromo?"checked":""}> Ver e imprimir sin la promoción</label>`;
+  $("sinPromo").onchange=e=>{ sinPromo=e.target.checked; pintarVista(); };
 }
 function resuelta(t){
   if(!t || !t.partes.some(p=>p.ref)) return t;
@@ -530,7 +556,7 @@ function vistaLuego(){ cancelAnimationFrame(rafVista); rafVista=requestAnimation
 function pintarVista(){
   const v=$("vista");
   if(!edit){ v.innerHTML=""; v.style.height="0"; return; }
-  v.innerHTML=`<div class="escala">${T.html(resuelta(edit), medida)}</div>`;
+  v.innerHTML=`<div class="escala">${T.html(conPromo(actual, edit), medida)}</div>`;
   const tj=v.querySelector(".tj"), ok=T.ajustar(tj);
   $("cortada").hidden=ok;
   escalar();
@@ -887,7 +913,7 @@ function abrirPrimera(){
 // ---------- imprimir ----------
 function imprimir(ids, copias){
   const lista=[];
-  ids.forEach(id=>{ const t = resuelta(id===actual && edit ? normal(edit) : tarjeta(id)); if(t) for(let k=0;k<copias;k++) lista.push(t); });
+  ids.forEach(id=>{ const t = conPromo(id, id===actual && edit ? normal(edit) : tarjeta(id)); if(t) for(let k=0;k<copias;k++) lista.push(t); });
   if(!lista.length){ toast("Marcá al menos una tarjeta"); return; }
   const d=distribucion(medida.ancho, medida.alto);
   if(!d.n){ alert("Con esa medida la tarjeta no cabe en una hoja carta."); return; }
@@ -1024,7 +1050,7 @@ async function conectarNube(){
 }
 
 // ---------- inicio ----------
-pintarCats(); pintarMedida();
+pintarCats(); pintarMedida(); pintarPromo();
 {
   const a=leer(LS_A, null);
   if(a && tarjeta(a) && !oculta(a)) abrir(a); else abrirPrimera();

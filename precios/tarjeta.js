@@ -212,7 +212,7 @@
   }
   function versiones(p, tid){
     const vs=p.vers||[]; if(!vs.length) return "";
-    return `<div class="tj-vers${vs.length===1?" solo":""}">${vs.map(v=>`<div class="tj-v"><div class="tj-vh"><div class="tj-vn">${esc(v.n)}${v.s?`<span class="tj-vs">${esc(v.s)}</span>`:""}</div><div class="tj-p${v.p==null||v.p===""?" tj-cons":""}">${precioHtml(v.p)}</div></div>${items(v.items, idsDe(v.c, tid))}${v.desc?`<div class="tj-desc">${esc(v.desc)}</div>`:""}</div>`).join("")}</div>`;
+    return `<div class="tj-vers${vs.length===1?" solo":""}">${vs.map(v=>`<div class="tj-v"><div class="tj-vh"><div class="tj-vn">${esc(v.n)}${v.s?`<span class="tj-vs">${esc(v.s)}</span>`:""}</div>${v.antes!=null ? `<div class="tj-p tj-promo"><span class="tj-pt">${esc(String(v.promo||"Promoción").toUpperCase())}</span><span class="tj-antes">Antes <s>${precio(v.antes)}</s></span><span>${precioHtml(v.p)}</span></div>` : `<div class="tj-p${v.p==null||v.p===""?" tj-cons":""}">${precioHtml(v.p)}</div>`}</div>${items(v.items, idsDe(v.c, tid))}${v.desc?`<div class="tj-desc">${esc(v.desc)}</div>`:""}</div>`).join("")}</div>`;
   }
   function comun(p, tid){
     const ids=[]; (p.vers||[]).forEach(v=>idsDe(v.c, tid).forEach(i=>{ if(ids.indexOf(i)<0) ids.push(i); }));
@@ -238,13 +238,15 @@
     const partes=(t.partes||[]).slice(0,2), doble=partes.length>1, tid=String(t.id||"");
     const banda = t.banda ? `<div class="tj-banda">${esc(t.bandaTxt||BANDA)}</div>` : "";
     const pp = t.ppOn ? ppLinea(t) : "";
+    // promoción con fecha (Black Friday…): franja negra con hasta cuándo vale
+    const promo = t.promo ? `<div class="tj-bf"><b>${esc(String(t.promo.nombre).toUpperCase())}</b> Precio especial válido hasta el ${esc(String(t.promo.hasta).split("-").reverse().join("/"))}</div>` : "";
     let cuerpo, abajo="";
     if(!doble){
       const p=partes[0]||{titulo:"",vers:[]};
-      cuerpo=`<div class="tj-izq">${cab(p)}${banda}${feats(p)}</div><div class="tj-der">${versiones(p, tid)}${comun(p, tid)}${pp}</div>`;
+      cuerpo=`<div class="tj-izq">${cab(p)}${promo}${banda}${feats(p)}</div><div class="tj-der">${versiones(p, tid)}${comun(p, tid)}${pp}</div>`;
     } else {
       cuerpo=partes.map(p=>`<div class="tj-mitad">${cab(p)}${feats(p)}${versiones(p, tid)}${comun(p, tid)}</div>`).join("");
-      if(banda || pp) abajo=`<div class="tj-abajo">${banda}${pp}</div>`;
+      if(banda || pp || promo) abajo=`<div class="tj-abajo">${promo}${banda}${pp}</div>`;
     }
     const notas = String(t.notas||"").trim() ? `<div class="tj-notas">${esc(t.notas).replace(/\n/g,"<br>")}</div>` : "";
     return `<div class="tj${doble?" doble":""}" style="width:${W}mm;height:${H}mm"><div class="tj-cuerpo">${cuerpo}</div>${abajo}${notas}</div>`;
@@ -369,6 +371,13 @@
 .tj-p{font-weight:700;font-size:1.85em;line-height:1;white-space:nowrap;letter-spacing:-.01em}
 .tj-q{font-size:.55em;font-weight:700;margin-right:.04em}
 .tj-p.tj-cons{font-size:1.1em;color:#555}
+.tj-p.tj-promo{display:flex;flex-direction:column;align-items:center;gap:.07em}
+.tj.doble .tj-p.tj-promo{align-items:flex-end}
+.tj-pt{font-size:.3em;font-weight:800;letter-spacing:.12em;background:#000;color:#fff;border-radius:.35em;padding:.28em .65em .22em}
+.tj-antes{font-size:.4em;font-weight:600;color:#555;letter-spacing:0}
+.tj-antes s{text-decoration-thickness:.09em}
+.tj-bf{background:#000;color:#fff;border-radius:.45em;padding:.45em .8em;font-size:.8em;font-weight:600;line-height:1.25;text-align:center}
+.tj-bf b{font-weight:800;letter-spacing:.12em;margin-right:.35em}
 .tj-items{display:flex;flex-wrap:wrap;justify-content:center;align-content:flex-start;gap:.55em .3em;width:100%}
 .tj-i{flex:0 0 6.3em;width:6.3em;display:flex;flex-direction:column;align-items:center;text-align:center;gap:.25em;font-size:.66em;font-weight:500;line-height:1.15;letter-spacing:.01em}
 .tj-i img{width:100%;height:4.4em;object-fit:contain;mix-blend-mode:multiply}
